@@ -104,189 +104,139 @@ export function ServicosSelector({ servicosSelecionados, onServicosChange }: Ser
   const valorTotal = servicosSelecionados.reduce((total, servico) => total + servico.valor_total, 0);
 
   return (
-    <Card className="p-3 sm:p-4 md:p-6">
-      <CardHeader className="pb-3 sm:pb-4 px-0">
-        <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-          <Package className="h-4 w-4 sm:h-5 sm:w-5" />
-          Serviços
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-0">
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4">
-            <Label className="text-sm sm:text-base font-medium">Selecionar Serviços *</Label>
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="h-10 w-full sm:w-auto touch-manipulation">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Adicionar Serviço
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="w-[95vw] max-w-2xl max-h-[80vh] overflow-y-auto px-4 sm:px-6">
-                <DialogHeader>
-                  <DialogTitle>Selecionar Serviços</DialogTitle>
-                  <DialogDescription>
-                    Escolha os serviços para adicionar à venda
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="space-y-4">
-                  <Input
-                    placeholder="Buscar serviços..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="h-10 sm:h-12 text-sm sm:text-base"
-                  />
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-base font-medium">Serviços</h3>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="h-9 px-3 touch-manipulation">
+              <Plus className="mr-2 h-4 w-4" />
+              Adicionar Serviço
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="w-[95vw] max-w-2xl max-h-[80vh] overflow-y-auto px-4 sm:px-6">
+            <DialogHeader>
+              <DialogTitle>Selecionar Serviços</DialogTitle>
+              <DialogDescription>
+                Escolha os serviços para adicionar à venda
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <Input
+                placeholder="Buscar serviços..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="h-10 sm:h-12 text-sm sm:text-base"
+              />
 
-                  {isLoading ? (
-                    <div className="text-center py-8">
-                      <div className="animate-pulse">Carregando serviços...</div>
-                    </div>
-                  ) : servicos.length > 0 ? (
-                    <div className="grid gap-3 max-h-60 sm:max-h-96 overflow-y-auto">
-                      {servicos.map((servico) => (
-                        <Card key={servico.id} className="cursor-pointer hover:shadow-md transition-all duration-200">
-                          <CardContent className="p-3 sm:p-4">
-                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-medium text-sm sm:text-base mb-1 truncate">{servico.nome}</h4>
-                                {servico.descricao && (
-                                  <p className="text-xs sm:text-sm text-muted-foreground mb-2 line-clamp-2">
-                                    {servico.descricao}
-                                  </p>
-                                )}
-                                <div className="flex flex-wrap items-center gap-1 sm:gap-2">
-                                  <Badge variant="outline" className="text-xs sm:text-sm px-2 py-1">
-                                    {formatCurrency(servico.valor)}
-                                  </Badge>
-                                  {servico.categoria && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      {servico.categoria}
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                              <Button
-                                size="sm"
-                                onClick={() => adicionarServico(servico)}
-                                className="h-9 sm:h-10 px-3 touch-manipulation shrink-0 w-full sm:w-auto"
-                              >
-                                <Plus className="h-4 w-4 sm:mr-2" />
-                                <span className="hidden sm:inline">Adicionar</span>
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p className="text-base mb-2">Nenhum serviço encontrado</p>
-                      <p className="text-sm">Tente ajustar sua busca ou cadastre novos serviços</p>
-                    </div>
-                  )}
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-pulse">Carregando serviços...</div>
                 </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          {servicosSelecionados.length > 0 ? (
-            <div className="space-y-3">
-              {servicosSelecionados.map((servico) => (
-                <Card key={servico.servico_id} className="border-muted">
-                  <CardContent className="p-3 sm:p-4">
-                    <div className="space-y-4">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm sm:text-base mb-3 truncate">{servico.nome}</h4>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {/* Valor Unitário Editável */}
-                        <div className="space-y-2">
-                          <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
-                            Valor Unitário
-                          </Label>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm">R$</span>
-                            <InlineEdit
-                              value={formatCurrencyForEdit(servico.valor_unitario)}
-                              onSave={(valor) => atualizarValorUnitario(servico.servico_id, valor)}
-                              className="font-medium text-base hover:bg-muted/50 px-2 py-1 rounded border-dashed border border-transparent hover:border-muted-foreground/30 transition-all"
-                              placeholder="0,00"
-                            />
-                            <Edit3 className="h-3 w-3 text-muted-foreground/50" />
+              ) : servicos.length > 0 ? (
+                <div className="grid gap-3 max-h-60 sm:max-h-96 overflow-y-auto">
+                  {servicos.map((servico) => (
+                    <Card key={servico.id} className="cursor-pointer hover:shadow-md transition-all duration-200">
+                      <CardContent className="p-3 sm:p-4">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-sm sm:text-base mb-1 truncate">{servico.nome}</h4>
+                            {servico.descricao && (
+                              <p className="text-xs sm:text-sm text-muted-foreground mb-2 line-clamp-2">
+                                {servico.descricao}
+                              </p>
+                            )}
+                            <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+                              <Badge variant="outline" className="text-xs sm:text-sm px-2 py-1">
+                                {formatCurrency(servico.valor)}
+                              </Badge>
+                              {servico.categoria && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {servico.categoria}
+                                </Badge>
+                              )}
+                            </div>
                           </div>
+                          <Button
+                            size="sm"
+                            onClick={() => adicionarServico(servico)}
+                            className="h-9 sm:h-10 px-3 touch-manipulation shrink-0 w-full sm:w-auto"
+                          >
+                            <Plus className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Adicionar</span>
+                          </Button>
                         </div>
-
-                        {/* Quantidade Editável */}
-                        <div className="space-y-2">
-                          <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
-                            Quantidade
-                          </Label>
-                          <div className="flex items-center gap-2">
-                            <InlineEdit
-                              value={servico.quantidade.toString()}
-                              onSave={(qtd) => atualizarQuantidade(servico.servico_id, parseInt(qtd) || 1)}
-                              className="font-medium text-base hover:bg-muted/50 px-2 py-1 rounded border-dashed border border-transparent hover:border-muted-foreground/30 transition-all w-16 text-center"
-                              placeholder="1"
-                            />
-                            <span className="text-sm text-muted-foreground">unid.</span>
-                          </div>
-                        </div>
-
-                        {/* Valor Total */}
-                        <div className="space-y-2">
-                          <Label className="text-xs sm:text-sm font-medium text-muted-foreground">
-                            Valor Total
-                          </Label>
-                          <div className="flex items-center justify-between sm:justify-start">
-                            <p className="font-bold text-lg text-primary">
-                              {formatCurrency(servico.valor_total)}
-                            </p>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => removerServico(servico.servico_id)}
-                              className="h-8 px-2 sm:ml-4 touch-manipulation"
-                              title="Remover serviço"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              
-              <Card className="bg-muted/30 border-primary/20">
-                <CardContent className="p-4">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                    <span className="font-medium text-lg">Valor Total dos Serviços:</span>
-                    <span className="text-2xl md:text-3xl font-bold text-primary">
-                      {formatCurrency(valorTotal)}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-base mb-2">Nenhum serviço encontrado</p>
+                  <p className="text-sm">Tente ajustar sua busca ou cadastre novos serviços</p>
+                </div>
+              )}
             </div>
-          ) : (
-            <Card className="border-dashed border-2 border-muted">
-              <CardContent className="p-8 text-center">
-                <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                <p className="text-muted-foreground text-base mb-2">
-                  Nenhum serviço selecionado
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Clique em "Adicionar Serviço" para começar
-                </p>
-              </CardContent>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Selected Services */}
+      {servicosSelecionados.length > 0 && (
+        <div className="space-y-3">
+          {servicosSelecionados.map((servico) => (
+            <Card key={servico.servico_id} className="p-4">
+              <div className="space-y-3">
+                <div className="font-medium text-sm">{servico.nome}</div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Qtd:</span>
+                      <Input
+                        type="number"
+                        value={servico.quantidade}
+                        onChange={(e) => atualizarQuantidade(servico.servico_id, parseInt(e.target.value) || 1)}
+                        className="w-16 h-8 text-center"
+                        min="1"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium">
+                      {formatCurrency(servico.valor_total)}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removerServico(servico.servico_id)}
+                      className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </Card>
-          )}
+          ))}
         </div>
-      </CardContent>
-    </Card>
+      )}
+
+      {/* Total Value */}
+      {servicosSelecionados.length > 0 && (
+        <Card className="bg-muted/30 p-4">
+          <div className="flex items-center justify-between">
+            <span className="font-medium">Valor Total:</span>
+            <span className="text-xl font-bold text-primary">
+              {formatCurrency(valorTotal)}
+            </span>
+          </div>
+        </Card>
+      )}
+    </div>
   );
 }
