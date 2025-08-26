@@ -185,7 +185,7 @@ export function ServicosSelector({ servicosSelecionados, onServicosChange }: Ser
       </div>
 
       {/* Selected Services */}
-      {servicosSelecionados.length > 0 && (
+      {servicosSelecionados.length > 0 ? (
         <div className="space-y-3">
           {servicosSelecionados.map((servico) => (
             <Card key={servico.servico_id} className="p-4">
@@ -223,18 +223,25 @@ export function ServicosSelector({ servicosSelecionados, onServicosChange }: Ser
               </div>
             </Card>
           ))}
+          
+          {/* Total Value */}
+          <Card className="bg-muted/30 p-4">
+            <div className="flex items-center justify-between">
+              <span className="font-medium">Valor Total:</span>
+              <span className="text-xl font-bold text-primary">
+                {formatCurrency(valorTotal)}
+              </span>
+            </div>
+          </Card>
         </div>
-      )}
-
-      {/* Total Value */}
-      {servicosSelecionados.length > 0 && (
-        <Card className="bg-muted/30 p-4">
-          <div className="flex items-center justify-between">
-            <span className="font-medium">Valor Total:</span>
-            <span className="text-xl font-bold text-primary">
-              {formatCurrency(valorTotal)}
-            </span>
-          </div>
+      ) : (
+        <Card className="border-dashed border-2 border-muted-foreground/20">
+          <CardContent className="p-8 text-center">
+            <div className="text-muted-foreground">
+              <p className="text-base mb-2">Nenhum serviço selecionado</p>
+              <p className="text-sm">Clique em "Adicionar Serviço" para começar</p>
+            </div>
+          </CardContent>
         </Card>
       )}
     </div>
