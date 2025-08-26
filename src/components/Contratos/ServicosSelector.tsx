@@ -84,7 +84,7 @@ export function ServicosSelector({
               Adicionar Serviço
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="w-[95vw] max-w-2xl max-h-[80vh] overflow-y-auto px-4 sm:px-6">
             <DialogHeader>
               <DialogTitle>Selecionar Serviços</DialogTitle>
               <DialogDescription>
@@ -97,17 +97,17 @@ export function ServicosSelector({
 
               {isLoading ? <div className="text-center py-4">Carregando serviços...</div> : servicos.length > 0 ? <div className="grid gap-3 max-h-96 overflow-y-auto">
                   {servicos.map(servico => <Card key={servico.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start">
+                      <CardContent className="p-3 sm:p-4">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                           <div className="flex-1">
-                            <h4 className="font-medium">{servico.nome}</h4>
+                            <h4 className="font-medium text-sm sm:text-base">{servico.nome}</h4>
                             <div className="flex items-center gap-2 mt-2">
-                              <Badge variant="outline">
+                              <Badge variant="outline" className="text-xs">
                                 {formatCurrency(servico.valor)}
                               </Badge>
                             </div>
                           </div>
-                          <Button size="sm" onClick={() => adicionarServico(servico)}>
+                          <Button size="sm" onClick={() => adicionarServico(servico)} className="self-start sm:self-auto h-9">
                             <Plus className="h-4 w-4" />
                           </Button>
                         </div>
@@ -123,26 +123,32 @@ export function ServicosSelector({
 
       {servicosSelecionados.length > 0 ? <div className="space-y-3">
           {servicosSelecionados.map(servico => <Card key={servico.servico_id}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <div className="flex-1">
-                    <h4 className="font-medium">{servico.nome}</h4>
-                    
+                    <h4 className="font-medium text-sm sm:text-base">{servico.nome}</h4>
                   </div>
                   
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <div className="flex items-center gap-2">
-                      <Label htmlFor={`qty-${servico.servico_id}`} className="text-sm">
+                      <Label htmlFor={`qty-${servico.servico_id}`} className="text-sm whitespace-nowrap">
                         Qtd:
                       </Label>
-                      <Input id={`qty-${servico.servico_id}`} type="number" min="1" value={servico.quantidade} onChange={e => atualizarQuantidade(servico.servico_id, parseInt(e.target.value) || 1)} className="w-20" />
+                      <Input 
+                        id={`qty-${servico.servico_id}`} 
+                        type="number" 
+                        min="1" 
+                        value={servico.quantidade} 
+                        onChange={e => atualizarQuantidade(servico.servico_id, parseInt(e.target.value) || 1)} 
+                        className="w-20 h-9" 
+                      />
                     </div>
                     
-                    <div className="text-right">
-                      <p className="font-medium">{formatCurrency(servico.valor_total)}</p>
+                    <div className="text-left sm:text-right">
+                      <p className="font-medium text-sm sm:text-base">{formatCurrency(servico.valor_total)}</p>
                     </div>
                     
-                    <Button variant="outline" size="sm" onClick={() => removerServico(servico.servico_id)}>
+                    <Button variant="outline" size="sm" onClick={() => removerServico(servico.servico_id)} className="h-9 self-start sm:self-auto">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>

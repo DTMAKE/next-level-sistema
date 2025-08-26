@@ -48,7 +48,7 @@ export function ClientesSelector({ clienteId, onClienteChange }: ClientesSelecto
               Selecionar Cliente
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="w-[95vw] max-w-2xl max-h-[80vh] overflow-y-auto px-4 sm:px-6">
             <DialogHeader>
               <DialogTitle>Selecionar Cliente</DialogTitle>
               <DialogDescription>
@@ -74,13 +74,13 @@ export function ClientesSelector({ clienteId, onClienteChange }: ClientesSelecto
                         clienteId === cliente.id ? 'ring-2 ring-primary' : ''
                       }`}
                     >
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start">
+                      <CardContent className="p-3 sm:p-4">
+                        <div className="flex flex-col sm:flex-row sm:justify-between gap-3">
                           <div className="flex-1 space-y-2">
-                            <h4 className="font-medium">{cliente.nome}</h4>
+                            <h4 className="font-medium text-sm sm:text-base">{cliente.nome}</h4>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Mail className="h-3 w-3" />
-                              {cliente.email}
+                              <span className="truncate">{cliente.email}</span>
                             </div>
                             {cliente.telefone && (
                               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -91,7 +91,7 @@ export function ClientesSelector({ clienteId, onClienteChange }: ClientesSelecto
                             {cliente.cnpj && (
                               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <Building className="h-3 w-3" />
-                                CNPJ: {cliente.cnpj}
+                                <span className="truncate">CNPJ: {cliente.cnpj}</span>
                               </div>
                             )}
                           </div>
@@ -99,6 +99,7 @@ export function ClientesSelector({ clienteId, onClienteChange }: ClientesSelecto
                             size="sm"
                             onClick={() => selecionarCliente(cliente)}
                             variant={clienteId === cliente.id ? "default" : "outline"}
+                            className="h-9 self-start sm:self-auto"
                           >
                             {clienteId === cliente.id ? "Selecionado" : "Selecionar"}
                           </Button>

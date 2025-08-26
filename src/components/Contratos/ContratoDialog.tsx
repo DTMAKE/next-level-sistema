@@ -108,21 +108,21 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto px-4 sm:px-6">
         <DialogHeader>
           <DialogTitle>
             {contrato ? "Editar Contrato" : "Novo Contrato"}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           <div className="space-y-4">
             <ClientesSelector
               clienteId={formData.cliente_id}
               onClienteChange={(value) => handleInputChange("cliente_id", value)}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label htmlFor="data_inicio">Data de Início</Label>
                 <Input
@@ -171,20 +171,20 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
             />
           </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
-              className="flex-1"
+              className="flex-1 h-11 sm:h-10"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={isLoading || !isFormValid}
-              className="flex-1 gradient-premium border-0 text-background"
+              className="flex-1 gradient-premium border-0 text-background h-11 sm:h-10"
             >
               {isLoading ? "Salvando..." : contrato ? "Atualizar" : "Criar"}
             </Button>
