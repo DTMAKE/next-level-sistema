@@ -103,13 +103,10 @@ export default function NovoContrato() {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Cliente */}
-                <div className="space-y-2">
-                  <Label className="text-base font-medium">Cliente *</Label>
-                  <ClientesSelector
-                    clienteId={formData.cliente_id}
-                    onClienteChange={(value) => handleInputChange("cliente_id", value)}
-                  />
-                </div>
+                <ClientesSelector
+                  clienteId={formData.cliente_id}
+                  onClienteChange={(value) => handleInputChange("cliente_id", value)}
+                />
 
                 {/* Datas */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -158,13 +155,10 @@ export default function NovoContrato() {
                 </div>
 
                 {/* Serviços */}
-                <div className="space-y-2">
-                  <Label className="text-base font-medium">Serviços *</Label>
-                  <ServicosSelector
-                    servicosSelecionados={servicosSelecionados}
-                    onServicosChange={setServicosSelecionados}
-                  />
-                </div>
+                <ServicosSelector
+                  servicosSelecionados={servicosSelecionados}
+                  onServicosChange={setServicosSelecionados}
+                />
 
                 {/* PDF Upload */}
                 <div className="space-y-2">
