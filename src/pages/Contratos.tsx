@@ -35,8 +35,7 @@ export default function Contratos() {
   };
 
   const handleNewContrato = () => {
-    setSelectedContrato(undefined);
-    setDialogOpen(true);
+    navigate("/contratos/novo");
   };
 
   const getStatusColor = (status: string) => {
