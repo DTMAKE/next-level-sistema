@@ -5,14 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, FileText, Calendar, DollarSign, Edit, Trash2, User } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Search, Plus, FileText, Calendar, DollarSign, Edit, Trash2, User, MoreVertical, Grid, List } from "lucide-react";
 import { useContratos, type Contrato } from "@/hooks/useContratos";
 import { ContratoDialog } from "@/components/Contratos/ContratoDialog";
 import { DeleteContratoDialog } from "@/components/Contratos/DeleteContratoDialog";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Contratos() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState<"cards" | "table">(isMobile ? "cards" : "table");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedContrato, setSelectedContrato] = useState<Contrato | undefined>();
@@ -56,7 +61,7 @@ export default function Contratos() {
 
   if (error) {
     return (
-      <div className="space-y-6">
+      <div className="px-4 sm:px-6 lg:px-0 space-y-6">
         <h1 className="text-3xl font-bold">Contratos</h1>
         <Card>
           <CardContent className="p-6">
@@ -68,11 +73,11 @@ export default function Contratos() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-3xl font-bold">Contratos</h1>
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-row justify-between items-center gap-4">
+        <h1 className="font-bold mx-0 py-0 text-3xl">Contratos</h1>
         <Button 
-          className="gradient-premium border-0 text-background"
+          className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0"
           onClick={handleNewContrato}
         >
           <Plus className="mr-2 h-4 w-4" />
@@ -81,43 +86,61 @@ export default function Contratos() {
       </div>
 
       <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar contratos por número, título ou status..."
-                className="pl-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-center">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar contratos..."
+                  className="pl-10 h-10 text-sm"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              {!isMobile && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={viewMode === "cards" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode("cards")}
+                  >
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === "table" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode("table")}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
+            
+            {contratos.length > 0 && (
+              <div className="text-sm text-muted-foreground">
+                Mostrando {contratos.length} contratos
+              </div>
+            )}
           </div>
         </CardHeader>
         
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           {isLoading ? (
             <div className="space-y-4">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Card key={i} className="p-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Skeleton className="h-5 w-5" />
-                      <Skeleton className="h-6 w-48" />
-                    </div>
-                    <div className="flex gap-4">
-                      <Skeleton className="h-4 w-40" />
-                      <Skeleton className="h-4 w-32" />
-                    </div>
-                  </div>
-                </Card>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
               ))}
             </div>
           ) : contratos.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">Nenhum contrato encontrado</h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-muted-foreground mb-4 text-sm">
                 {searchTerm 
                   ? "Não encontramos contratos com os termos buscados." 
                   : "Comece adicionando seu primeiro contrato."
@@ -134,67 +157,149 @@ export default function Contratos() {
               )}
             </div>
           ) : (
-            <div className="space-y-4">
-              {contratos.map((contrato) => (
-                <Card 
-                  key={contrato.id} 
-                  className="p-4 hover:shadow-premium transition-shadow cursor-pointer"
-                  onClick={() => navigate(`/contratos/${contrato.id}`)}
-                >
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="space-y-3 flex-1">
-                      <div className="flex items-center gap-3">
-                        <FileText className="h-5 w-5 text-accent" />
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                          <h3 className="font-semibold text-lg">{contrato.numero_contrato || `Contrato #${contrato.id.slice(-8)}`}</h3>
-                          <Badge className={getStatusColor(contrato.status)}>
-                            {getStatusLabel(contrato.status)}
-                          </Badge>
+            <>
+              {viewMode === "cards" || isMobile ? (
+                // Card View (Mobile and Desktop when cards selected)
+                <div className="space-y-3">
+                  {contratos.map((contrato) => (
+                    <Card 
+                      key={contrato.id} 
+                      className="p-4 hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => navigate(`/contratos/${contrato.id}`)}
+                    >
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-4 w-4 text-accent shrink-0" />
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-semibold text-base truncate">
+                              {contrato.numero_contrato || `Contrato #${contrato.id.slice(-8)}`}
+                            </h3>
+                            <Badge className={getStatusColor(contrato.status)}>
+                              {getStatusLabel(contrato.status)}
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 shrink-0" />
+                            <span className="truncate">{contrato.cliente?.nome || 'Cliente não encontrado'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 shrink-0" />
+                            <span>
+                              {new Date(contrato.data_inicio).toLocaleDateString()}
+                              {contrato.data_fim && ` - ${new Date(contrato.data_fim).toLocaleDateString()}`}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <DollarSign className="h-4 w-4 shrink-0" />
+                            <span>
+                              {new Intl.NumberFormat('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL'
+                              }).format(contrato.valor)}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1"
+                            onClick={() => handleEditContrato(contrato)}
+                          >
+                            <Edit className="h-3 w-3 mr-1" />
+                            Editar
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1"
+                            onClick={() => handleDeleteContrato(contrato)}
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" />
+                            Excluir
+                          </Button>
                         </div>
                       </div>
-                      
-                      <div className="flex flex-col sm:flex-row gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4" />
-                          {contrato.cliente?.nome || 'Cliente não encontrado'}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          {new Date(contrato.data_inicio).toLocaleDateString()}
-                          {contrato.data_fim && ` - ${new Date(contrato.data_fim).toLocaleDateString()}`}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="h-4 w-4" />
-                          {new Intl.NumberFormat('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL'
-                          }).format(contrato.valor)}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleEditContrato(contrato)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Editar
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleDeleteContrato(contrato)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Excluir
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                // Table View (Desktop only)
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Contrato</TableHead>
+                        <TableHead>Cliente</TableHead>
+                        <TableHead>Período</TableHead>
+                        <TableHead>Valor</TableHead>
+                        <TableHead className="w-[100px]">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {contratos.map((contrato) => (
+                        <TableRow 
+                          key={contrato.id} 
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => navigate(`/contratos/${contrato.id}`)}
+                        >
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-3">
+                              <FileText className="h-4 w-4 text-accent" />
+                              <div className="flex flex-col gap-1">
+                                <span>{contrato.numero_contrato || `Contrato #${contrato.id.slice(-8)}`}</span>
+                                <Badge className={getStatusColor(contrato.status)} variant="secondary">
+                                  {getStatusLabel(contrato.status)}
+                                </Badge>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{contrato.cliente?.nome || 'Cliente não encontrado'}</TableCell>
+                          <TableCell>
+                            {new Date(contrato.data_inicio).toLocaleDateString()}
+                            {contrato.data_fim && ` - ${new Date(contrato.data_fim).toLocaleDateString()}`}
+                          </TableCell>
+                          <TableCell>
+                            {new Intl.NumberFormat('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL'
+                            }).format(contrato.valor)}
+                          </TableCell>
+                          <TableCell>
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => handleEditContrato(contrato)}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Editar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleDeleteContrato(contrato)} 
+                                    className="text-destructive"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Excluir
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
