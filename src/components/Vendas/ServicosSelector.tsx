@@ -122,7 +122,7 @@ export function ServicosSelector({ servicosSelecionados, onServicosChange }: Ser
                   Adicionar Serviço
                 </Button>
               </DialogTrigger>
-              <DialogContent className="mx-4 max-w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="w-[95vw] max-w-2xl max-h-[80vh] overflow-y-auto px-4 sm:px-6">
                 <DialogHeader>
                   <DialogTitle>Selecionar Serviços</DialogTitle>
                   <DialogDescription>
