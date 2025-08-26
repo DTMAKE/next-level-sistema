@@ -91,10 +91,10 @@ export default function Contratos() {
             <div>
               <p className="text-sm sm:text-base text-muted-foreground">Total em Contratos</p>
               <p className="text-xl sm:text-2xl font-bold">
-                {totalContratos > 0 ? new Intl.NumberFormat('pt-BR', {
+                {new Intl.NumberFormat('pt-BR', {
                   style: 'currency',
                   currency: 'BRL'
-                }).format(totalContratos) : '—'}
+                }).format(totalContratos)}
               </p>
             </div>
           </div>
