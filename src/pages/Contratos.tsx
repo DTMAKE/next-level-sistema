@@ -81,14 +81,22 @@ export default function Contratos() {
 
       <Card>
         <CardHeader>
-          
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Buscar contratos..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </CardHeader>
         
         <CardContent>
-          {isLoading ? <div className="space-y-4">
-              {Array.from({
-            length: 3
-          }).map((_, i) => <Card key={i} className="p-4">
+          {isLoading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Card key={i} className="p-4">
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <Skeleton className="h-5 w-5" />
@@ -99,19 +107,21 @@ export default function Contratos() {
                       <Skeleton className="h-4 w-32" />
                     </div>
                   </div>
-                </Card>)}
-            </div> : contratos.length === 0 ? <div className="text-center py-12">
+                </Card>
+              ))}
+            </div>
+          ) : contratos.length === 0 ? (
+            <div className="text-center py-12">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">Nenhum contrato encontrado</h3>
-              <p className="text-muted-foreground mb-4">
-                {searchTerm ? "Não encontramos contratos com os termos buscados." : "Comece adicionando seu primeiro contrato."}
+              <p className="text-muted-foreground">
+                {searchTerm ? "Não encontramos contratos com os termos buscados." : "Comece adicionando seu primeiro"}
               </p>
-              {!searchTerm && <Button className="gradient-premium border-0 text-background" onClick={handleNewContrato}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Adicionar Contrato
-                </Button>}
-            </div> : <div className="space-y-4">
-              {contratos.map(contrato => <Card key={contrato.id} className="p-4 hover:shadow-premium transition-shadow cursor-pointer" onClick={() => navigate(`/contratos/${contrato.id}`)}>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {contratos.map(contrato => (
+                <Card key={contrato.id} className="p-4 hover:shadow-premium transition-shadow cursor-pointer" onClick={() => navigate(`/contratos/${contrato.id}`)}>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="space-y-3 flex-1">
                       <div className="flex items-center gap-3">
@@ -137,9 +147,9 @@ export default function Contratos() {
                         <div className="flex items-center gap-2">
                           <DollarSign className="h-4 w-4" />
                           {new Intl.NumberFormat('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL'
-                    }).format(contrato.valor)}
+                            style: 'currency',
+                            currency: 'BRL'
+                          }).format(contrato.valor)}
                         </div>
                       </div>
                     </div>
@@ -155,8 +165,10 @@ export default function Contratos() {
                       </Button>
                     </div>
                   </div>
-                </Card>)}
-            </div>}
+                </Card>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
