@@ -171,7 +171,7 @@ function EventItem({ event, isToday }: EventItemProps) {
   const eventStatus = getEventStatus(event);
 
   return (
-    <div className="flex items-start gap-3 p-2 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+    <div className="flex items-start gap-3 p-2 rounded-lg border bg-card">
       <div className="flex-1 min-w-0 space-y-1">
         <div className="flex items-start justify-between gap-2">
           <p className="text-sm font-medium leading-tight line-clamp-1">

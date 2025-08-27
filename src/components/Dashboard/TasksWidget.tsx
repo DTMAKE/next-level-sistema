@@ -121,7 +121,7 @@ function TaskItem({ task, updateTaskColumn, availableColumns }: TaskItemProps) {
   );
   
   return (
-    <div className="flex items-start gap-3 p-2 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+    <div className="flex items-start gap-3 p-2 rounded-lg border bg-card">
       <Button
         variant="ghost"
         size="sm"
