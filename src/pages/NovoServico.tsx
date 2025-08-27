@@ -19,10 +19,8 @@ export default function NovoServico() {
   
   const [formData, setFormData] = useState({
     nome: "",
-    descricao: "",
     valor: "",
     custo: "",
-    categoria: "agente_ia",
     ativo: true,
   });
 
@@ -38,10 +36,8 @@ export default function NovoServico() {
     try {
       await createServico.mutateAsync({
         nome: formData.nome.trim(),
-        descricao: formData.descricao.trim() || undefined,
         valor: parseFloat(formData.valor),
         custo: formData.custo ? parseFloat(formData.custo) : 0,
-        categoria: formData.categoria,
         ativo: formData.ativo,
       });
       navigate("/servicos");
@@ -81,39 +77,19 @@ export default function NovoServico() {
             
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Primeira linha: Nome do Serviço e Categoria */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="nome" className="text-base font-medium">
-                      Nome do Serviço *
-                    </Label>
-                    <Input
-                      id="nome"
-                      value={formData.nome}
-                      onChange={(e) => handleInputChange("nome", e.target.value)}
-                      placeholder="Digite o nome do serviço"
-                      className="h-12 text-base"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="categoria" className="text-base font-medium">
-                      Categoria
-                    </Label>
-                    <Select value={formData.categoria} onValueChange={(value) => handleInputChange("categoria", value)}>
-                      <SelectTrigger className="h-12 text-base">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="agente_ia">Agente IA</SelectItem>
-                        <SelectItem value="automacao">Automação</SelectItem>
-                        <SelectItem value="consultoria">Consultoria</SelectItem>
-                        <SelectItem value="desenvolvimento">Desenvolvimento</SelectItem>
-                        <SelectItem value="treinamento">Treinamento</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                {/* Primeira linha: Nome do Serviço */}
+                <div className="space-y-2">
+                  <Label htmlFor="nome" className="text-base font-medium">
+                    Nome do Serviço *
+                  </Label>
+                  <Input
+                    id="nome"
+                    value={formData.nome}
+                    onChange={(e) => handleInputChange("nome", e.target.value)}
+                    placeholder="Digite o nome do serviço"
+                    className="h-12 text-base"
+                    required
+                  />
                 </div>
 
                 {/* Segunda linha: Valor, Custo (se admin) e Status */}
@@ -168,20 +144,6 @@ export default function NovoServico() {
                       </Label>
                     </div>
                   </div>
-                </div>
-
-                {/* Terceira linha: Descrição (largura completa) */}
-                <div className="space-y-2">
-                  <Label htmlFor="descricao" className="text-base font-medium">
-                    Descrição
-                  </Label>
-                  <Textarea
-                    id="descricao"
-                    value={formData.descricao}
-                    onChange={(e) => handleInputChange("descricao", e.target.value)}
-                    placeholder="Descreva os detalhes do serviço"
-                    className="min-h-[100px] text-base resize-none"
-                  />
                 </div>
 
                 {/* Required fields note */}
