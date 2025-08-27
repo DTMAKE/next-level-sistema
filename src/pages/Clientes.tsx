@@ -291,12 +291,11 @@ export default function Clientes() {
                         <TableHead>Nome</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Telefone</TableHead>
-                        <TableHead>Empresa</TableHead>
                         <TableHead className="w-[100px]">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {paginatedData.map(item => <TableRow key={`${item.type}-${item.id}`} className="cursor-pointer hover:bg-muted/50" onClick={() => item.type === "cliente" ? navigate(`/clientes/${item.id}`) : navigate(`/leads`)}>
+                      {paginatedData.map(item => <TableRow key={`${item.type}-${item.id}`} className="cursor-pointer" onClick={() => item.type === "cliente" ? navigate(`/clientes/${item.id}`) : navigate(`/leads`)}>
                           <TableCell>
                             <div onClick={e => e.stopPropagation()}>
                               {getStatusBadge(item)}
@@ -310,7 +309,6 @@ export default function Clientes() {
                           </TableCell>
                           <TableCell>{item.email}</TableCell>
                           <TableCell>{item.telefone || '-'}</TableCell>
-                          <TableCell>{item.type === "lead" ? (item as Lead).empresa || '-' : '-'}</TableCell>
                           <TableCell>
                             <div onClick={e => e.stopPropagation()}>
                               <DropdownMenu>
