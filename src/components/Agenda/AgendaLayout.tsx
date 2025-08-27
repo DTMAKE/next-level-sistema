@@ -28,6 +28,7 @@ export function AgendaLayout({ events, isLoading, error }: AgendaLayoutProps) {
     eventos,
     isLoading: isLoadingUnified,
     error: errorUnified,
+    needsGoogleConnection,
     createEventoUnificado,
     updateEventoUnificado,
     deleteEventoUnificado,
@@ -103,6 +104,7 @@ export function AgendaLayout({ events, isLoading, error }: AgendaLayoutProps) {
           events={filteredEvents}
           isLoading={loading}
           error={errorMessage}
+          needsGoogleConnection={needsGoogleConnection}
           viewMode={viewMode}
           selectedDate={currentDate}
           dateRange={dateRange}
