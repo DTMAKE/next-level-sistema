@@ -23,6 +23,9 @@ export function StatusSelector({ cliente, disabled = false, size = "md" }: Statu
   const handleStatusChange = async (newStatus: "Cliente" | "Lead") => {
     if (disabled || updateCliente.isPending) return;
 
+    // Don't update if it's the same status
+    if (currentStatus === newStatus) return;
+
     const statusValue = newStatus === "Lead" ? "lead" : "cliente";
     
     try {
@@ -30,9 +33,9 @@ export function StatusSelector({ cliente, disabled = false, size = "md" }: Statu
         id: cliente.id,
         nome: cliente.nome,
         email: cliente.email,
-        telefone: cliente.telefone,
-        endereco: cliente.endereco,
-        cnpj: cliente.cnpj,
+        telefone: cliente.telefone || "",
+        endereco: cliente.endereco || "",
+        cnpj: cliente.cnpj || "",
         status: statusValue,
       });
       
@@ -43,18 +46,23 @@ export function StatusSelector({ cliente, disabled = false, size = "md" }: Statu
       });
     } catch (error) {
       console.error("Erro ao atualizar status:", error);
+      toast({
+        title: "Erro ao atualizar",
+        description: "Não foi possível atualizar o status",
+        variant: "destructive",
+      });
     }
   };
 
   const getStatusStyles = (status: string) => {
     if (status === "Lead") {
       return {
-        badge: "bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200",
+        badge: "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100",
         dot: "bg-blue-600"
       };
     } else {
       return {
-        badge: "bg-green-100 text-green-800 hover:bg-green-200 border-green-200",
+        badge: "bg-green-100 text-green-800 border-green-200 hover:bg-green-100", 
         dot: "bg-green-600"
       };
     }
@@ -94,7 +102,7 @@ export function StatusSelector({ cliente, disabled = false, size = "md" }: Statu
             className={cn(
               styles.badge,
               sizeClasses[size],
-              "cursor-pointer transition-colors hover:opacity-90",
+              "cursor-pointer transition-all duration-200 hover:shadow-sm",
               "flex items-center gap-1.5"
             )}
           >
