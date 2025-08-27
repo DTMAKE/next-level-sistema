@@ -281,7 +281,7 @@ export default function Candidatos() {
                                 
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium">Status:</span>
-                                  <CandidaturaStatusSelector candidatura={candidato} disabled size="sm" />
+                                  <CandidaturaStatusSelector candidatura={candidato} allowStatusChange size="sm" />
                                 </div>
                               </div>
                             </DialogContent>
@@ -399,7 +399,7 @@ export default function Candidatos() {
                                       
                                       <div className="flex items-center gap-2">
                                         <span className="font-medium">Status:</span>
-                                        <CandidaturaStatusSelector candidatura={candidato} disabled size="sm" />
+                                        <CandidaturaStatusSelector candidatura={candidato} allowStatusChange size="sm" />
                                       </div>
                                     </div>
                                   </DialogContent>

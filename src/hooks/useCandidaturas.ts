@@ -79,7 +79,7 @@ export function useUpdateCandidaturaStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: 'aprovado' | 'rejeitado' }) => {
+    mutationFn: async ({ id, status }: { id: string; status: 'aprovado' | 'rejeitado' | 'pendente' }) => {
       const { error } = await supabase
         .from('candidaturas')
         .update({ status })
@@ -91,7 +91,7 @@ export function useUpdateCandidaturaStatus() {
       queryClient.invalidateQueries({ queryKey: ['candidaturas'] });
       toast({
         title: "Status atualizado!",
-        description: `Candidatura ${status === 'aprovado' ? 'aprovada' : 'rejeitada'} com sucesso.`,
+        description: `Candidatura ${status === 'aprovado' ? 'aprovada' : status === 'rejeitado' ? 'rejeitada' : 'marcada como pendente'} com sucesso.`,
       });
     },
     onError: () => {

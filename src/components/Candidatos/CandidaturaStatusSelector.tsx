@@ -11,9 +11,10 @@ interface CandidaturaStatusSelectorProps {
   candidatura: Candidatura;
   disabled?: boolean;
   size?: "sm" | "md" | "lg";
+  allowStatusChange?: boolean; // Permite alteração mesmo quando não é pendente
 }
 
-export function CandidaturaStatusSelector({ candidatura, disabled = false, size = "md" }: CandidaturaStatusSelectorProps) {
+export function CandidaturaStatusSelector({ candidatura, disabled = false, size = "md", allowStatusChange = false }: CandidaturaStatusSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const updateStatus = useUpdateCandidaturaStatus();
   const { toast } = useToast();
@@ -31,13 +32,14 @@ export function CandidaturaStatusSelector({ candidatura, disabled = false, size 
 
   const currentStatus = getDisplayStatus(candidatura.status);
   
-  const handleStatusChange = async (newStatus: "Aprovado" | "Rejeitado") => {
+  const handleStatusChange = async (newStatus: "Aprovado" | "Rejeitado" | "Pendente") => {
     if (disabled || updateStatus.isPending) return;
 
     // Don't update if it's the same status
     if (currentStatus === newStatus) return;
 
-    const statusValue = newStatus === "Aprovado" ? "aprovado" : "rejeitado";
+    const statusValue = newStatus === "Aprovado" ? "aprovado" : 
+                       newStatus === "Rejeitado" ? "rejeitado" : "pendente";
     
     try {
       await updateStatus.mutateAsync({
@@ -88,8 +90,8 @@ export function CandidaturaStatusSelector({ candidatura, disabled = false, size 
     lg: "text-sm px-4 py-2 h-8"
   };
 
-  // If disabled or status is not pending, show as read-only badge
-  if (disabled || candidatura.status !== "pendente") {
+  // If disabled or (status is not pending and allowStatusChange is false), show as read-only badge
+  if (disabled || (candidatura.status !== "pendente" && !allowStatusChange)) {
     return (
       <Badge variant="secondary" className={cn(styles.badge, sizeClasses[size])}>
         <div className={cn("w-2 h-2 rounded-full mr-1.5", styles.dot)} />
@@ -151,6 +153,20 @@ export function CandidaturaStatusSelector({ candidatura, disabled = false, size 
             <span className="font-medium">Rejeitado</span>
           </div>
         </DropdownMenuItem>
+        
+        {/* Se permitir mudança de status, também incluir opção de voltar para pendente */}
+        {allowStatusChange && candidatura.status !== "pendente" && (
+          <DropdownMenuItem 
+            onClick={() => handleStatusChange("Pendente")}
+            className="cursor-pointer"
+            disabled={currentStatus === "Pendente"}
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-yellow-600" />
+              <span className="font-medium">Pendente</span>
+            </div>
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
