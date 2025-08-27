@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCreateCliente, useUpdateCliente, type Cliente } from "@/hooks/useClientes";
 
 interface ClienteDialogProps {
@@ -17,6 +18,7 @@ export function ClienteDialog({ open, onOpenChange, cliente }: ClienteDialogProp
   const [telefone, setTelefone] = useState("");
   const [endereco, setEndereco] = useState("");
   const [cnpj, setCnpj] = useState("");
+  const [status, setStatus] = useState("ativo");
 
   const createCliente = useCreateCliente();
   const updateCliente = useUpdateCliente();
@@ -31,12 +33,14 @@ export function ClienteDialog({ open, onOpenChange, cliente }: ClienteDialogProp
       setTelefone(cliente.telefone || "");
       setEndereco(cliente.endereco || "");
       setCnpj(cliente.cnpj || "");
+      setStatus(cliente.status || "ativo");
     } else {
       setNome("");
       setEmail("");
       setTelefone("");
       setEndereco("");
       setCnpj("");
+      setStatus("ativo");
     }
   }, [cliente, open]);
 
@@ -54,6 +58,7 @@ export function ClienteDialog({ open, onOpenChange, cliente }: ClienteDialogProp
           telefone: telefone.trim() || undefined,
           endereco: endereco.trim() || undefined,
           cnpj: cnpj.trim() || undefined,
+          status: status,
         });
       } else {
         await createCliente.mutateAsync({
@@ -62,6 +67,7 @@ export function ClienteDialog({ open, onOpenChange, cliente }: ClienteDialogProp
           telefone: telefone.trim() || undefined,
           endereco: endereco.trim() || undefined,
           cnpj: cnpj.trim() || undefined,
+          status: status,
         });
       }
       onOpenChange(false);
@@ -138,6 +144,35 @@ export function ClienteDialog({ open, onOpenChange, cliente }: ClienteDialogProp
               placeholder="Digite o endereço completo"
               className="h-10 sm:h-11"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="status" className="text-sm font-medium">Status *</Label>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="h-10 sm:h-11">
+                <SelectValue placeholder="Selecione o status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ativo">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-600" />
+                    Ativo
+                  </div>
+                </SelectItem>
+                <SelectItem value="inativo">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-red-600" />
+                    Inativo
+                  </div>
+                </SelectItem>
+                <SelectItem value="prospecto">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-yellow-600" />
+                    Prospecto
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t">

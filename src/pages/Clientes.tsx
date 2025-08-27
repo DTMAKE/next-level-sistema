@@ -117,9 +117,21 @@ export default function Clientes() {
 
   const getStatusBadge = (item: CombinedItem) => {
     if (item.type === "cliente") {
-      return <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100">
-        <div className="w-2 h-2 rounded-full bg-green-600 mr-1" />
-        Cliente
+      const cliente = item as Cliente;
+      const statusColors = {
+        ativo: "bg-green-100 text-green-800",
+        inativo: "bg-red-100 text-red-800", 
+        prospecto: "bg-yellow-100 text-yellow-800"
+      };
+      const statusColor = statusColors[cliente.status as keyof typeof statusColors] || statusColors.ativo;
+      
+      return <Badge variant="secondary" className={`${statusColor} hover:${statusColor}`}>
+        <div className={`w-2 h-2 rounded-full mr-1 ${
+          cliente.status === "ativo" ? "bg-green-600" : 
+          cliente.status === "inativo" ? "bg-red-600" : 
+          "bg-yellow-600"
+        }`} />
+        Cliente ({cliente.status || "ativo"})
       </Badge>;
     } else {
       return <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-100">
@@ -139,7 +151,13 @@ export default function Clientes() {
       </div>;
   }
   return <div className="space-y-6 p-4 sm:p-6">
-      <h1 className="font-bold mx-0 py-0 text-3xl">Clientes</h1>
+      <div className="flex flex-row justify-between items-center gap-4">
+        <h1 className="font-bold mx-0 py-0 text-3xl">Clientes</h1>
+        <Button className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0" onClick={handleNewCliente}>
+          <Plus className="mr-2 h-4 w-4" />
+          Novo Cliente
+        </Button>
+      </div>
 
       <Card>
         <CardHeader className="p-4 sm:p-6">
@@ -173,11 +191,6 @@ export default function Clientes() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-
-                <Button className="gradient-premium border-0 text-background h-10 px-4 text-sm" onClick={handleNewCliente}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  {isMobile ? "Novo" : "Novo Cliente"}
-                </Button>
 
                 {!isMobile && <div className="flex items-center gap-2 ml-2">
                     <Button variant={viewMode === "cards" ? "default" : "outline"} size="sm" onClick={() => setViewMode("cards")}>

@@ -10,6 +10,7 @@ export interface Cliente {
   telefone?: string;
   endereco?: string;
   cnpj?: string;
+  status?: string;
   user_id: string;
   created_at: string;
   updated_at: string;
@@ -28,6 +29,7 @@ export interface CreateClienteData {
   telefone?: string;
   endereco?: string;
   cnpj?: string;
+  status?: string;
 }
 
 export interface UpdateClienteData extends CreateClienteData {
