@@ -23,9 +23,6 @@ export default function NovoServico() {
     valor: "",
     custo: "",
     categoria: "agente_ia",
-    tipo_cobranca: "fixo",
-    nivel_complexidade: "medio",
-    tempo_entrega_dias: "30",
     ativo: true,
   });
 
@@ -45,9 +42,6 @@ export default function NovoServico() {
         valor: parseFloat(formData.valor),
         custo: formData.custo ? parseFloat(formData.custo) : 0,
         categoria: formData.categoria,
-        tipo_cobranca: formData.tipo_cobranca,
-        nivel_complexidade: formData.nivel_complexidade,
-        tempo_entrega_dias: parseInt(formData.tempo_entrega_dias),
         ativo: formData.ativo,
       });
       navigate("/servicos");
@@ -122,8 +116,8 @@ export default function NovoServico() {
                   </div>
                 </div>
 
-                {/* Segunda linha: Valor e Custo (se admin) */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Segunda linha: Valor, Custo (se admin) e Status */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="valor" className="text-base font-medium">
                       Valor de Venda *
@@ -158,59 +152,6 @@ export default function NovoServico() {
                       />
                     </div>
                   )}
-                </div>
-
-                {/* Terceira linha: Tipo de Cobrança e Complexidade */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="tipo_cobranca" className="text-base font-medium">
-                      Tipo de Cobrança
-                    </Label>
-                    <Select value={formData.tipo_cobranca} onValueChange={(value) => handleInputChange("tipo_cobranca", value)}>
-                      <SelectTrigger className="h-12 text-base">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="fixo">Valor Fixo</SelectItem>
-                        <SelectItem value="por_hora">Por Hora</SelectItem>
-                        <SelectItem value="mensal">Mensal</SelectItem>
-                        <SelectItem value="anual">Anual</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="nivel_complexidade" className="text-base font-medium">
-                      Nível de Complexidade
-                    </Label>
-                    <Select value={formData.nivel_complexidade} onValueChange={(value) => handleInputChange("nivel_complexidade", value)}>
-                      <SelectTrigger className="h-12 text-base">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="baixo">Baixo</SelectItem>
-                        <SelectItem value="medio">Médio</SelectItem>
-                        <SelectItem value="alto">Alto</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Quarta linha: Tempo de Entrega */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="tempo_entrega_dias" className="text-base font-medium">
-                      Tempo de Entrega (dias)
-                    </Label>
-                    <Input
-                      id="tempo_entrega_dias"
-                      type="number"
-                      min="1"
-                      value={formData.tempo_entrega_dias}
-                      onChange={(e) => handleInputChange("tempo_entrega_dias", e.target.value)}
-                      className="h-12 text-base"
-                    />
-                  </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="ativo" className="text-base font-medium">
@@ -229,7 +170,7 @@ export default function NovoServico() {
                   </div>
                 </div>
 
-                {/* Quinta linha: Descrição (largura completa) */}
+                {/* Terceira linha: Descrição (largura completa) */}
                 <div className="space-y-2">
                   <Label htmlFor="descricao" className="text-base font-medium">
                     Descrição
