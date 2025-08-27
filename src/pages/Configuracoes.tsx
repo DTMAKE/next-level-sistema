@@ -50,63 +50,64 @@ export default function Configuracoes() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Configurações</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Configurações</h1>
+        <p className="text-muted-foreground hidden sm:block">
           Gerenciamento de usuários e configurações do sistema
         </p>
       </div>
 
       <Tabs defaultValue="usuarios" className="w-full">
-        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto">
-          <TabsTrigger value="usuarios" className="flex items-center gap-2 text-xs sm:text-sm">
+        <TabsList className="grid w-full grid-cols-3 h-auto">
+          <TabsTrigger value="usuarios" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
             <Users className="h-4 w-4" />
-            <span className="hidden xs:inline">Usuários</span>
+            <span>Usuários</span>
           </TabsTrigger>
-          <TabsTrigger value="sistema" className="flex items-center gap-2 text-xs sm:text-sm">
+          <TabsTrigger value="sistema" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
             <Cog className="h-4 w-4" />
-            <span className="hidden xs:inline">Sistema</span>
+            <span>Sistema</span>
           </TabsTrigger>
-          <TabsTrigger value="dashboard" className="flex items-center gap-2 text-xs sm:text-sm">
+          <TabsTrigger value="dashboard" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
             <ImageIcon className="h-4 w-4" />
-            <span className="hidden xs:inline">Dashboard</span>
+            <span className="hidden sm:inline">Dashboard</span>
+            <span className="sm:hidden">Images</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="usuarios" className="space-y-6">
+        <TabsContent value="usuarios" className="space-y-4 sm:space-y-6">
           {/* Estatísticas de Usuários */}
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardHeader className="pb-2 p-4 sm:p-6">
+                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                   Total de Usuários
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{usuarios?.length || 0}</div>
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="text-xl sm:text-2xl font-bold">{usuarios?.length || 0}</div>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardHeader className="pb-2 p-4 sm:p-6">
+                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                   Administradores
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-primary">
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="text-xl sm:text-2xl font-bold text-primary">
                   {usuarios?.filter(u => u.role === 'admin').length || 0}
                 </div>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardHeader className="pb-2 p-4 sm:p-6">
+                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                   Vendedores
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-secondary">
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="text-xl sm:text-2xl font-bold text-secondary">
                   {usuarios?.filter(u => u.role === 'vendedor').length || 0}
                 </div>
               </CardContent>
@@ -115,47 +116,47 @@ export default function Configuracoes() {
 
           {/* Gestão de Usuários */}
           <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
+            <CardHeader className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                    <Users className="h-4 w-4 sm:h-5 sm:w-5" />
                     Gestão de Usuários
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">
                     Gerencie funções, comissões e metas dos usuários
                   </CardDescription>
                 </div>
                 <UserDialog mode="create" trigger={
-                  <Button>
+                  <Button className="w-full sm:w-auto">
                     <UserPlus className="h-4 w-4 mr-2" />
-                    Novo Usuário
+                    <span className="hidden sm:inline">Novo Usuário</span>
+                    <span className="sm:hidden">Novo</span>
                   </Button>
                 } />
               </div>
             </CardHeader>
-            <CardContent>
-              {usuarios && usuarios.length > 0 ? (
-                <div className="space-y-4">
+            <CardContent className="p-4 sm:p-6">{usuarios && usuarios.length > 0 ? (
+                <div className="space-y-3 sm:space-y-4">
                   {usuarios.map((usuario) => (
-                    <div key={usuario.id} className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 border rounded-lg hover:bg-muted/30 transition-colors">
-                      <div className="flex items-center gap-4 flex-1">
-                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <div key={usuario.id} className="flex flex-col gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg hover:bg-muted/30 transition-colors">
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                           {usuario.avatar_url ? (
                             <img 
                               src={usuario.avatar_url} 
                               alt={`Avatar de ${usuario.name}`}
-                              className="h-12 w-12 rounded-full object-cover"
+                              className="h-10 w-10 sm:h-12 sm:w-12 rounded-full object-cover"
                             />
                           ) : (
-                            <span className="text-sm font-semibold">
+                            <span className="text-xs sm:text-sm font-semibold">
                               {usuario.name?.charAt(0)?.toUpperCase() || 'U'}
                             </span>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <p className="font-medium truncate">{usuario.name}</p>
+                            <p className="font-medium truncate text-sm sm:text-base">{usuario.name}</p>
                             <Badge 
                               variant={usuario.role === 'admin' ? 'default' : 'secondary'}
                               className="text-xs flex-shrink-0"
@@ -163,8 +164,8 @@ export default function Configuracoes() {
                               {usuario.role === 'admin' ? (
                                 <>
                                   <Crown className="h-3 w-3 mr-1" />
-                                  <span className="hidden xs:inline">Administrador</span>
-                                  <span className="xs:hidden">Admin</span>
+                                  <span className="hidden sm:inline">Administrador</span>
+                                  <span className="sm:hidden">Admin</span>
                                 </>
                               ) : (
                                 'Vendedor'
@@ -179,7 +180,7 @@ export default function Configuracoes() {
                           
                           {/* Informações específicas para vendedores */}
                           {usuario.role === 'vendedor' && (
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
+                            <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                               <div className="flex items-center gap-1">
                                 <DollarSign className="h-3 w-3" />
                                 {usuario.percentual_comissao || 0}% comissão
@@ -191,21 +192,21 @@ export default function Configuracoes() {
                             </div>
                           )}
                           
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs sm:text-sm text-muted-foreground">
                             Criado em {new Date(usuario.created_at).toLocaleDateString('pt-BR')}
                           </p>
                         </div>
                       </div>
                       
-                      <div className="flex flex-wrap gap-2 sm:flex-shrink-0">
+                      <div className="flex flex-wrap gap-2">
                         {/* Configurar usuário */}
                         {usuario.role === 'vendedor' && (
                           <UserDialog 
                             user={usuario} 
                             mode="edit" 
                             trigger={
-                              <Button size="sm" variant="outline" className="flex-1 sm:flex-initial">
-                                <Settings2 className="h-4 w-4 sm:mr-1" />
+                              <Button size="sm" variant="outline" className="flex-1 sm:flex-initial text-xs">
+                                <Settings2 className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                                 <span className="hidden sm:inline">Configurar</span>
                               </Button>
                             } 
@@ -219,16 +220,16 @@ export default function Configuracoes() {
                             variant={usuario.role === 'vendedor' ? 'default' : 'outline'}
                             onClick={() => handlePromover(usuario.user_id, usuario.role)}
                             disabled={promoverUsuario.isPending}
-                            className="flex-1 sm:flex-initial"
+                            className="flex-1 sm:flex-initial text-xs"
                           >
                             {usuario.role === 'vendedor' ? (
                               <>
-                                <ArrowUpCircle className="h-4 w-4 sm:mr-1" />
+                                <ArrowUpCircle className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                                 <span className="hidden sm:inline">Promover</span>
                               </>
                             ) : (
                               <>
-                                <ArrowDownCircle className="h-4 w-4 sm:mr-1" />
+                                <ArrowDownCircle className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                                 <span className="hidden sm:inline">Rebaixar</span>
                               </>
                             )}
@@ -261,39 +262,39 @@ export default function Configuracoes() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="sistema" className="space-y-6">
+        <TabsContent value="sistema" className="space-y-4 sm:space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <User className="h-4 w-4 sm:h-5 sm:w-5" />
                 Perfil do Usuário
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
                 Configure suas informações pessoais e avatar
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   {currentUser?.avatar_url ? (
                     <img 
                       src={currentUser.avatar_url} 
                       alt="Avatar" 
-                      className="h-16 w-16 rounded-full object-cover"
+                      className="h-12 w-12 sm:h-16 sm:w-16 rounded-full object-cover"
                     />
                   ) : (
-                    <span className="text-lg font-semibold">
+                    <span className="text-sm sm:text-lg font-semibold">
                       {currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
                     </span>
                   )}
                 </div>
                 <div className="flex-1 text-center sm:text-left">
-                  <p className="font-medium text-lg">{currentUser?.name}</p>
-                  <p className="text-muted-foreground break-all">{currentUser?.email}</p>
-                  <div className="mt-2">
+                  <p className="font-medium text-base sm:text-lg">{currentUser?.name}</p>
+                  <p className="text-muted-foreground text-sm break-all">{currentUser?.email}</p>
+                  <div className="mt-3">
                     <ProfileDialog trigger={
-                      <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                        <Settings2 className="h-4 w-4 mr-2" />
+                      <Button variant="outline" size="sm" className="w-full sm:w-auto text-xs sm:text-sm">
+                        <Settings2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                         Editar Perfil
                       </Button>
                     } />
@@ -304,35 +305,35 @@ export default function Configuracoes() {
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Cog className="h-5 w-5" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Cog className="h-4 w-4 sm:h-5 sm:w-5" />
                 Configurações Gerais
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
                 Configurações globais do sistema
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
+            <CardContent className="p-4 sm:p-6">
+              <p className="text-muted-foreground text-sm">
                 Outras configurações do sistema serão adicionadas aqui conforme necessário.
               </p>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="dashboard" className="space-y-6">
+        <TabsContent value="dashboard" className="space-y-4 sm:space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ImageIcon className="h-5 w-5" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <ImageIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                 Imagens do Dashboard
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
                 Arraste e solte para reordenar • Clique para ativar/desativar • Hover para controles
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6">
               <ImageManager />
             </CardContent>
           </Card>
