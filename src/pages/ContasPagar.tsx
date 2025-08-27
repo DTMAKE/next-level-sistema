@@ -99,65 +99,65 @@ export default function ContasPagar() {
   const despesasPagas = filteredDespesas.filter(d => d.status === 'confirmada').reduce((sum, d) => sum + Number(d.valor), 0);
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
+    <div className="space-y-3 sm:space-y-6 p-3 sm:p-6">
       {/* Header */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Contas a Pagar</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Contas a Pagar</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Controle de despesas e contas a pagar
           </p>
         </div>
 
         {/* Controles de data */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <MonthYearPicker 
             selected={selectedDate}
             onSelect={setSelectedDate}
           />
           
           <TransacaoDialog tipo="despesa">
-            <Button>
+            <Button className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
-              Nova Despesa
+              <span className="sm:inline">Nova Despesa</span>
             </Button>
           </TransacaoDialog>
         </div>
       </div>
 
       {/* Cards de Resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total a Pagar</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Total a Pagar</CardTitle>
+            <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-red-600">
               {formatCurrency(totalDespesas)}
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Pendentes</CardTitle>
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-yellow-600">
               {formatCurrency(despesasPendentes)}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pagas</CardTitle>
-            <TrendingDown className="h-4 w-4 text-muted-foreground" />
+        <Card className="col-span-2 lg:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Pagas</CardTitle>
+            <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-green-600">
               {formatCurrency(despesasPagas)}
             </div>
           </CardContent>
@@ -166,11 +166,11 @@ export default function ContasPagar() {
 
       {/* Filtros */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Filtros</CardTitle>
+        <CardHeader className="p-3 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Filtros</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <CardContent className="p-3 sm:p-6 pt-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
@@ -212,7 +212,7 @@ export default function ContasPagar() {
               setStatusFilter("all");
               setCategoriaFilter("all");
               setCurrentPage(1);
-            }}>
+            }} className="col-span-1 sm:col-span-2 lg:col-span-1">
               <Filter className="h-4 w-4 mr-2" />
               Limpar
             </Button>
@@ -222,13 +222,13 @@ export default function ContasPagar() {
 
       {/* Lista de Despesas */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Despesas do Período</CardTitle>
-          <CardDescription>
+        <CardHeader className="p-3 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Despesas do Período</CardTitle>
+          <CardDescription className="text-sm">
             {filteredDespesas.length} despesa(s) encontrada(s)
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 sm:p-6 pt-0">
           {isLoading ? (
             <div className="text-center text-muted-foreground">Carregando...</div>
           ) : paginatedDespesas.length === 0 ? (
@@ -236,40 +236,44 @@ export default function ContasPagar() {
               Nenhuma despesa encontrada
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {paginatedDespesas.map((despesa) => (
-                <div key={despesa.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-4 min-w-0 flex-1">
+                <div key={despesa.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 min-w-0 flex-1">
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium text-base">
+                      <div className="font-medium text-sm sm:text-base">
                         {despesa.descricao || 'Despesa sem descrição'}
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-xs sm:text-sm text-muted-foreground">
                         {despesa.categoria?.nome || 'Sem categoria'} • {format(new Date(despesa.data_transacao), "dd/MM/yyyy", { locale: ptBR })}
-                        {despesa.data_vencimento && ` • Vencimento: ${format(new Date(despesa.data_vencimento), "dd/MM/yyyy", { locale: ptBR })}`}
+                        {despesa.data_vencimento && (
+                          <span className="block sm:inline">
+                            {" • "}Vencimento: {format(new Date(despesa.data_vencimento), "dd/MM/yyyy", { locale: ptBR })}
+                          </span>
+                        )}
                       </div>
                     </div>
                     
-                    <Badge className={cn("text-xs", getStatusColor(despesa.status || 'confirmada'))}>
-                      {getStatusLabel(despesa.status || 'confirmada')}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <div className="font-bold text-red-600">
+                    <div className="flex items-center justify-between sm:justify-end gap-2">
+                      <Badge className={cn("text-xs", getStatusColor(despesa.status || 'confirmada'))}>
+                        {getStatusLabel(despesa.status || 'confirmada')}
+                      </Badge>
+                      
+                      <div className="font-bold text-red-600 text-sm sm:text-base">
                         {formatCurrency(Number(despesa.valor))}
                       </div>
                     </div>
-                    
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
+                  </div>
+                  
+                  <div className="flex gap-1 justify-end sm:justify-start">
+                    <Button variant="ghost" size="sm">
+                      <Eye className="h-4 w-4" />
+                      <span className="sr-only">Visualizar</span>
+                    </Button>
+                    <Button variant="ghost" size="sm">
+                      <Edit className="h-4 w-4" />
+                      <span className="sr-only">Editar</span>
+                    </Button>
                   </div>
                 </div>
               ))}
