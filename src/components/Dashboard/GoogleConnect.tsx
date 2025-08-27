@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
-import { Calendar, Loader2, Link, Unlink } from 'lucide-react';
+import { Calendar, Loader2, Check, X } from 'lucide-react';
+import googleLogo from '@/assets/google-logo.png';
 
 export const GoogleConnect = () => {
   const { 
@@ -18,64 +19,72 @@ export const GoogleConnect = () => {
   }, [checkConnection]);
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Calendar className="h-5 w-5 text-primary" />
-          Integração Google
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-gray-300'}`} />
-            <div>
-              <p className="font-medium">
-                {isConnected ? 'Conta conectada' : 'Conta não conectada'}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {isConnected 
-                  ? 'Acesso ao Google Calendar ativo' 
-                  : 'Conecte para sincronizar eventos do calendar'
-                }
-              </p>
-            </div>
+    <Card className="relative overflow-hidden border-0 shadow-lg">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/20 to-primary/5" />
+      
+      <CardContent className="relative p-6 text-center">
+        {/* Google Logo over Calendar Icon */}
+        <div className="relative inline-flex items-center justify-center mb-4">
+          <Calendar className="w-12 h-12 text-muted-foreground/30" />
+          <div className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center">
+            <img 
+              src={googleLogo} 
+              alt="Google" 
+              className="w-4 h-4 object-contain"
+            />
           </div>
-          
+        </div>
+
+        {/* Status indicator */}
+        <div className="flex items-center justify-center gap-2 mb-3">
           {isConnected ? (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={disconnectGoogle}
-              className="flex items-center gap-2"
-            >
-              <Unlink className="h-4 w-4" />
-              Desconectar
-            </Button>
+            <div className="flex items-center gap-2 text-success">
+              <Check className="w-4 h-4" />
+              <span className="text-sm font-medium">Conectado</span>
+            </div>
           ) : (
-            <Button 
-              onClick={connectGoogle}
-              disabled={isConnecting}
-              className="flex items-center gap-2"
-            >
-              {isConnecting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Link className="h-4 w-4" />
-              )}
-              Conectar Google
-            </Button>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <X className="w-4 h-4" />
+              <span className="text-sm font-medium">Não conectado</span>
+            </div>
           )}
         </div>
 
-        {isConnected && (
-          <div className="flex items-center gap-2 pt-2">
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-blue-500" />
-              <span>Google Calendar</span>
-              <div className="w-2 h-2 bg-green-500 rounded-full" />
-            </div>
-          </div>
+        {/* Description */}
+        <p className="text-xs text-muted-foreground mb-4 max-w-[200px] mx-auto">
+          {isConnected 
+            ? 'Acesso ao Google Calendar ativo' 
+            : 'Conecte para sincronizar eventos'
+          }
+        </p>
+
+        {/* Action Button */}
+        {isConnected ? (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={disconnectGoogle}
+            className="h-8 px-3 text-xs"
+          >
+            Desconectar
+          </Button>
+        ) : (
+          <Button 
+            onClick={connectGoogle}
+            disabled={isConnecting}
+            size="sm"
+            className="h-8 px-4 text-xs bg-primary hover:bg-primary/90"
+          >
+            {isConnecting ? (
+              <>
+                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                Conectando...
+              </>
+            ) : (
+              'Conectar Google'
+            )}
+          </Button>
         )}
       </CardContent>
     </Card>
