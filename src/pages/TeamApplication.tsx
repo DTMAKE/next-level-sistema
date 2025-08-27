@@ -117,10 +117,10 @@ export function TeamApplication() {
                 <div className="space-y-8 text-center sm:text-left animate-fade-in">
                   <div>
                     <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">
-                      Qual é o seu nome? ✋
+                      Qual é o seu nome e sobrenome? ✋
                     </h2>
                     <p className="text-lg text-muted-foreground">
-                      Vamos começar do básico - como podemos te chamar?
+                      Vamos começar do básico - digite seu nome completo
                     </p>
                   </div>
                   
@@ -130,7 +130,7 @@ export function TeamApplication() {
                       value={formData.nome}
                       onChange={(e) => updateFormData('nome', e.target.value)}
                       onKeyPress={handleKeyPress}
-                      placeholder="Digite seu nome"
+                      placeholder="Digite seu nome e sobrenome"
                       className="text-xl p-6 border-2 bg-background/50 backdrop-blur-sm focus:border-primary/50"
                     />
                     {formData.nome.length > 0 && formData.nome.length < 2 && (
