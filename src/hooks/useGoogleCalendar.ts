@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useGoogleAuth } from './useGoogleAuth';
 
 export interface GoogleCalendarEvent {
   id: string;
@@ -26,17 +25,8 @@ export const useGoogleCalendar = () => {
   const [events, setEvents] = useState<GoogleCalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { isConnected } = useGoogleAuth();
 
   const fetchEvents = useCallback(async () => {
-    // Don't try to fetch if not connected
-    if (!isConnected) {
-      setEvents([]);
-      setError(null);
-      setIsLoading(false);
-      return;
-    }
-
     setIsLoading(true);
     setError(null);
     
@@ -64,7 +54,7 @@ export const useGoogleCalendar = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isConnected]);
+  }, []);
 
   const getTodayEvents = useCallback(() => {
     const today = new Date();
@@ -89,16 +79,10 @@ export const useGoogleCalendar = () => {
     }).slice(0, 10); // Limit to 10 events
   }, [events]);
 
-  // Auto-fetch events when hook is used and connected
+  // Auto-fetch events when hook is used
   useEffect(() => {
-    if (isConnected) {
-      fetchEvents();
-    } else {
-      setEvents([]);
-      setError(null);
-      setIsLoading(false);
-    }
-  }, [fetchEvents, isConnected]);
+    fetchEvents();
+  }, [fetchEvents]);
 
   return {
     events,

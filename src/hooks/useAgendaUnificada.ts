@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useGoogleCalendar, GoogleCalendarEvent } from './useGoogleCalendar';
 import { useEventos, Evento } from './useEventos';
-import { useGoogleAuth } from './useGoogleAuth';
 
 export interface EventoUnificado {
   id: string;
@@ -21,10 +20,7 @@ export const useAgendaUnificada = () => {
   const [eventos, setEventos] = useState<EventoUnificado[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [needsGoogleConnection, setNeedsGoogleConnection] = useState(false);
 
-  const { isConnected } = useGoogleAuth();
-  
   const { 
     events: googleEvents, 
     isLoading: isLoadingGoogle, 
@@ -77,23 +73,14 @@ export const useAgendaUnificada = () => {
   const fetchAllEvents = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    setNeedsGoogleConnection(false);
     
     try {
       // Fetch local events
       const localEventos = await fetchEventos();
       const unifiedLocalEvents = localEventos.map(convertLocalEvent);
 
-      // Convert Google events (only if connected)
-      let unifiedGoogleEvents: EventoUnificado[] = [];
-      if (isConnected) {
-        unifiedGoogleEvents = googleEvents.map(convertGoogleEvent);
-      } else {
-        // Set flag to show connection message only if there are no local events
-        if (unifiedLocalEvents.length === 0) {
-          setNeedsGoogleConnection(true);
-        }
-      }
+      // Convert Google events
+      const unifiedGoogleEvents = googleEvents.map(convertGoogleEvent);
 
       // Combine and sort by start date
       const allEvents = [...unifiedLocalEvents, ...unifiedGoogleEvents];
@@ -102,14 +89,11 @@ export const useAgendaUnificada = () => {
       setEventos(allEvents);
     } catch (error: any) {
       console.error('Error fetching unified events:', error);
-      // Only set error for actual errors, not connection issues
-      if (!error.message?.includes('not connected')) {
-        setError(error.message);
-      }
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
-  }, [googleEvents, fetchEventos, convertGoogleEvent, convertLocalEvent, isConnected]);
+  }, [googleEvents, fetchEventos, convertGoogleEvent, convertLocalEvent]);
 
   // Auto-fetch when dependencies change
   useEffect(() => {
@@ -228,8 +212,7 @@ export const useAgendaUnificada = () => {
   return {
     eventos,
     isLoading: isLoading || isLoadingGoogle || isLoadingLocal,
-    error,
-    needsGoogleConnection,
+    error: error || googleError,
     fetchAllEvents,
     refreshAllEvents,
     createEventoUnificado,
