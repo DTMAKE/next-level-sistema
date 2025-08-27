@@ -4,7 +4,6 @@ import { AgendaMainView } from "./AgendaMainView";
 import { EventoUnificado, useAgendaUnificada } from "@/hooks/useAgendaUnificada";
 import { EventoDialog } from "./EventoDialog";
 import { Button } from "@/components/ui/button";
-import { GoogleConnect } from "@/components/Dashboard/GoogleConnect";
 import { Plus } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -128,18 +127,6 @@ export function AgendaLayout({ events, isLoading, error }: AgendaLayoutProps) {
         </div>
       )}
 
-      {/* Google Integration Section */}
-      <div className="flex-shrink-0 border-t border-muted-foreground/20 bg-background p-3 sm:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-          <div className="text-sm text-muted-foreground">
-            <p className="font-medium mb-1">Integração com Google Calendar</p>
-            <p className="text-xs">Sincronize seus eventos com sua conta Google para uma experiência completa.</p>
-          </div>
-          <div className="flex-shrink-0">
-            <GoogleConnect />
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
