@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Search, Plus, FileText, Calendar, DollarSign, Edit, Trash2, User, MoreVertical, Grid, List } from "lucide-react";
 import { useContratos, type Contrato } from "@/hooks/useContratos";
@@ -17,12 +18,51 @@ export default function Contratos() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"cards" | "table">(isMobile ? "cards" : "table");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedContrato, setSelectedContrato] = useState<Contrato | undefined>();
 
-  const { data: contratos = [], isLoading, error } = useContratos(searchTerm);
+  const { data: contratosData = [], isLoading, error } = useContratos(searchTerm);
+
+  // Client-side pagination
+  const filteredContratos = useMemo(() => {
+    return contratosData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [contratosData]);
+
+  // Pagination
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(filteredContratos.length / itemsPerPage);
+  const paginatedData = filteredContratos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const total = filteredContratos.length;
+
+  // Reset page when search changes
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  // Generate pagination numbers
+  const generatePaginationNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = isMobile ? 3 : 5;
+    const halfVisible = Math.floor(maxVisiblePages / 2);
+    let startPage = Math.max(1, currentPage - halfVisible);
+    let endPage = Math.min(totalPages, currentPage + halfVisible);
+
+    // Adjust if we're near the beginning or end
+    if (currentPage <= halfVisible) {
+      endPage = Math.min(totalPages, maxVisiblePages);
+    }
+    if (currentPage > totalPages - halfVisible) {
+      startPage = Math.max(1, totalPages - maxVisiblePages + 1);
+    }
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
 
   const handleEditContrato = (contrato: Contrato) => {
     setSelectedContrato(contrato);
@@ -94,7 +134,7 @@ export default function Contratos() {
                   placeholder="Buscar contratos..."
                   className="pl-10 h-10 text-sm"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                 />
               </div>
               {!isMobile && (
@@ -117,9 +157,9 @@ export default function Contratos() {
               )}
             </div>
             
-            {contratos.length > 0 && (
+            {total > 0 && (
               <div className="text-sm text-muted-foreground">
-                Mostrando {contratos.length} contratos
+                Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, total)} de {total} contratos
               </div>
             )}
           </div>
@@ -135,7 +175,7 @@ export default function Contratos() {
                 </div>
               ))}
             </div>
-          ) : contratos.length === 0 ? (
+          ) : paginatedData.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">Nenhum contrato encontrado</h3>
@@ -160,7 +200,7 @@ export default function Contratos() {
               {viewMode === "cards" || isMobile ? (
                 // Card View (Mobile and Desktop when cards selected)
                 <div className="space-y-3">
-                  {contratos.map((contrato) => (
+                  {paginatedData.map((contrato) => (
                     <Card 
                       key={contrato.id} 
                       className="p-4 hover:shadow-md transition-shadow cursor-pointer"
@@ -240,7 +280,7 @@ export default function Contratos() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {contratos.map((contrato) => (
+                      {paginatedData.map((contrato) => (
                         <TableRow 
                           key={contrato.id} 
                           className="cursor-pointer hover:bg-muted/50"
@@ -298,6 +338,26 @@ export default function Contratos() {
                   </Table>
                 </div>
               )}
+
+              {totalPages > 1 && <div className="mt-6">
+                  <Pagination>
+                    <PaginationContent>
+                      {currentPage > 1 && <PaginationItem>
+                          <PaginationPrevious onClick={() => setCurrentPage(currentPage - 1)} className="cursor-pointer" />
+                        </PaginationItem>}
+                      
+                      {generatePaginationNumbers().map(pageNum => <PaginationItem key={pageNum}>
+                          <PaginationLink onClick={() => setCurrentPage(pageNum)} isActive={pageNum === currentPage} className="cursor-pointer">
+                            {pageNum}
+                          </PaginationLink>
+                        </PaginationItem>)}
+                      
+                      {currentPage < totalPages && <PaginationItem>
+                          <PaginationNext onClick={() => setCurrentPage(currentPage + 1)} className="cursor-pointer" />
+                        </PaginationItem>}
+                    </PaginationContent>
+                  </Pagination>
+                </div>}
             </>
           )}
         </CardContent>

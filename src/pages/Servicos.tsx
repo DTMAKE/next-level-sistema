@@ -49,7 +49,7 @@ export default function Servicos() {
   }, [servicosData, statusFilter]);
 
   // Pagination
-  const itemsPerPage = 25;
+  const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredServicos.length / itemsPerPage);
   const paginatedData = filteredServicos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const total = filteredServicos.length;

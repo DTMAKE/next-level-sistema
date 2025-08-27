@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Plus, Filter, Search, MoreHorizontal, Edit, Trash2, Lock, Grid, List, FolderOpen, Users } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useProjetos } from "@/hooks/useProjetos";
 import { KanbanBoard } from "@/components/Kanban/KanbanBoard";
@@ -16,6 +17,7 @@ export default function Projetos() {
   const isMobile = useIsMobile();
   const [selectedProjeto, setSelectedProjeto] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"cards" | "table">(isMobile ? "cards" : "cards"); // Always cards for projects
   const [showProjetoDialog, setShowProjetoDialog] = useState(false);
   const [editingProjeto, setEditingProjeto] = useState<any>(null);
@@ -32,10 +34,46 @@ export default function Projetos() {
     }
   }, [location.state]);
 
-  const filteredProjetos = projetos.filter(projeto =>
-    projeto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    projeto.descricao?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProjetos = useMemo(() => {
+    const filtered = projetos.filter(projeto =>
+      projeto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      projeto.descricao?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    return filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [projetos, searchTerm]);
+
+  // Pagination
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(filteredProjetos.length / itemsPerPage);
+  const paginatedData = filteredProjetos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const total = filteredProjetos.length;
+
+  // Reset page when search changes
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  // Generate pagination numbers
+  const generatePaginationNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = isMobile ? 3 : 5;
+    const halfVisible = Math.floor(maxVisiblePages / 2);
+    let startPage = Math.max(1, currentPage - halfVisible);
+    let endPage = Math.min(totalPages, currentPage + halfVisible);
+
+    // Adjust if we're near the beginning or end
+    if (currentPage <= halfVisible) {
+      endPage = Math.min(totalPages, maxVisiblePages);
+    }
+    if (currentPage > totalPages - halfVisible) {
+      startPage = Math.max(1, totalPages - maxVisiblePages + 1);
+    }
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
 
   const handleEditProject = (projeto: any, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -101,11 +139,11 @@ export default function Projetos() {
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Buscar projetos..." 
-                  className="pl-10 h-10 text-sm" 
+                <Input
+                  placeholder="Buscar projetos..."
+                  className="pl-10 h-10 text-sm"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                 />
               </div>
               <Button variant="outline" size="sm" className="flex-shrink-0">
@@ -115,9 +153,9 @@ export default function Projetos() {
               </Button>
             </div>
             
-            {filteredProjetos.length > 0 && (
+            {total > 0 && (
               <div className="text-sm text-muted-foreground">
-                Mostrando {filteredProjetos.length} de {projetos.length} projetos
+                Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, total)} de {total} projetos
               </div>
             )}
           </div>
@@ -133,7 +171,7 @@ export default function Projetos() {
                 </div>
               ))}
             </div>
-          ) : filteredProjetos.length === 0 ? (
+          ) : paginatedData.length === 0 ? (
             <div className="text-center py-12">
               <FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">Nenhum projeto encontrado</h3>
@@ -149,7 +187,7 @@ export default function Projetos() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-              {filteredProjetos.map((projeto) => (
+              {paginatedData.map((projeto) => (
                 <Card 
                   key={projeto.id} 
                   className="projeto-card cursor-pointer"
@@ -208,6 +246,44 @@ export default function Projetos() {
                 </Card>
               ))}
             </div>
+
+            {totalPages > 1 && (
+              <div className="mt-6">
+                <Pagination>
+                  <PaginationContent>
+                    {currentPage > 1 && (
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          onClick={() => setCurrentPage(currentPage - 1)} 
+                          className="cursor-pointer" 
+                        />
+                      </PaginationItem>
+                    )}
+                    
+                    {generatePaginationNumbers().map(pageNum => (
+                      <PaginationItem key={pageNum}>
+                        <PaginationLink 
+                          onClick={() => setCurrentPage(pageNum)} 
+                          isActive={pageNum === currentPage} 
+                          className="cursor-pointer"
+                        >
+                          {pageNum}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    
+                    {currentPage < totalPages && (
+                      <PaginationItem>
+                        <PaginationNext 
+                          onClick={() => setCurrentPage(currentPage + 1)} 
+                          className="cursor-pointer" 
+                        />
+                      </PaginationItem>
+                    )}
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
           )}
         </CardContent>
       </Card>

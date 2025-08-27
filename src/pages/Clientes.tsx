@@ -71,7 +71,7 @@ export default function Clientes() {
   }, [clientes, leads, statusFilter, searchTerm]);
 
   // Pagination
-  const itemsPerPage = 25;
+  const itemsPerPage = 10;
   const totalPages = Math.ceil(combinedData.length / itemsPerPage);
   const paginatedData = combinedData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const total = combinedData.length;

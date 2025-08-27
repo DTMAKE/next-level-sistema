@@ -44,7 +44,7 @@ export default function Vendas() {
     data: vendasResponse,
     isLoading,
     error
-  } = useVendas(searchTerm, currentPage, 25);
+  } = useVendas(searchTerm, currentPage, 10);
   const vendas = vendasResponse?.data || [];
   const totalPages = vendasResponse?.totalPages || 0;
   const total = vendasResponse?.total || 0;
@@ -185,7 +185,7 @@ export default function Vendas() {
             </div>
             
             {total > 0 && <div className="text-sm text-muted-foreground">
-                Mostrando {(currentPage - 1) * 25 + 1} - {Math.min(currentPage * 25, total)} de {total} vendas
+                Mostrando {(currentPage - 1) * 10 + 1} - {Math.min(currentPage * 10, total)} de {total} vendas
               </div>}
           </div>
         </CardHeader>
