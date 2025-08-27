@@ -121,8 +121,7 @@ export default function Clientes() {
   };
   
   const handleNewCliente = () => {
-    setSelectedCliente(undefined);
-    setDialogOpen(true);
+    navigate("/clientes/novo");
   };
 
   const getStatusBadge = (item: CombinedItem) => {
