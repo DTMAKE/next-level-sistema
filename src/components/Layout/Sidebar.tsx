@@ -60,15 +60,15 @@ const modulosItems = [
     roles: ["admin", "vendedor"],
   },
   {
-    title: "Projetos",
-    url: "/projetos",
-    icon: Kanban,
-    roles: ["admin", "vendedor"],
-  },
-  {
     title: "Serviços",
     url: "/servicos",
     icon: Package,
+    roles: ["admin", "vendedor"],
+  },
+  {
+    title: "Projetos",
+    url: "/projetos",
+    icon: Kanban,
     roles: ["admin", "vendedor"],
   },
   {
