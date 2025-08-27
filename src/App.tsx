@@ -30,6 +30,7 @@ import ContasReceber from "./pages/ContasReceber";
 import ContasPagar from "./pages/ContasPagar";
 import Relatorios from "./pages/Relatorios";
 import Configuracoes from "./pages/Configuracoes";
+import Candidatos from "./pages/Candidatos";
 import Metas from "./pages/Metas";
 import MinhasTarefas from "./pages/MinhasTarefas";
 import Agenda from "./pages/Agenda";
@@ -172,14 +173,21 @@ const App = () => {
                      </Layout>
                    </ProtectedRoute>
                  } />
-                  <Route path="/configuracoes" element={
-                    <ProtectedRoute requiredRole="admin">
-                      <Layout>
-                        <Configuracoes />
-                      </Layout>
-                    </ProtectedRoute>
-                  } />
-                    <Route path="/metas" element={
+                   <Route path="/candidatos" element={
+                     <ProtectedRoute requiredRole="admin">
+                       <Layout>
+                         <Candidatos />
+                       </Layout>
+                     </ProtectedRoute>
+                   } />
+                   <Route path="/configuracoes" element={
+                     <ProtectedRoute requiredRole="admin">
+                       <Layout>
+                         <Configuracoes />
+                       </Layout>
+                     </ProtectedRoute>
+                   } />
+                     <Route path="/metas" element={
                       <ProtectedRoute>
                         <Layout>
                           <Metas />

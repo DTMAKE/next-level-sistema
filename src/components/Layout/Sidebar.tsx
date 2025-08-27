@@ -29,6 +29,7 @@ import {
   CalendarDays,
   TrendingUp,
   TrendingDown,
+  UserCheck,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -107,6 +108,12 @@ const adminItems = [
     title: "Metas",
     url: "/metas",
     icon: Target,
+    roles: ["admin"],
+  },
+  {
+    title: "Candidatos",
+    url: "/candidatos",
+    icon: UserCheck,
     roles: ["admin"],
   },
   {
