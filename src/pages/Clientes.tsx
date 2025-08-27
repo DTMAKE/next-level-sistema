@@ -112,7 +112,8 @@ export default function Clientes() {
   };
   
   const handleNewCliente = () => {
-    navigate("/clientes/novo");
+    setSelectedCliente(undefined);
+    setDialogOpen(true);
   };
 
   const getStatusBadge = (item: CombinedItem) => {
@@ -162,45 +163,62 @@ export default function Clientes() {
       <Card>
         <CardHeader className="p-4 sm:p-6">
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+            <div className="flex flex-row gap-2 items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Buscar clientes e leads..." className="pl-10 h-10 text-sm" value={searchTerm} onChange={e => handleSearchChange(e.target.value)} />
+                <Input 
+                  placeholder="Buscar clientes e leads..." 
+                  className="pl-10 h-10 text-sm" 
+                  value={searchTerm} 
+                  onChange={e => handleSearchChange(e.target.value)} 
+                />
               </div>
               
-              <div className="flex items-center gap-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-10">
-                      <Filter className="h-4 w-4 mr-2" />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-10 px-3 shrink-0">
+                    <Filter className="h-4 w-4" />
+                    <span className="ml-2 hidden sm:inline">
                       {statusFilter === "todos" ? "Todos" : statusFilter === "clientes" ? "Clientes" : "Leads"}
-                      {statusFilter !== "todos" && <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleFilterChange("todos")}>
-                      Todos
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleFilterChange("clientes")}>
-                      <div className="w-2 h-2 rounded-full bg-green-600 mr-2" />
-                      Clientes
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleFilterChange("leads")}>
-                      <div className="w-2 h-2 rounded-full bg-blue-600 mr-2" />
-                      Leads
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    </span>
+                    {statusFilter !== "todos" && (
+                      <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleFilterChange("todos")}>
+                    Todos
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("clientes")}>
+                    <div className="w-2 h-2 rounded-full bg-green-600 mr-2" />
+                    Clientes
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("leads")}>
+                    <div className="w-2 h-2 rounded-full bg-blue-600 mr-2" />
+                    Leads
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-                {!isMobile && <div className="flex items-center gap-2 ml-2">
-                    <Button variant={viewMode === "cards" ? "default" : "outline"} size="sm" onClick={() => setViewMode("cards")}>
-                      <Grid className="h-4 w-4" />
-                    </Button>
-                    <Button variant={viewMode === "table" ? "default" : "outline"} size="sm" onClick={() => setViewMode("table")}>
-                      <List className="h-4 w-4" />
-                    </Button>
-                  </div>}
-              </div>
+              {!isMobile && (
+                <div className="flex items-center gap-2 ml-2">
+                  <Button 
+                    variant={viewMode === "cards" ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setViewMode("cards")}
+                  >
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant={viewMode === "table" ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setViewMode("table")}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
             
             {total > 0 && <div className="text-sm text-muted-foreground">
