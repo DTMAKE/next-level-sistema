@@ -9,6 +9,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Search, Users, UserCheck, UserX, Trash2, Eye, CheckCircle, XCircle, Clock, Mail, Phone, User, MoreVertical, Grid, List, Filter } from "lucide-react";
 import { useGetCandidaturas, useUpdateCandidaturaStatus, useDeleteCandidatura, Candidatura } from "@/hooks/useCandidaturas";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -86,14 +87,48 @@ export default function Candidatos() {
     return pages;
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (candidato: Candidatura) => {
+    const { status, id } = candidato;
+    
     switch (status) {
       case 'aprovada':
         return <Badge className="bg-success/10 text-success border-success/20"><CheckCircle className="h-3 w-3 mr-1" />Aprovada</Badge>;
       case 'rejeitada':
         return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Rejeitada</Badge>;
       default:
-        return <Badge variant="outline"><Clock className="h-3 w-3 mr-1" />Pendente</Badge>;
+        return (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Badge variant="outline" className="cursor-pointer hover:bg-muted/50 transition-colors">
+                <Clock className="h-3 w-3 mr-1" />
+                Pendente
+              </Badge>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2" align="start">
+              <div className="flex flex-col gap-1">
+                <Button
+                  size="sm"
+                  onClick={() => updateStatus.mutate({ id, status: 'aprovada' })}
+                  disabled={updateStatus.isPending}
+                  className="justify-start h-8 px-2"
+                >
+                  <UserCheck className="h-3 w-3 mr-2" />
+                  Aprovar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => updateStatus.mutate({ id, status: 'rejeitada' })}
+                  disabled={updateStatus.isPending}
+                  className="justify-start h-8 px-2"
+                >
+                  <UserX className="h-3 w-3 mr-2" />
+                  Rejeitar
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        );
     }
   };
 
@@ -224,7 +259,7 @@ export default function Candidatos() {
                             <User className="h-4 w-4 text-accent shrink-0" />
                             <h3 className="font-semibold text-base truncate">{candidato.nome}</h3>
                           </div>
-                          {getStatusBadge(candidato.status)}
+                          {getStatusBadge(candidato)}
                         </div>
                         
                         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
@@ -290,7 +325,7 @@ export default function Candidatos() {
                                 
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium">Status:</span>
-                                  {getStatusBadge(candidato.status)}
+                                  {getStatusBadge(candidato)}
                                 </div>
                               </div>
                             </DialogContent>
@@ -342,7 +377,7 @@ export default function Candidatos() {
                       {paginatedData.map(candidato => (
                         <TableRow key={candidato.id}>
                           <TableCell>
-                            {getStatusBadge(candidato.status)}
+                            {getStatusBadge(candidato)}
                           </TableCell>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
@@ -408,7 +443,7 @@ export default function Candidatos() {
                                       
                                       <div className="flex items-center gap-2">
                                         <span className="font-medium">Status:</span>
-                                        {getStatusBadge(candidato.status)}
+                                        {getStatusBadge(candidato)}
                                       </div>
                                     </div>
                                   </DialogContent>
