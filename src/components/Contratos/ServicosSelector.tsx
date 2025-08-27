@@ -73,6 +73,15 @@ export function ServicosSelector({
     } : s);
     onServicosChange(novosServicos);
   };
+
+  const atualizarValorUnitario = (servicoId: string, novoValor: number) => {
+    const novosServicos = servicosSelecionados.map(s => s.servico_id === servicoId ? {
+      ...s,
+      valor_unitario: novoValor,
+      valor_total: s.quantidade * novoValor
+    } : s);
+    onServicosChange(novosServicos);
+  };
   const valorTotal = servicosSelecionados.reduce((total, servico) => total + servico.valor_total, 0);
   return <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -124,35 +133,52 @@ export function ServicosSelector({
       {servicosSelecionados.length > 0 ? <div className="space-y-3">
           {servicosSelecionados.map(servico => <Card key={servico.servico_id}>
               <CardContent className="p-3 sm:p-4">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-sm sm:text-base">{servico.nome}</h4>
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor={`qty-${servico.servico_id}`} className="text-sm whitespace-nowrap">
-                        Qtd:
-                      </Label>
-                      <Input 
-                        id={`qty-${servico.servico_id}`} 
-                        type="number" 
-                        min="1" 
-                        value={servico.quantidade} 
-                        onChange={e => atualizarQuantidade(servico.servico_id, parseInt(e.target.value) || 1)} 
-                        className="w-20 h-9" 
-                      />
-                    </div>
-                    
-                    <div className="text-left sm:text-right">
-                      <p className="font-medium text-sm sm:text-base">{formatCurrency(servico.valor_total)}</p>
-                    </div>
-                    
-                    <Button variant="outline" size="sm" onClick={() => removerServico(servico.servico_id)} className="h-9 self-start sm:self-auto">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                   <div className="flex-1 min-w-0">
+                     <h4 className="font-medium text-sm sm:text-base truncate">{servico.nome}</h4>
+                   </div>
+                   
+                   <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
+                     <div className="flex items-center gap-2">
+                       <Label htmlFor={`qty-${servico.servico_id}`} className="text-sm whitespace-nowrap">
+                         Qtd:
+                       </Label>
+                       <Input 
+                         id={`qty-${servico.servico_id}`} 
+                         type="number" 
+                         min="1" 
+                         value={servico.quantidade} 
+                         onChange={e => atualizarQuantidade(servico.servico_id, parseInt(e.target.value) || 1)} 
+                         className="w-16 h-9 text-center" 
+                       />
+                     </div>
+                     
+                     <div className="flex items-center gap-2">
+                       <Input
+                         type="number"
+                         step="0.01"
+                         min="0"
+                         value={servico.valor_unitario}
+                         onChange={e => atualizarValorUnitario(servico.servico_id, parseFloat(e.target.value) || 0)}
+                         className="w-32 h-9 text-right"
+                         placeholder="0,00"
+                       />
+                     </div>
+                     
+                     <div className="min-w-[100px] text-right">
+                       <p className="font-bold text-base">{formatCurrency(servico.valor_total)}</p>
+                     </div>
+                     
+                     <Button 
+                       variant="outline" 
+                       size="sm" 
+                       onClick={() => removerServico(servico.servico_id)} 
+                       className="h-9 w-9 p-0 hover:bg-destructive hover:text-destructive-foreground flex-shrink-0"
+                     >
+                       <Trash2 className="h-4 w-4" />
+                     </Button>
+                   </div>
+                 </div>
               </CardContent>
             </Card>)}
           
