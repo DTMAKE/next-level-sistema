@@ -104,11 +104,11 @@ export default function Relatorios() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Relatórios</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Relatórios</h1>
+          <p className="text-muted-foreground hidden sm:block">
             Dashboard completo de analytics e performance
           </p>
         </div>
@@ -124,31 +124,31 @@ export default function Relatorios() {
       />
 
       {/* Métricas Principais */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {metricasCards.map((metrica, index) => {
           const icons = [DollarSign, Users, Target, TrendingUp];
           const Icon = icons[index] || Activity;
           
           return (
             <Card key={metrica.label} className="relative overflow-hidden">
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-2 p-3 sm:p-6">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                     {metrica.label}
                   </CardTitle>
                   <Icon className="h-4 w-4 text-muted-foreground" />
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{metrica.valor}</div>
+              <CardContent className="p-3 sm:p-6 pt-0">
+                <div className="text-xl sm:text-2xl font-bold">{metrica.valor}</div>
                 <div className="flex items-center text-xs">
                   <Badge 
                     variant={metrica.variacao.includes('+') ? 'default' : 'secondary'} 
-                    className="mr-1"
+                    className="mr-1 text-xs"
                   >
                     {metrica.variacao}
                   </Badge>
-                  <span className="text-muted-foreground">{metrica.periodo}</span>
+                  <span className="text-muted-foreground text-xs">{metrica.periodo}</span>
                 </div>
               </CardContent>
               <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary/20 to-primary/5" />
@@ -158,16 +158,16 @@ export default function Relatorios() {
       </div>
 
       {/* Gráficos e Analytics */}
-      <Tabs defaultValue="visao-geral" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="visao-geral">Visão Geral</TabsTrigger>
-          <TabsTrigger value="vendas">Vendas</TabsTrigger>
-          <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
-          <TabsTrigger value="leads">Leads</TabsTrigger>
+      <Tabs defaultValue="visao-geral" className="space-y-4 sm:space-y-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+          <TabsTrigger value="visao-geral" className="text-xs sm:text-sm">Visão Geral</TabsTrigger>
+          <TabsTrigger value="vendas" className="text-xs sm:text-sm">Vendas</TabsTrigger>
+          <TabsTrigger value="financeiro" className="text-xs sm:text-sm">Financeiro</TabsTrigger>
+          <TabsTrigger value="leads" className="text-xs sm:text-sm">Leads</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="visao-geral" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+        <TabsContent value="visao-geral" className="space-y-4 sm:space-y-6">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
             <GraficoVendas />
             <GraficoFinanceiro />
           </div>
@@ -189,32 +189,33 @@ export default function Relatorios() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {performance?.slice(0, 5).map((vendedor, index) => (
-                      <div key={vendedor.vendedor_id} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                            index === 0 ? 'bg-yellow-500/20 text-yellow-700' :
-                            index === 1 ? 'bg-gray-500/20 text-gray-700' :
-                            index === 2 ? 'bg-orange-500/20 text-orange-700' :
-                            'bg-primary/10 text-primary'
-                          }`}>
-                            {index + 1}
-                          </div>
-                          <div>
-                            <p className="font-medium">{vendedor.nome}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {vendedor.vendas} vendas • {vendedor.meta_atingida ? '✅ Meta atingida' : '❌ Meta pendente'}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-lg">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(vendedor.valor_total)}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(vendedor.comissoes)} comissão
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                     {performance?.slice(0, 5).map((vendedor, index) => (
+                       <div key={vendedor.vendedor_id} className="flex items-center justify-between p-3 sm:p-4 bg-muted/30 rounded-lg border">
+                         <div className="flex items-center gap-2 sm:gap-3">
+                           <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${
+                             index === 0 ? 'bg-yellow-500/20 text-yellow-700' :
+                             index === 1 ? 'bg-gray-500/20 text-gray-700' :
+                             index === 2 ? 'bg-orange-500/20 text-orange-700' :
+                             'bg-primary/10 text-primary'
+                           }`}>
+                             {index + 1}
+                           </div>
+                           <div>
+                             <p className="font-medium text-sm sm:text-base">{vendedor.nome}</p>
+                             <p className="text-xs sm:text-sm text-muted-foreground">
+                               {vendedor.vendas} vendas • <span className="hidden sm:inline">{vendedor.meta_atingida ? '✅ Meta atingida' : '❌ Meta pendente'}</span>
+                               <span className="sm:hidden">{vendedor.meta_atingida ? '✅' : '❌'}</span>
+                             </p>
+                           </div>
+                         </div>
+                         <div className="text-right">
+                           <p className="font-bold text-sm sm:text-lg">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(vendedor.valor_total)}</p>
+                           <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
+                             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(vendedor.comissoes)} comissão
+                           </p>
+                         </div>
+                       </div>
+                     ))}
                     {(!performance || performance.length === 0) && (
                       <div className="text-center py-8">
                         <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -253,22 +254,22 @@ export default function Relatorios() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {relatorios.map((relatorio) => (
               <Card key={relatorio.title} className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105 border-2 hover:border-primary/20">
-                <CardHeader className="pb-4">
+                <CardHeader className="pb-4 p-4 sm:p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5">
-                      <relatorio.icon className="h-6 w-6 text-primary" />
+                    <div className="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5">
+                      <relatorio.icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                     </div>
                     <Badge variant="outline" className="text-xs">{relatorio.tipo}</Badge>
                   </div>
-                  <CardTitle className="text-lg">{relatorio.title}</CardTitle>
-                  <CardDescription className="text-sm leading-relaxed">
+                  <CardTitle className="text-base sm:text-lg">{relatorio.title}</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm leading-relaxed">
                     {relatorio.description}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="pt-0">
+                <CardContent className="pt-0 p-4 sm:p-6">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-muted-foreground">
@@ -279,11 +280,12 @@ export default function Relatorios() {
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="flex-1">
+                      <Button size="sm" variant="outline" className="flex-1 text-xs">
                         <FileText className="h-3 w-3 mr-1" />
-                        Visualizar
+                        <span className="hidden sm:inline">Visualizar</span>
+                        <span className="sm:hidden">Ver</span>
                       </Button>
-                      <Button size="sm" className="flex-1">
+                      <Button size="sm" className="flex-1 text-xs">
                         <Download className="h-3 w-3 mr-1" />
                         Download
                       </Button>
@@ -308,38 +310,38 @@ export default function Relatorios() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-4">
             <Button 
               variant="outline" 
-              className="h-24 flex-col gap-2 hover:bg-primary/5 border-2 border-dashed"
+              className="h-20 sm:h-24 flex-col gap-1 sm:gap-2 hover:bg-primary/5 border-2 border-dashed p-2"
               onClick={() => toast.info("Funcionalidade em desenvolvimento")}
             >
-              <BarChart3 className="h-8 w-8 text-primary" />
-              <span className="text-sm font-medium">Relatório de Vendas</span>
+              <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+              <span className="text-xs sm:text-sm font-medium text-center">Relatório de Vendas</span>
             </Button>
             <Button 
               variant="outline" 
-              className="h-24 flex-col gap-2 hover:bg-primary/5 border-2 border-dashed"
+              className="h-20 sm:h-24 flex-col gap-1 sm:gap-2 hover:bg-primary/5 border-2 border-dashed p-2"
               onClick={() => toast.info("Funcionalidade em desenvolvimento")}
             >
-              <PieChart className="h-8 w-8 text-primary" />
-              <span className="text-sm font-medium">Dashboard Financeiro</span>
+              <PieChart className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+              <span className="text-xs sm:text-sm font-medium text-center">Dashboard Financeiro</span>
             </Button>
             <Button 
               variant="outline" 
-              className="h-24 flex-col gap-2 hover:bg-primary/5 border-2 border-dashed"
+              className="h-20 sm:h-24 flex-col gap-1 sm:gap-2 hover:bg-primary/5 border-2 border-dashed p-2"
               onClick={() => toast.info("Funcionalidade em desenvolvimento")}
             >
-              <Users className="h-8 w-8 text-primary" />
-              <span className="text-sm font-medium">Análise de Clientes</span>
+              <Users className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+              <span className="text-xs sm:text-sm font-medium text-center">Análise de Clientes</span>
             </Button>
             <Button 
               variant="outline" 
-              className="h-24 flex-col gap-2 hover:bg-primary/5 border-2 border-dashed"
+              className="h-20 sm:h-24 flex-col gap-1 sm:gap-2 hover:bg-primary/5 border-2 border-dashed p-2"
               onClick={() => toast.info("Funcionalidade em desenvolvimento")}
             >
-              <Target className="h-8 w-8 text-primary" />
-              <span className="text-sm font-medium">Performance KPIs</span>
+              <Target className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+              <span className="text-xs sm:text-sm font-medium text-center">Performance KPIs</span>
             </Button>
           </div>
           <div className="mt-6 p-4 bg-muted/30 rounded-lg">
