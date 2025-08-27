@@ -13,7 +13,7 @@ export interface CandidaturaData {
 
 export interface Candidatura extends CandidaturaData {
   id: string;
-  status: 'pendente' | 'aprovada' | 'rejeitada';
+  status: 'pendente' | 'aprovado' | 'rejeitado';
   created_at: string;
   updated_at: string;
 }
@@ -79,7 +79,7 @@ export function useUpdateCandidaturaStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: 'aprovada' | 'rejeitada' }) => {
+    mutationFn: async ({ id, status }: { id: string; status: 'aprovado' | 'rejeitado' }) => {
       const { error } = await supabase
         .from('candidaturas')
         .update({ status })
@@ -91,7 +91,7 @@ export function useUpdateCandidaturaStatus() {
       queryClient.invalidateQueries({ queryKey: ['candidaturas'] });
       toast({
         title: "Status atualizado!",
-        description: `Candidatura ${status === 'aprovada' ? 'aprovada' : 'rejeitada'} com sucesso.`,
+        description: `Candidatura ${status === 'aprovado' ? 'aprovada' : 'rejeitada'} com sucesso.`,
       });
     },
     onError: () => {

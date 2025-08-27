@@ -14,7 +14,7 @@ import { Search, Users, UserCheck, UserX, Trash2, Eye, CheckCircle, XCircle, Clo
 import { useGetCandidaturas, useUpdateCandidaturaStatus, useDeleteCandidatura, Candidatura } from "@/hooks/useCandidaturas";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-type FilterType = "todos" | "pendente" | "aprovada" | "rejeitada";
+type FilterType = "todos" | "pendente" | "aprovado" | "rejeitado";
 
 export default function Candidatos() {
   const isMobile = useIsMobile();
@@ -126,9 +126,9 @@ export default function Candidatos() {
                   <Button variant="outline" size="sm" className="h-10 px-3 shrink-0">
                     <Filter className="h-4 w-4" />
                     <span className="ml-2 hidden sm:inline">
-                      {statusFilter === "todos" ? "Todos" : 
-                       statusFilter === "pendente" ? "Pendentes" : 
-                       statusFilter === "aprovada" ? "Aprovadas" : "Rejeitadas"}
+                       {statusFilter === "todos" ? "Todos" : 
+                        statusFilter === "pendente" ? "Pendentes" : 
+                        statusFilter === "aprovado" ? "Aprovados" : "Rejeitados"}
                     </span>
                     {statusFilter !== "todos" && (
                       <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>
@@ -143,13 +143,13 @@ export default function Candidatos() {
                     <Clock className="h-4 w-4 mr-2 text-amber-600" />
                     Pendentes
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleFilterChange("aprovada")}>
+                  <DropdownMenuItem onClick={() => handleFilterChange("aprovado")}>
                     <CheckCircle className="h-4 w-4 mr-2 text-success" />
-                    Aprovadas
+                    Aprovados
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleFilterChange("rejeitada")}>
+                  <DropdownMenuItem onClick={() => handleFilterChange("rejeitado")}>
                     <XCircle className="h-4 w-4 mr-2 text-destructive" />
-                    Rejeitadas
+                    Rejeitados
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -291,7 +291,7 @@ export default function Candidatos() {
                             <>
                               <Button 
                                 size="sm" 
-                                onClick={() => updateStatus.mutate({ id: candidato.id, status: 'aprovada' })}
+                                onClick={() => updateStatus.mutate({ id: candidato.id, status: 'aprovado' })}
                                 disabled={updateStatus.isPending}
                                 className="flex-1"
                               >
@@ -302,7 +302,7 @@ export default function Candidatos() {
                               <Button 
                                 size="sm" 
                                 variant="outline"
-                                onClick={() => updateStatus.mutate({ id: candidato.id, status: 'rejeitada' })}
+                                onClick={() => updateStatus.mutate({ id: candidato.id, status: 'rejeitado' })}
                                 disabled={updateStatus.isPending}
                                 className="flex-1"
                               >
@@ -407,11 +407,11 @@ export default function Candidatos() {
                                 
                                 {candidato.status === 'pendente' && (
                                   <>
-                                    <DropdownMenuItem onClick={() => updateStatus.mutate({ id: candidato.id, status: 'aprovada' })}>
+                                    <DropdownMenuItem onClick={() => updateStatus.mutate({ id: candidato.id, status: 'aprovado' })}>
                                       <UserCheck className="h-4 w-4 mr-2" />
                                       Aprovar
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => updateStatus.mutate({ id: candidato.id, status: 'rejeitada' })}>
+                                    <DropdownMenuItem onClick={() => updateStatus.mutate({ id: candidato.id, status: 'rejeitado' })}>
                                       <UserX className="h-4 w-4 mr-2" />
                                       Rejeitar
                                     </DropdownMenuItem>

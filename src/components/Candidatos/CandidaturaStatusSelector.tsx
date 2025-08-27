@@ -20,10 +20,10 @@ export function CandidaturaStatusSelector({ candidatura, disabled = false, size 
 
   const getDisplayStatus = (status: string) => {
     switch (status) {
-      case "aprovada":
-        return "Aprovada";
-      case "rejeitada":
-        return "Rejeitada";
+      case "aprovado":
+        return "Aprovado";
+      case "rejeitado":
+        return "Rejeitado";
       default:
         return "Pendente";
     }
@@ -31,13 +31,13 @@ export function CandidaturaStatusSelector({ candidatura, disabled = false, size 
 
   const currentStatus = getDisplayStatus(candidatura.status);
   
-  const handleStatusChange = async (newStatus: "Aprovada" | "Rejeitada") => {
+  const handleStatusChange = async (newStatus: "Aprovado" | "Rejeitado") => {
     if (disabled || updateStatus.isPending) return;
 
     // Don't update if it's the same status
     if (currentStatus === newStatus) return;
 
-    const statusValue = newStatus === "Aprovada" ? "aprovada" : "rejeitada";
+    const statusValue = newStatus === "Aprovado" ? "aprovado" : "rejeitado";
     
     try {
       await updateStatus.mutateAsync({
@@ -62,12 +62,12 @@ export function CandidaturaStatusSelector({ candidatura, disabled = false, size 
 
   const getStatusStyles = (status: string) => {
     switch (status) {
-      case "Aprovada":
+      case "Aprovado":
         return {
           badge: "bg-green-100 text-green-800 border-green-200 hover:bg-green-100",
           dot: "bg-green-600"
         };
-      case "Rejeitada":
+      case "Rejeitado":
         return {
           badge: "bg-red-100 text-red-800 border-red-200 hover:bg-red-100",
           dot: "bg-red-600"
@@ -131,24 +131,24 @@ export function CandidaturaStatusSelector({ candidatura, disabled = false, size 
         className="w-32 bg-background/95 backdrop-blur-sm border shadow-lg z-50"
       >
         <DropdownMenuItem 
-          onClick={() => handleStatusChange("Aprovada")}
+          onClick={() => handleStatusChange("Aprovado")}
           className="cursor-pointer"
-          disabled={currentStatus === "Aprovada"}
+          disabled={currentStatus === "Aprovado"}
         >
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-green-600" />
-            <span className="font-medium">Aprovada</span>
+            <span className="font-medium">Aprovado</span>
           </div>
         </DropdownMenuItem>
         
         <DropdownMenuItem 
-          onClick={() => handleStatusChange("Rejeitada")}
+          onClick={() => handleStatusChange("Rejeitado")}
           className="cursor-pointer"
-          disabled={currentStatus === "Rejeitada"}
+          disabled={currentStatus === "Rejeitado"}
         >
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-red-600" />
-            <span className="font-medium">Rejeitada</span>
+            <span className="font-medium">Rejeitado</span>
           </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
