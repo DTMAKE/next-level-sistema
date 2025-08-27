@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, ChevronLeft, ChevronRight, ChevronDown, Plus } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { format, addDays, addWeeks, addMonths, subDays, subWeeks, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -19,8 +19,6 @@ interface AgendaToolbarProps {
   onDateRangeChange: (range: DateRange | undefined) => void;
   selectedDate: Date;
   onDateChange: (date: Date) => void;
-  onCreateEvent?: () => void;
-  children?: React.ReactNode;
 }
 
 export function AgendaToolbar({
@@ -31,9 +29,7 @@ export function AgendaToolbar({
   dateRange,
   onDateRangeChange,
   selectedDate,
-  onDateChange,
-  onCreateEvent,
-  children
+  onDateChange
 }: AgendaToolbarProps) {
   const isMobile = useIsMobile();
   
@@ -257,7 +253,7 @@ export function AgendaToolbar({
             </div>
           </div>
 
-          {/* Right Section - View Mode + Search + New Event Button */}
+          {/* Right Section - View Mode + Search */}
           <div className="flex items-center gap-2 lg:gap-3 flex-wrap lg:flex-nowrap">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -320,11 +316,6 @@ export function AgendaToolbar({
                 className="w-auto flex-shrink-0"
               />
             )}
-
-            {/* New Event Button - Desktop Only */}
-            <div className="flex-shrink-0">
-              {children}
-            </div>
           </div>
         </div>
       )}
