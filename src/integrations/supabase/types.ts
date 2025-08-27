@@ -178,6 +178,7 @@ export type Database = {
           endereco: string | null
           id: string
           nome: string
+          status: string | null
           telefone: string | null
           updated_at: string
           user_id: string
@@ -189,6 +190,7 @@ export type Database = {
           endereco?: string | null
           id?: string
           nome: string
+          status?: string | null
           telefone?: string | null
           updated_at?: string
           user_id: string
@@ -200,6 +202,7 @@ export type Database = {
           endereco?: string | null
           id?: string
           nome?: string
+          status?: string | null
           telefone?: string | null
           updated_at?: string
           user_id?: string
