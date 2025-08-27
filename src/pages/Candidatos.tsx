@@ -102,15 +102,15 @@ export default function Candidatos() {
   }
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div className="flex flex-row justify-between items-center gap-4">
-        <h1 className="font-bold mx-0 py-0 text-3xl">Candidatos</h1>
+    <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6">
+        <h1 className="text-2xl sm:text-3xl font-bold">Candidatos</h1>
       </div>
 
       <Card>
         <CardHeader className="p-4 sm:p-6">
           <div className="flex flex-col gap-4">
-            <div className="flex flex-row gap-2 items-center">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
@@ -121,57 +121,59 @@ export default function Candidatos() {
                 />
               </div>
               
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-10 px-3 shrink-0">
-                    <Filter className="h-4 w-4" />
-                    <span className="ml-2 hidden sm:inline">
-                       {statusFilter === "todos" ? "Todos" : 
-                        statusFilter === "pendente" ? "Pendentes" : 
-                        statusFilter === "aprovado" ? "Aprovados" : "Rejeitados"}
-                    </span>
-                    {statusFilter !== "todos" && (
-                      <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => handleFilterChange("todos")}>
-                    Todos
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleFilterChange("pendente")}>
-                    <Clock className="h-4 w-4 mr-2 text-amber-600" />
-                    Pendentes
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleFilterChange("aprovado")}>
-                    <CheckCircle className="h-4 w-4 mr-2 text-success" />
-                    Aprovados
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleFilterChange("rejeitado")}>
-                    <XCircle className="h-4 w-4 mr-2 text-destructive" />
-                    Rejeitados
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-10 px-3 shrink-0">
+                      <Filter className="h-4 w-4" />
+                      <span className="ml-2 hidden sm:inline">
+                         {statusFilter === "todos" ? "Todos" : 
+                          statusFilter === "pendente" ? "Pendentes" : 
+                          statusFilter === "aprovado" ? "Aprovados" : "Rejeitados"}
+                      </span>
+                      {statusFilter !== "todos" && (
+                        <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-popover border shadow-lg z-50">
+                    <DropdownMenuItem onClick={() => handleFilterChange("todos")}>
+                      Todos
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleFilterChange("pendente")}>
+                      <Clock className="h-4 w-4 mr-2 text-amber-600" />
+                      Pendentes
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleFilterChange("aprovado")}>
+                      <CheckCircle className="h-4 w-4 mr-2 text-success" />
+                      Aprovados
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleFilterChange("rejeitado")}>
+                      <XCircle className="h-4 w-4 mr-2 text-destructive" />
+                      Rejeitados
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-              {!isMobile && (
-                <div className="flex items-center gap-2 ml-2">
-                  <Button 
-                    variant={viewMode === "cards" ? "default" : "outline"} 
-                    size="sm" 
-                    onClick={() => setViewMode("cards")}
-                  >
-                    <Grid className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant={viewMode === "table" ? "default" : "outline"} 
-                    size="sm" 
-                    onClick={() => setViewMode("table")}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
+                {!isMobile && (
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant={viewMode === "cards" ? "default" : "outline"} 
+                      size="sm" 
+                      onClick={() => setViewMode("cards")}
+                    >
+                      <Grid className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant={viewMode === "table" ? "default" : "outline"} 
+                      size="sm" 
+                      onClick={() => setViewMode("table")}
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
             
             {total > 0 && (
@@ -206,16 +208,18 @@ export default function Candidatos() {
             <>
               {viewMode === "cards" || isMobile ? (
                 // Card View (Mobile and Desktop when cards selected)
-                <div className="space-y-3">
+                <div className="space-y-3 sm:space-y-4">
                   {paginatedData.map(candidato => (
-                    <Card key={candidato.id} className="p-4 hover:shadow-md transition-shadow">
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-3">
+                    <Card key={candidato.id} className="p-4 sm:p-5 hover:shadow-md transition-shadow">
+                      <div className="flex flex-col gap-3 sm:gap-4">
+                        <div className="flex items-start sm:items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
                             <User className="h-4 w-4 text-accent shrink-0" />
-                            <h3 className="font-semibold text-base break-words">{candidato.nome}</h3>
+                            <h3 className="font-semibold text-base sm:text-lg truncate">{candidato.nome}</h3>
                           </div>
-                          <CandidaturaStatusSelector candidatura={candidato} size="sm" />
+                          <div className="shrink-0">
+                            <CandidaturaStatusSelector candidatura={candidato} size="sm" />
+                          </div>
                         </div>
                         
                         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
@@ -231,11 +235,11 @@ export default function Candidatos() {
                           )}
                         </div>
                         
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           {/* Ver detalhes */}
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button variant="outline" size="sm" className="flex-1">
+                              <Button variant="outline" size="sm" className="w-full sm:flex-1">
                                 <Eye className="h-3 w-3 mr-1" />
                                 Ver Detalhes
                               </Button>
@@ -288,7 +292,7 @@ export default function Candidatos() {
                           </Dialog>
                           
                           {candidato.status === 'pendente' && (
-                            <>
+                            <div className="flex gap-2">
                               <Button 
                                 size="sm" 
                                 onClick={() => updateStatus.mutate({ id: candidato.id, status: 'aprovado' })}
@@ -296,7 +300,8 @@ export default function Candidatos() {
                                 className="flex-1"
                               >
                                 <UserCheck className="h-3 w-3 mr-1" />
-                                Aprovar
+                                <span className="hidden sm:inline">Aprovar</span>
+                                <span className="sm:hidden">✓</span>
                               </Button>
                               
                               <Button 
@@ -307,9 +312,10 @@ export default function Candidatos() {
                                 className="flex-1"
                               >
                                 <UserX className="h-3 w-3 mr-1" />
-                                Rejeitar
+                                <span className="hidden sm:inline">Rejeitar</span>
+                                <span className="sm:hidden">✗</span>
                               </Button>
-                            </>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -350,7 +356,7 @@ export default function Candidatos() {
                                   <MoreVertical className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
+                              <DropdownMenuContent align="end" className="bg-popover border shadow-lg z-50">
                                 <Dialog>
                                   <DialogTrigger asChild>
                                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -454,43 +460,43 @@ export default function Candidatos() {
                 </div>
               )}
 
-              {totalPages > 1 && (
-                <div className="mt-6">
-                  <Pagination>
-                    <PaginationContent>
-                      {currentPage > 1 && (
-                        <PaginationItem>
-                          <PaginationPrevious 
-                            onClick={() => setCurrentPage(currentPage - 1)} 
-                            className="cursor-pointer" 
-                          />
-                        </PaginationItem>
-                      )}
-                      
-                      {generatePaginationNumbers().map(pageNum => (
-                        <PaginationItem key={pageNum}>
-                          <PaginationLink 
-                            onClick={() => setCurrentPage(pageNum)} 
-                            isActive={pageNum === currentPage} 
-                            className="cursor-pointer"
-                          >
-                            {pageNum}
-                          </PaginationLink>
-                        </PaginationItem>
-                      ))}
-                      
-                      {currentPage < totalPages && (
-                        <PaginationItem>
-                          <PaginationNext 
-                            onClick={() => setCurrentPage(currentPage + 1)} 
-                            className="cursor-pointer" 
-                          />
-                        </PaginationItem>
-                      )}
-                    </PaginationContent>
-                  </Pagination>
-                </div>
-              )}
+            {totalPages > 1 && (
+              <div className="mt-6">
+                <Pagination>
+                  <PaginationContent>
+                    {currentPage > 1 && (
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          onClick={() => setCurrentPage(currentPage - 1)} 
+                          className="cursor-pointer" 
+                        />
+                      </PaginationItem>
+                    )}
+                    
+                    {generatePaginationNumbers().map(pageNum => (
+                      <PaginationItem key={pageNum}>
+                        <PaginationLink 
+                          onClick={() => setCurrentPage(pageNum)} 
+                          isActive={pageNum === currentPage}
+                          className="cursor-pointer"
+                        >
+                          {pageNum}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    
+                    {currentPage < totalPages && (
+                      <PaginationItem>
+                        <PaginationNext 
+                          onClick={() => setCurrentPage(currentPage + 1)} 
+                          className="cursor-pointer" 
+                        />
+                      </PaginationItem>
+                    )}
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
             </>
           )}
         </CardContent>
