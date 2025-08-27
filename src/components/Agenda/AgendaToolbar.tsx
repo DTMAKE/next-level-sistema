@@ -105,56 +105,59 @@ export function AgendaToolbar({
   return (
     <div className="border-b border-calendar-border bg-background">
       {isMobile ? (
-        // Mobile Layout - Stacked
-        <div className="px-3 py-2 space-y-3">
-          {/* First Row - Today button + Date Navigation + Date Label */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onDateChange(new Date())}
-                className="flex-shrink-0 px-2 py-1.5 font-medium border-muted-foreground/20 hover:bg-muted hover:text-foreground text-xs h-8"
-              >
-                Hoje
-              </Button>
-              
-              {viewMode !== 'list' && (
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigateDate('prev')}
-                    className="flex-shrink-0 p-1 hover:bg-muted hover:text-foreground rounded-full h-8 w-8"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigateDate('next')}
-                    className="flex-shrink-0 p-1 hover:bg-muted hover:text-foreground rounded-full h-8 w-8"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
+        // Mobile Layout - Optimized for better responsiveness
+        <div className="px-4 py-3">
+          {/* Single Row Layout for Mobile */}
+          <div className="flex items-center gap-3">
+            {/* Today button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onDateChange(new Date())}
+              className="flex-shrink-0 px-3 py-2 font-medium border-muted-foreground/20 hover:bg-muted hover:text-foreground text-xs h-9"
+            >
+              Hoje
+            </Button>
+            
+            {/* Navigation arrows for date views */}
+            {viewMode !== 'list' && (
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigateDate('prev')}
+                  className="p-2 hover:bg-muted hover:text-foreground rounded-full h-9 w-9"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigateDate('next')}
+                  className="p-2 hover:bg-muted hover:text-foreground rounded-full h-9 w-9"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
 
-            <div className="text-sm font-semibold text-foreground">
-              {getDateLabel()}
+            {/* Date label - center */}
+            <div className="flex-1 text-center">
+              <div className="text-sm font-semibold text-foreground truncate">
+                {getDateLabel()}
+              </div>
             </div>
           </div>
 
           {/* Second Row - View Mode + Search */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 mt-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex items-center gap-1.5 border-muted-foreground/20 hover:bg-muted hover:text-foreground text-xs h-8"
+                  className="flex items-center gap-2 border-muted-foreground/20 hover:bg-muted hover:text-foreground text-xs h-9 px-3"
                 >
                   {getViewModeLabel(viewMode)}
                   <ChevronDown className="w-3 h-3" />
@@ -192,23 +195,25 @@ export function AgendaToolbar({
             </DropdownMenu>
 
             <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar..."
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="pl-8 border-muted-foreground/20 text-sm h-8"
+                className="pl-10 border-muted-foreground/20 text-sm h-9"
               />
             </div>
           </div>
 
           {/* Date Range Picker for List View on Mobile */}
           {viewMode === 'list' && (
-            <DatePickerWithRange
-              date={dateRange}
-              onDateChange={onDateRangeChange}
-              className="w-full"
-            />
+            <div className="mt-3">
+              <DatePickerWithRange
+                date={dateRange}
+                onDateChange={onDateRangeChange}
+                className="w-full"
+              />
+            </div>
           )}
         </div>
       ) : (
