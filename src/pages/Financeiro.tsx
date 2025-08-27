@@ -75,16 +75,18 @@ export default function Financeiro() {
     }, {} as Record<string, number>) || {};
 
   return (
-    <div className="space-y-6">
-      {/* Header com controles de data */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 p-4 sm:p-6">
+      {/* Header responsivo */}
+      <div className="space-y-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Financeiro</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Financeiro</h1>
+          <p className="text-muted-foreground hidden sm:block">
             Controle financeiro mensal e análise de resultados
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        
+        {/* Controles de data - mobile abaixo do título */}
+        <div className="flex items-center justify-center sm:justify-start gap-2">
           <Button variant="outline" size="sm" onClick={handlePreviousMonth}>
             ←
           </Button>
@@ -105,39 +107,39 @@ export default function Financeiro() {
       </div>
 
       {/* Cards de Resumo Mensal */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Receita Total</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-green-600">
               {isLoadingResumo ? "..." : formatCurrency(resumo?.receita_total || 0)}
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Despesas Totais</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Despesas Totais</CardTitle>
             <TrendingDown className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-red-600">
               {isLoadingResumo ? "..." : formatCurrency(resumo?.despesa_total || 0)}
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Lucro Líquido</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Lucro Líquido</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 sm:p-6 pt-0">
             <div className={cn(
-              "text-2xl font-bold",
+              "text-lg sm:text-2xl font-bold",
               (resumo?.lucro_liquido || 0) >= 0 ? "text-green-600" : "text-red-600"
             )}>
               {isLoadingResumo ? "..." : formatCurrency(resumo?.lucro_liquido || 0)}
@@ -146,13 +148,13 @@ export default function Financeiro() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Margem de Lucro</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Margem de Lucro</CardTitle>
             <Calculator className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 sm:p-6 pt-0">
             <div className={cn(
-              "text-2xl font-bold",
+              "text-lg sm:text-2xl font-bold",
               (resumo?.margem_lucro || 0) >= 0 ? "text-green-600" : "text-red-600"
             )}>
               {isLoadingResumo ? "..." : formatPercentage(resumo?.margem_lucro || 0)}
@@ -163,43 +165,43 @@ export default function Financeiro() {
 
       {/* Ações Rápidas */}
       <Card>
-        <CardHeader>
-          <CardTitle>Ações Rápidas</CardTitle>
-          <CardDescription>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Ações Rápidas</CardTitle>
+          <CardDescription className="text-sm hidden sm:block">
             Ferramentas financeiras mais utilizadas
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+        <CardContent className="p-4 sm:p-6 pt-0">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <TransacaoDialog tipo="receita">
-              <Button variant="outline" className="h-20 flex-col">
-                <DollarSign className="h-6 w-6 mb-2 text-green-600" />
+              <Button variant="outline" className="h-16 sm:h-20 flex-col text-xs sm:text-sm">
+                <DollarSign className="h-4 w-4 sm:h-6 sm:w-6 mb-1 sm:mb-2 text-green-600" />
                 Lançar Receita
               </Button>
             </TransacaoDialog>
             
             <TransacaoDialog tipo="despesa">
-              <Button variant="outline" className="h-20 flex-col">
-                <TrendingDown className="h-6 w-6 mb-2 text-red-600" />
+              <Button variant="outline" className="h-16 sm:h-20 flex-col text-xs sm:text-sm">
+                <TrendingDown className="h-4 w-4 sm:h-6 sm:w-6 mb-1 sm:mb-2 text-red-600" />
                 Registrar Despesa
               </Button>
             </TransacaoDialog>
             
             <CategoriaDialog>
-              <Button variant="outline" className="h-20 flex-col">
-                <Settings className="h-6 w-6 mb-2" />
+              <Button variant="outline" className="h-16 sm:h-20 flex-col text-xs sm:text-sm">
+                <Settings className="h-4 w-4 sm:h-6 sm:w-6 mb-1 sm:mb-2" />
                 Gerenciar Categorias
               </Button>
             </CategoriaDialog>
             
             <Button 
               variant="outline" 
-              className="h-20 flex-col"
+              className="h-16 sm:h-20 flex-col text-xs sm:text-sm"
               onClick={() => sincronizarVendas.mutate()}
               disabled={sincronizarVendas.isPending}
             >
               <RefreshCw className={cn(
-                "h-6 w-6 mb-2",
+                "h-4 w-4 sm:h-6 sm:w-6 mb-1 sm:mb-2",
                 sincronizarVendas.isPending && "animate-spin"
               )} />
               Sincronizar Vendas
@@ -209,27 +211,27 @@ export default function Financeiro() {
       </Card>
 
       {/* Seções Financeiras */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Receitas por Categoria</CardTitle>
-            <CardDescription>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">Receitas por Categoria</CardTitle>
+            <CardDescription className="text-sm">
               Distribuição de receitas no período selecionado
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0">
             {isLoadingTransacoes ? (
-              <div className="text-center text-muted-foreground">Carregando...</div>
+              <div className="text-center text-muted-foreground text-sm">Carregando...</div>
             ) : Object.keys(receitasPorCategoria).length === 0 ? (
-              <div className="text-center text-muted-foreground">
+              <div className="text-center text-muted-foreground text-sm">
                 Nenhuma receita encontrada no período
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {Object.entries(receitasPorCategoria).map(([categoria, valor]) => (
                   <div key={categoria} className="flex items-center justify-between">
                     <span className="text-sm">{categoria}</span>
-                    <span className="font-medium text-green-600">
+                    <span className="font-medium text-green-600 text-sm">
                       {formatCurrency(valor)}
                     </span>
                   </div>
@@ -240,25 +242,25 @@ export default function Financeiro() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Despesas por Categoria</CardTitle>
-            <CardDescription>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">Despesas por Categoria</CardTitle>
+            <CardDescription className="text-sm">
               Controle de gastos no período selecionado
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0">
             {isLoadingTransacoes ? (
-              <div className="text-center text-muted-foreground">Carregando...</div>
+              <div className="text-center text-muted-foreground text-sm">Carregando...</div>
             ) : Object.keys(despesasPorCategoria).length === 0 ? (
-              <div className="text-center text-muted-foreground">
+              <div className="text-center text-muted-foreground text-sm">
                 Nenhuma despesa encontrada no período
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {Object.entries(despesasPorCategoria).map(([categoria, valor]) => (
                   <div key={categoria} className="flex items-center justify-between">
                     <span className="text-sm">{categoria}</span>
-                    <span className="font-medium text-red-600">
+                    <span className="font-medium text-red-600 text-sm">
                       {formatCurrency(valor)}
                     </span>
                   </div>
@@ -271,39 +273,39 @@ export default function Financeiro() {
 
       {/* Lista de Transações Recentes */}
       <Card>
-        <CardHeader>
-          <CardTitle>Transações do Período</CardTitle>
-          <CardDescription>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Transações do Período</CardTitle>
+          <CardDescription className="text-sm">
             Últimas movimentações financeiras
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6 pt-0">
           {isLoadingTransacoes ? (
-            <div className="text-center text-muted-foreground">Carregando...</div>
+            <div className="text-center text-muted-foreground text-sm">Carregando...</div>
           ) : !transacoes || transacoes.length === 0 ? (
-            <div className="text-center text-muted-foreground">
+            <div className="text-center text-muted-foreground text-sm">
               Nenhuma transação encontrada no período
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {transacoes.slice(0, 10).map((transacao) => (
-                <div key={transacao.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
+                <div key={transacao.id} className="flex items-center justify-between p-2 sm:p-3 border rounded-lg">
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                     <div className={cn(
-                      "w-3 h-3 rounded-full",
+                      "w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0",
                       transacao.tipo === 'receita' ? 'bg-green-500' : 'bg-red-500'
                     )} />
-                    <div>
-                      <div className="font-medium">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-sm sm:text-base truncate">
                         {transacao.descricao || `${transacao.tipo === 'receita' ? 'Receita' : 'Despesa'} sem descrição`}
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-xs sm:text-sm text-muted-foreground">
                         {transacao.categoria?.nome || 'Sem categoria'} • {format(new Date(transacao.data_transacao), "dd/MM/yyyy")}
                       </div>
                     </div>
                   </div>
                   <div className={cn(
-                    "font-medium",
+                    "font-medium text-sm sm:text-base flex-shrink-0",
                     transacao.tipo === 'receita' ? 'text-green-600' : 'text-red-600'
                   )}>
                     {transacao.tipo === 'receita' ? '+' : '-'}{formatCurrency(Number(transacao.valor))}
