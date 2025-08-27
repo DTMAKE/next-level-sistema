@@ -18,7 +18,7 @@ export function ClienteDialog({ open, onOpenChange, cliente }: ClienteDialogProp
   const [telefone, setTelefone] = useState("");
   const [endereco, setEndereco] = useState("");
   const [cnpj, setCnpj] = useState("");
-  const [status, setStatus] = useState("ativo");
+  const [status, setStatus] = useState("cliente");
 
   const createCliente = useCreateCliente();
   const updateCliente = useUpdateCliente();
@@ -33,14 +33,14 @@ export function ClienteDialog({ open, onOpenChange, cliente }: ClienteDialogProp
       setTelefone(cliente.telefone || "");
       setEndereco(cliente.endereco || "");
       setCnpj(cliente.cnpj || "");
-      setStatus(cliente.status || "ativo");
+      setStatus(cliente.status || "cliente");
     } else {
       setNome("");
       setEmail("");
       setTelefone("");
       setEndereco("");
       setCnpj("");
-      setStatus("ativo");
+      setStatus("cliente");
     }
   }, [cliente, open]);
 
@@ -152,23 +152,17 @@ export function ClienteDialog({ open, onOpenChange, cliente }: ClienteDialogProp
               <SelectTrigger className="h-10 sm:h-11">
                 <SelectValue placeholder="Selecione o status" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ativo">
+              <SelectContent className="bg-background/95 backdrop-blur-sm border shadow-lg z-50">
+                <SelectItem value="cliente">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-green-600" />
-                    Ativo
+                    Cliente
                   </div>
                 </SelectItem>
-                <SelectItem value="inativo">
+                <SelectItem value="lead">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-red-600" />
-                    Inativo
-                  </div>
-                </SelectItem>
-                <SelectItem value="prospecto">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-yellow-600" />
-                    Prospecto
+                    <div className="w-2 h-2 rounded-full bg-blue-600" />
+                    Lead
                   </div>
                 </SelectItem>
               </SelectContent>

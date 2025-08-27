@@ -14,6 +14,7 @@ import { useLeads, type Lead } from "@/hooks/useLeads";
 import { useAuth } from "@/contexts/AuthContext";
 import { ClienteDialog } from "@/components/Clientes/ClienteDialog";
 import { DeleteClienteDialog } from "@/components/Clientes/DeleteClienteDialog";
+import { StatusSelector } from "@/components/Clientes/StatusSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 type FilterType = "todos" | "clientes" | "leads";
@@ -46,7 +47,15 @@ export default function Clientes() {
     
     // Apply status filter
     if (statusFilter !== "todos") {
-      combined = combined.filter(item => item.type === statusFilter.slice(0, -1)); // Remove 's' from 'clientes'/'leads'
+      if (statusFilter === "clientes") {
+        combined = combined.filter(item => 
+          (item.type === "cliente" && ((item as Cliente).status === "cliente" || !(item as Cliente).status || (item as Cliente).status === "ativo" || (item as Cliente).status === "prospecto"))
+        );
+      } else if (statusFilter === "leads") {
+        combined = combined.filter(item => 
+          item.type === "lead" || (item.type === "cliente" && (item as Cliente).status === "lead")
+        );
+      }
     }
     
     // Apply search filter
@@ -118,22 +127,7 @@ export default function Clientes() {
 
   const getStatusBadge = (item: CombinedItem) => {
     if (item.type === "cliente") {
-      const cliente = item as Cliente;
-      const statusColors = {
-        ativo: "bg-green-100 text-green-800",
-        inativo: "bg-red-100 text-red-800", 
-        prospecto: "bg-yellow-100 text-yellow-800"
-      };
-      const statusColor = statusColors[cliente.status as keyof typeof statusColors] || statusColors.ativo;
-      
-      return <Badge variant="secondary" className={`${statusColor} hover:${statusColor}`}>
-        <div className={`w-2 h-2 rounded-full mr-1 ${
-          cliente.status === "ativo" ? "bg-green-600" : 
-          cliente.status === "inativo" ? "bg-red-600" : 
-          "bg-yellow-600"
-        }`} />
-        Cliente ({cliente.status || "ativo"})
-      </Badge>;
+      return <StatusSelector cliente={item as Cliente} size="sm" />;
     } else {
       return <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-100">
         <div className="w-2 h-2 rounded-full bg-blue-600 mr-1" />
@@ -256,7 +250,9 @@ export default function Clientes() {
                             <Building2 className="h-4 w-4 text-accent shrink-0" />
                             <h3 className="font-semibold text-base truncate">{item.nome}</h3>
                           </div>
-                          {getStatusBadge(item)}
+                          <div onClick={e => e.stopPropagation()}>
+                            {getStatusBadge(item)}
+                          </div>
                         </div>
                         
                         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
@@ -303,7 +299,9 @@ export default function Clientes() {
                     <TableBody>
                       {paginatedData.map(item => <TableRow key={`${item.type}-${item.id}`} className="cursor-pointer hover:bg-muted/50" onClick={() => item.type === "cliente" ? navigate(`/clientes/${item.id}`) : navigate(`/leads`)}>
                           <TableCell>
-                            {getStatusBadge(item)}
+                            <div onClick={e => e.stopPropagation()}>
+                              {getStatusBadge(item)}
+                            </div>
                           </TableCell>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
