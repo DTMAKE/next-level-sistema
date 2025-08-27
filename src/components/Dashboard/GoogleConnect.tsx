@@ -1,11 +1,14 @@
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
-import { Calendar, Loader2, Check, X } from 'lucide-react';
+import { Loader2, Check, X } from 'lucide-react';
 import googleLogo from '@/assets/google-logo.png';
 
-export const GoogleConnect = () => {
+interface GoogleConnectProps {
+  compact?: boolean;
+}
+
+export const GoogleConnect = ({ compact = false }: GoogleConnectProps) => {
   const { 
     isConnecting, 
     isConnected, 
@@ -18,20 +21,49 @@ export const GoogleConnect = () => {
     checkConnection();
   }, [checkConnection]);
 
-  return (
-    <Card className="relative overflow-hidden border-0 shadow-lg">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/20 to-primary/5" />
-      
-      <CardContent className="relative p-6 text-center">
-        {/* Google Logo over Calendar Icon */}
-        <div className="relative inline-flex items-center justify-center mb-4">
-          <Calendar className="w-12 h-12 text-muted-foreground/30" />
-          <div className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center">
+  if (compact) {
+    return (
+      <Button
+        variant={isConnected ? "secondary" : "outline"}
+        size="sm"
+        onClick={isConnected ? disconnectGoogle : connectGoogle}
+        disabled={isConnecting}
+        className="h-8 px-3 gap-2"
+      >
+        {isConnecting ? (
+          <Loader2 className="w-3 h-3 animate-spin" />
+        ) : (
+          <>
             <img 
               src={googleLogo} 
               alt="Google" 
-              className="w-4 h-4 object-contain"
+              className="w-3 h-3 object-contain"
+            />
+            {isConnected ? (
+              <Check className="w-3 h-3 text-success" />
+            ) : (
+              <X className="w-3 h-3 text-muted-foreground" />
+            )}
+          </>
+        )}
+      </Button>
+    );
+  }
+
+  // Original card design for other locations
+  return (
+    <div className="relative overflow-hidden border rounded-lg shadow-lg">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/20 to-primary/5" />
+      
+      <div className="relative p-6 text-center">
+        {/* Google Logo over Calendar Icon */}
+        <div className="relative inline-flex items-center justify-center mb-4">
+          <div className="w-12 h-12 rounded-full bg-muted/30 flex items-center justify-center">
+            <img 
+              src={googleLogo} 
+              alt="Google" 
+              className="w-6 h-6 object-contain"
             />
           </div>
         </div>
@@ -86,7 +118,7 @@ export const GoogleConnect = () => {
             )}
           </Button>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
