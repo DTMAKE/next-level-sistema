@@ -244,7 +244,7 @@ export default function Candidatos() {
                                 Ver Detalhes
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-[95vw] sm:max-w-2xl m-4 sm:m-0 max-h-[90vh] sm:max-h-[80vh] overflow-y-auto">
+                            <DialogContent className="w-[95vw] max-w-[600px] m-4 sm:m-0 max-h-[95vh] overflow-y-auto">
                               <DialogHeader>
                                 <DialogTitle className="flex items-center gap-2">
                                   <User className="h-5 w-5" />
@@ -337,7 +337,7 @@ export default function Candidatos() {
                                       Ver Detalhes
                                     </DropdownMenuItem>
                                   </DialogTrigger>
-                                  <DialogContent className="max-w-[95vw] sm:max-w-2xl m-4 sm:m-0 max-h-[90vh] sm:max-h-[80vh] overflow-y-auto">
+                                  <DialogContent className="w-[95vw] max-w-[600px] m-4 sm:m-0 max-h-[95vh] overflow-y-auto">
                                     <DialogHeader>
                                       <DialogTitle className="flex items-center gap-2">
                                         <User className="h-5 w-5" />
