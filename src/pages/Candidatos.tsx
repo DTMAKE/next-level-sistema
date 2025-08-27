@@ -1,37 +1,90 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { 
-  Users, 
-  UserCheck,
-  UserX,
-  Trash2,
-  Eye,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Loader2,
-  Mail,
-  Phone,
-  User
-} from "lucide-react";
+import { Search, Users, UserCheck, UserX, Trash2, Eye, CheckCircle, XCircle, Clock, Mail, Phone, User, MoreVertical, Grid, List, Filter } from "lucide-react";
 import { useGetCandidaturas, useUpdateCandidaturaStatus, useDeleteCandidatura, Candidatura } from "@/hooks/useCandidaturas";
-import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
+
+type FilterType = "todos" | "pendente" | "aprovada" | "rejeitada";
 
 export default function Candidatos() {
-  const { data: candidaturas, isLoading } = useGetCandidaturas();
+  const isMobile = useIsMobile();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<"cards" | "table">(isMobile ? "cards" : "table");
+  const [statusFilter, setStatusFilter] = useState<FilterType>("todos");
+  const [selectedCandidatura, setSelectedCandidatura] = useState<Candidatura | null>(null);
+
+  // Fetch data
+  const { data: candidaturas, isLoading, error } = useGetCandidaturas();
   const updateStatus = useUpdateCandidaturaStatus();
   const deleteCandidatura = useDeleteCandidatura();
-  const [selectedCandidatura, setSelectedCandidatura] = useState<Candidatura | null>(null);
-  const [statusFilter, setStatusFilter] = useState<'todos' | 'pendente' | 'aprovada' | 'rejeitada'>('todos');
+  
+  // Filter and search data
+  const filteredData = useMemo(() => {
+    let filtered = candidaturas || [];
+    
+    // Apply status filter
+    if (statusFilter !== "todos") {
+      filtered = filtered.filter(item => item.status === statusFilter);
+    }
+    
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(item => 
+        item.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.telefone.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    return filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [candidaturas, statusFilter, searchTerm]);
 
-  const filteredCandidaturas = candidaturas?.filter(candidatura => {
-    if (statusFilter === 'todos') return true;
-    return candidatura.status === statusFilter;
-  }) || [];
+  // Pagination
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const total = filteredData.length;
+
+  // Reset page when search or filter changes
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleFilterChange = (filter: FilterType) => {
+    setStatusFilter(filter);
+    setCurrentPage(1);
+  };
+
+  // Generate pagination numbers
+  const generatePaginationNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = isMobile ? 3 : 5;
+    const halfVisible = Math.floor(maxVisiblePages / 2);
+    let startPage = Math.max(1, currentPage - halfVisible);
+    let endPage = Math.min(totalPages, currentPage + halfVisible);
+
+    if (currentPage <= halfVisible) {
+      endPage = Math.min(totalPages, maxVisiblePages);
+    }
+    if (currentPage > totalPages - halfVisible) {
+      startPage = Math.max(1, totalPages - maxVisiblePages + 1);
+    }
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -44,274 +97,413 @@ export default function Candidatos() {
     }
   };
 
-  const getStatusCount = (status: string) => {
-    return candidaturas?.filter(c => c.status === status).length || 0;
-  };
-
-  if (isLoading) {
+  if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="space-y-6 p-4 sm:p-6">
+        <h1 className="text-3xl font-bold">Candidatos</h1>
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-destructive">Erro ao carregar candidatos: {error.message}</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Candidatos</h1>
-        <p className="text-muted-foreground hidden sm:block">
-          Gerencie as candidaturas recebidas através do formulário
-        </p>
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-row justify-between items-center gap-4">
+        <h1 className="font-bold mx-0 py-0 text-3xl">Candidatos</h1>
       </div>
 
-      {/* Estatísticas */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
-              Total
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <div className="text-lg sm:text-2xl font-bold">{candidaturas?.length || 0}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
-              Pendentes
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <div className="text-lg sm:text-2xl font-bold text-primary">
-              {getStatusCount('pendente')}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
-              Aprovadas
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <div className="text-lg sm:text-2xl font-bold text-success">
-              {getStatusCount('aprovada')}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
-              Rejeitadas
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <div className="text-lg sm:text-2xl font-bold text-destructive">
-              {getStatusCount('rejeitada')}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-row gap-2 items-center">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Buscar candidatos..." 
+                  className="pl-10 h-10 text-sm" 
+                  value={searchTerm} 
+                  onChange={e => handleSearchChange(e.target.value)} 
+                />
+              </div>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-10 px-3 shrink-0">
+                    <Filter className="h-4 w-4" />
+                    <span className="ml-2 hidden sm:inline">
+                      {statusFilter === "todos" ? "Todos" : 
+                       statusFilter === "pendente" ? "Pendentes" : 
+                       statusFilter === "aprovada" ? "Aprovadas" : "Rejeitadas"}
+                    </span>
+                    {statusFilter !== "todos" && (
+                      <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleFilterChange("todos")}>
+                    Todos
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("pendente")}>
+                    <Clock className="h-4 w-4 mr-2 text-amber-600" />
+                    Pendentes
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("aprovada")}>
+                    <CheckCircle className="h-4 w-4 mr-2 text-success" />
+                    Aprovadas
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("rejeitada")}>
+                    <XCircle className="h-4 w-4 mr-2 text-destructive" />
+                    Rejeitadas
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-      {/* Filtros */}
-      <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 h-auto">
-          <TabsTrigger value="todos" className="text-xs sm:text-sm py-2">
-            Todos
-          </TabsTrigger>
-          <TabsTrigger value="pendente" className="text-xs sm:text-sm py-2">
-            Pendentes
-          </TabsTrigger>
-          <TabsTrigger value="aprovada" className="text-xs sm:text-sm py-2">
-            Aprovadas
-          </TabsTrigger>
-          <TabsTrigger value="rejeitada" className="text-xs sm:text-sm py-2">
-            Rejeitadas
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value={statusFilter} className="mt-6">
-          <Card>
-            <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-                Candidaturas
-                {statusFilter !== 'todos' && (
-                  <span className="text-sm text-muted-foreground">
-                    ({filteredCandidaturas.length})
-                  </span>
-                )}
-              </CardTitle>
-              <CardDescription className="text-xs sm:text-sm">
-                Lista de candidatos que preencheram o formulário
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              {filteredCandidaturas.length > 0 ? (
-                <div className="space-y-3 sm:space-y-4">
-                  {filteredCandidaturas.map((candidatura) => (
-                    <div key={candidatura.id} className="flex flex-col gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg hover:bg-muted/30 transition-colors">
-                      <div className="flex items-start gap-3 sm:gap-4">
-                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <User className="h-4 w-4 sm:h-5 sm:w-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                            <p className="font-medium text-sm sm:text-base">{candidatura.nome}</p>
-                            {getStatusBadge(candidatura.status)}
+              {!isMobile && (
+                <div className="flex items-center gap-2 ml-2">
+                  <Button 
+                    variant={viewMode === "cards" ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setViewMode("cards")}
+                  >
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant={viewMode === "table" ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setViewMode("table")}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            {total > 0 && (
+              <div className="text-sm text-muted-foreground">
+                Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, total)} de {total} {statusFilter === "todos" ? "candidatos" : statusFilter}
+              </div>
+            )}
+          </div>
+        </CardHeader>
+        
+        <CardContent className="p-4 sm:p-6">
+          {isLoading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              ))}
+            </div>
+          ) : paginatedData.length === 0 ? (
+            <div className="text-center py-12">
+              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">
+                {searchTerm || statusFilter !== "todos" ? "Nenhum resultado encontrado" : "Nenhum candidato encontrado"}
+              </h3>
+              <p className="text-muted-foreground mb-4 text-sm">
+                {searchTerm ? "Não encontramos candidatos com os termos buscados." : "Quando alguém preencher o formulário, aparecerá aqui."}
+              </p>
+            </div>
+          ) : (
+            <>
+              {viewMode === "cards" || isMobile ? (
+                // Card View (Mobile and Desktop when cards selected)
+                <div className="space-y-3">
+                  {paginatedData.map(candidato => (
+                    <Card key={candidato.id} className="p-4 hover:shadow-md transition-shadow">
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <User className="h-4 w-4 text-accent shrink-0" />
+                            <h3 className="font-semibold text-base truncate">{candidato.nome}</h3>
                           </div>
-                          
-                          <div className="flex flex-col gap-1 text-xs sm:text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Mail className="h-3 w-3" />
-                              <span className="break-all">{candidatura.email}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Phone className="h-3 w-3" />
-                              {candidatura.telefone}
-                            </div>
-                          </div>
-                          
-                          <p className="text-xs text-muted-foreground mt-2">
-                            Enviado em {new Date(candidatura.created_at).toLocaleDateString('pt-BR')}
-                          </p>
+                          {getStatusBadge(candidato.status)}
                         </div>
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-2">
-                        {/* Ver detalhes */}
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button size="sm" variant="outline" className="flex-1 sm:flex-initial text-xs">
-                              <Eye className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
-                              <span className="hidden sm:inline">Ver Detalhes</span>
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                            <DialogHeader>
-                              <DialogTitle className="flex items-center gap-2">
-                                <User className="h-5 w-5" />
-                                {candidatura.nome}
-                              </DialogTitle>
-                              <DialogDescription>
-                                Candidatura enviada em {new Date(candidatura.created_at).toLocaleDateString('pt-BR')}
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <div>
-                                <h4 className="font-medium mb-2">Informações de Contato</h4>
-                                <div className="space-y-2 text-sm">
-                                  <div className="flex items-center gap-2">
-                                    <Mail className="h-4 w-4 text-muted-foreground" />
-                                    {candidatura.email}
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Phone className="h-4 w-4 text-muted-foreground" />
-                                    {candidatura.telefone}
+                        
+                        <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 shrink-0" />
+                            <span className="truncate">{candidato.email}</span>
+                          </div>
+                          {candidato.telefone && (
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 shrink-0" />
+                              <span>{candidato.telefone}</span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          {/* Ver detalhes */}
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="flex-1">
+                                <Eye className="h-3 w-3 mr-1" />
+                                Ver Detalhes
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                  <User className="h-5 w-5" />
+                                  {candidato.nome}
+                                </DialogTitle>
+                                <DialogDescription>
+                                  Candidatura enviada em {new Date(candidato.created_at).toLocaleDateString('pt-BR')}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <h4 className="font-medium mb-2">Informações de Contato</h4>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex items-center gap-2">
+                                      <Mail className="h-4 w-4 text-muted-foreground" />
+                                      {candidato.email}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Phone className="h-4 w-4 text-muted-foreground" />
+                                      {candidato.telefone}
+                                    </div>
                                   </div>
                                 </div>
+                                
+                                <div>
+                                  <h4 className="font-medium mb-2">Sobre o Candidato</h4>
+                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                    {candidato.sobre_voce}
+                                  </p>
+                                </div>
+                                
+                                <div>
+                                  <h4 className="font-medium mb-2">Objetivo de Vendas</h4>
+                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                    {candidato.objetivo_vendas}
+                                  </p>
+                                </div>
+                                
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">Status:</span>
+                                  {getStatusBadge(candidato.status)}
+                                </div>
                               </div>
-                              
-                              <div>
-                                <h4 className="font-medium mb-2">Sobre o Candidato</h4>
-                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                  {candidatura.sobre_voce}
-                                </p>
-                              </div>
-                              
-                              <div>
-                                <h4 className="font-medium mb-2">Objetivo de Vendas</h4>
-                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                  {candidatura.objetivo_vendas}
-                                </p>
-                              </div>
-                              
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">Status:</span>
-                                {getStatusBadge(candidatura.status)}
-                              </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                        
-                        {/* Aprovar */}
-                        {candidatura.status === 'pendente' && (
-                          <Button 
-                            size="sm" 
-                            onClick={() => updateStatus.mutate({ id: candidatura.id, status: 'aprovada' })}
-                            disabled={updateStatus.isPending}
-                            className="flex-1 sm:flex-initial text-xs"
-                          >
-                            <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
-                            <span className="hidden sm:inline">Aprovar</span>
-                          </Button>
-                        )}
-                        
-                        {/* Rejeitar */}
-                        {candidatura.status === 'pendente' && (
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => updateStatus.mutate({ id: candidatura.id, status: 'rejeitada' })}
-                            disabled={updateStatus.isPending}
-                            className="flex-1 sm:flex-initial text-xs"
-                          >
-                            <UserX className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
-                            <span className="hidden sm:inline">Rejeitar</span>
-                          </Button>
-                        )}
-                        
-                        {/* Excluir */}
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button size="sm" variant="destructive" className="flex-1 sm:flex-initial text-xs">
-                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
-                              <span className="hidden sm:inline">Excluir</span>
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Excluir candidatura</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Tem certeza que deseja excluir a candidatura de {candidatura.nome}? 
-                                Esta ação não pode ser desfeita.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => deleteCandidatura.mutate(candidatura.id)}
-                                className="bg-destructive text-destructive-foreground"
+                            </DialogContent>
+                          </Dialog>
+                          
+                          {candidato.status === 'pendente' && (
+                            <>
+                              <Button 
+                                size="sm" 
+                                onClick={() => updateStatus.mutate({ id: candidato.id, status: 'aprovada' })}
+                                disabled={updateStatus.isPending}
+                                className="flex-1"
                               >
-                                Excluir
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                                <UserCheck className="h-3 w-3 mr-1" />
+                                Aprovar
+                              </Button>
+                              
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => updateStatus.mutate({ id: candidato.id, status: 'rejeitada' })}
+                                disabled={updateStatus.isPending}
+                                className="flex-1"
+                              >
+                                <UserX className="h-3 w-3 mr-1" />
+                                Rejeitar
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    </Card>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-foreground mb-2">
-                    {statusFilter === 'todos' ? 'Nenhuma candidatura encontrada' : `Nenhuma candidatura ${statusFilter}`}
-                  </h3>
-                  <p className="text-muted-foreground">
-                    {statusFilter === 'todos' 
-                      ? 'Quando alguém preencher o formulário, aparecerá aqui.'
-                      : `Não há candidaturas com status ${statusFilter} no momento.`
-                    }
-                  </p>
+                // Table View (Desktop only)
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Telefone</TableHead>
+                        <TableHead className="w-[100px]">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedData.map(candidato => (
+                        <TableRow key={candidato.id}>
+                          <TableCell>
+                            {getStatusBadge(candidato.status)}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-accent" />
+                              {candidato.nome}
+                            </div>
+                          </TableCell>
+                          <TableCell>{candidato.email}</TableCell>
+                          <TableCell>{candidato.telefone || '-'}</TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                      <Eye className="h-4 w-4 mr-2" />
+                                      Ver Detalhes
+                                    </DropdownMenuItem>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                                    <DialogHeader>
+                                      <DialogTitle className="flex items-center gap-2">
+                                        <User className="h-5 w-5" />
+                                        {candidato.nome}
+                                      </DialogTitle>
+                                      <DialogDescription>
+                                        Candidatura enviada em {new Date(candidato.created_at).toLocaleDateString('pt-BR')}
+                                      </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                      <div>
+                                        <h4 className="font-medium mb-2">Informações de Contato</h4>
+                                        <div className="space-y-2 text-sm">
+                                          <div className="flex items-center gap-2">
+                                            <Mail className="h-4 w-4 text-muted-foreground" />
+                                            {candidato.email}
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <Phone className="h-4 w-4 text-muted-foreground" />
+                                            {candidato.telefone}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                      <div>
+                                        <h4 className="font-medium mb-2">Sobre o Candidato</h4>
+                                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                          {candidato.sobre_voce}
+                                        </p>
+                                      </div>
+                                      
+                                      <div>
+                                        <h4 className="font-medium mb-2">Objetivo de Vendas</h4>
+                                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                          {candidato.objetivo_vendas}
+                                        </p>
+                                      </div>
+                                      
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-medium">Status:</span>
+                                        {getStatusBadge(candidato.status)}
+                                      </div>
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
+                                
+                                {candidato.status === 'pendente' && (
+                                  <>
+                                    <DropdownMenuItem onClick={() => updateStatus.mutate({ id: candidato.id, status: 'aprovada' })}>
+                                      <UserCheck className="h-4 w-4 mr-2" />
+                                      Aprovar
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => updateStatus.mutate({ id: candidato.id, status: 'rejeitada' })}>
+                                      <UserX className="h-4 w-4 mr-2" />
+                                      Rejeitar
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
+                                
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Excluir
+                                    </DropdownMenuItem>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Excluir candidatura</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Tem certeza que deseja excluir a candidatura de {candidato.nome}? 
+                                        Esta ação não pode ser desfeita.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => deleteCandidatura.mutate(candidato.id)}
+                                        className="bg-destructive text-destructive-foreground"
+                                      >
+                                        Excluir
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+
+              {totalPages > 1 && (
+                <div className="mt-6">
+                  <Pagination>
+                    <PaginationContent>
+                      {currentPage > 1 && (
+                        <PaginationItem>
+                          <PaginationPrevious 
+                            onClick={() => setCurrentPage(currentPage - 1)} 
+                            className="cursor-pointer" 
+                          />
+                        </PaginationItem>
+                      )}
+                      
+                      {generatePaginationNumbers().map(pageNum => (
+                        <PaginationItem key={pageNum}>
+                          <PaginationLink 
+                            onClick={() => setCurrentPage(pageNum)} 
+                            isActive={pageNum === currentPage} 
+                            className="cursor-pointer"
+                          >
+                            {pageNum}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                      
+                      {currentPage < totalPages && (
+                        <PaginationItem>
+                          <PaginationNext 
+                            onClick={() => setCurrentPage(currentPage + 1)} 
+                            className="cursor-pointer" 
+                          />
+                        </PaginationItem>
+                      )}
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
