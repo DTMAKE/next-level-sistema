@@ -244,9 +244,9 @@ export default function Candidatos() {
                                 Ver Detalhes
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="w-[95vw] max-w-[600px] m-4 sm:m-0 max-h-[95vh] overflow-y-auto">
-                              <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2">
+                            <DialogContent className="w-[95vw] max-w-[600px] max-h-[95vh] overflow-y-auto">
+                              <DialogHeader className="space-y-3">
+                                <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
                                   <User className="h-5 w-5" />
                                   {candidato.nome}
                                 </DialogTitle>
@@ -254,7 +254,7 @@ export default function Candidatos() {
                                   Candidatura enviada em {new Date(candidato.created_at).toLocaleDateString('pt-BR')}
                                 </DialogDescription>
                               </DialogHeader>
-                              <div className="space-y-4 pr-2">
+                              <div className="space-y-4 sm:space-y-6">
                                 <div>
                                   <h4 className="font-medium mb-3">Informações de Contato</h4>
                                   <div className="space-y-3 text-sm">
@@ -337,9 +337,9 @@ export default function Candidatos() {
                                       Ver Detalhes
                                     </DropdownMenuItem>
                                   </DialogTrigger>
-                                  <DialogContent className="w-[95vw] max-w-[600px] m-4 sm:m-0 max-h-[95vh] overflow-y-auto">
-                                    <DialogHeader>
-                                      <DialogTitle className="flex items-center gap-2">
+                                  <DialogContent className="w-[95vw] max-w-[600px] max-h-[95vh] overflow-y-auto">
+                                    <DialogHeader className="space-y-3">
+                                      <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
                                         <User className="h-5 w-5" />
                                         {candidato.nome}
                                       </DialogTitle>
@@ -347,7 +347,7 @@ export default function Candidatos() {
                                         Candidatura enviada em {new Date(candidato.created_at).toLocaleDateString('pt-BR')}
                                       </DialogDescription>
                                     </DialogHeader>
-                                    <div className="space-y-4 pr-2">
+                                    <div className="space-y-4 sm:space-y-6">
                                       <div>
                                         <h4 className="font-medium mb-3">Informações de Contato</h4>
                                         <div className="space-y-3 text-sm">
