@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -244,52 +245,52 @@ export default function Candidatos() {
                                 Ver Detalhes
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="w-[98vw] max-w-[400px] sm:w-[95vw] sm:max-w-[600px] max-h-[95vh] overflow-y-auto">
-                              <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-                                  <User className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <DialogContent className="w-[95vw] max-w-[600px] max-h-[95vh] overflow-y-auto">
+                              <DialogHeader className="space-y-3">
+                                <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                                  <User className="h-4 w-4" />
                                   {candidato.nome}
                                 </DialogTitle>
-                                <DialogDescription className="text-xs sm:text-sm">
+                                <DialogDescription className="text-sm text-muted-foreground">
                                   Candidatura enviada em {new Date(candidato.created_at).toLocaleDateString('pt-BR')}
                                 </DialogDescription>
                               </DialogHeader>
                               
-                              <div className="space-y-3 sm:space-y-6">
+                              <div className="space-y-4 sm:space-y-6">
                                 {/* Informações de Contato */}
-                                <div className="space-y-2 sm:space-y-3">
-                                  <h4 className="font-semibold text-xs sm:text-sm">Informações de Contato</h4>
-                                  <div className="grid gap-1 sm:gap-2">
+                                <div className="space-y-2">
+                                  <Label className="text-sm sm:text-base font-medium">Informações de Contato</Label>
+                                  <div className="grid gap-2">
                                     <div className="flex items-center gap-2">
-                                      <Mail className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
-                                      <span className="text-xs sm:text-sm break-all">{candidato.email}</span>
+                                      <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                                      <span className="text-sm break-words">{candidato.email}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                      <Phone className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
-                                      <span className="text-xs sm:text-sm">{candidato.telefone}</span>
+                                      <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                                      <span className="text-sm">{candidato.telefone}</span>
                                     </div>
                                   </div>
                                 </div>
                                 
                                 {/* Sobre o Candidato */}
-                                <div className="space-y-2 sm:space-y-3">
-                                  <h4 className="font-semibold text-xs sm:text-sm">Sobre o Candidato</h4>
-                                  <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
+                                <div className="space-y-2">
+                                  <Label className="text-sm sm:text-base font-medium">Sobre o Candidato</Label>
+                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
                                     {candidato.sobre_voce}
                                   </p>
                                 </div>
                                 
                                 {/* Objetivo de Vendas */}
-                                <div className="space-y-2 sm:space-y-3">
-                                  <h4 className="font-semibold text-xs sm:text-sm">Objetivo de Vendas</h4>
-                                  <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
+                                <div className="space-y-2">
+                                  <Label className="text-sm sm:text-base font-medium">Objetivo de Vendas</Label>
+                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
                                     {candidato.objetivo_vendas}
                                   </p>
                                 </div>
                                 
                                 {/* Status */}
-                                <div className="flex items-center justify-between pt-3 sm:pt-4 border-t">
-                                  <span className="font-semibold text-xs sm:text-sm">Status:</span>
+                                <div className="flex items-center justify-between pt-4 border-t">
+                                  <Label className="text-sm sm:text-base font-medium">Status:</Label>
                                   <CandidaturaStatusSelector candidatura={candidato} allowStatusChange size="sm" />
                                 </div>
                               </div>
@@ -342,55 +343,55 @@ export default function Candidatos() {
                                       Ver Detalhes
                                     </DropdownMenuItem>
                                   </DialogTrigger>
-                                  <DialogContent className="w-[98vw] max-w-[400px] sm:w-[95vw] sm:max-w-[600px] max-h-[95vh] overflow-y-auto">
-                                    <DialogHeader>
-                                      <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-                                        <User className="h-4 w-4 sm:h-5 sm:w-5" />
-                                        {candidato.nome}
-                                      </DialogTitle>
-                                      <DialogDescription className="text-xs sm:text-sm">
-                                        Candidatura enviada em {new Date(candidato.created_at).toLocaleDateString('pt-BR')}
-                                      </DialogDescription>
-                                    </DialogHeader>
-                                    
-                                    <div className="space-y-3 sm:space-y-6">
-                                      {/* Informações de Contato */}
-                                      <div className="space-y-2 sm:space-y-3">
-                                        <h4 className="font-semibold text-xs sm:text-sm">Informações de Contato</h4>
-                                        <div className="grid gap-1 sm:gap-2">
-                                          <div className="flex items-center gap-2">
-                                            <Mail className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
-                                            <span className="text-xs sm:text-sm break-all">{candidato.email}</span>
-                                          </div>
-                                          <div className="flex items-center gap-2">
-                                            <Phone className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
-                                            <span className="text-xs sm:text-sm">{candidato.telefone}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      
-                                      {/* Sobre o Candidato */}
-                                      <div className="space-y-2 sm:space-y-3">
-                                        <h4 className="font-semibold text-xs sm:text-sm">Sobre o Candidato</h4>
-                                        <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
-                                          {candidato.sobre_voce}
-                                        </p>
-                                      </div>
-                                      
-                                      {/* Objetivo de Vendas */}
-                                      <div className="space-y-2 sm:space-y-3">
-                                        <h4 className="font-semibold text-xs sm:text-sm">Objetivo de Vendas</h4>
-                                        <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
-                                          {candidato.objetivo_vendas}
-                                        </p>
-                                      </div>
-                                      
-                                      {/* Status */}
-                                      <div className="flex items-center justify-between pt-3 sm:pt-4 border-t">
-                                        <span className="font-semibold text-xs sm:text-sm">Status:</span>
-                                        <CandidaturaStatusSelector candidatura={candidato} allowStatusChange size="sm" />
-                                      </div>
-                                    </div>
+                                   <DialogContent className="w-[95vw] max-w-[600px] max-h-[95vh] overflow-y-auto">
+                                     <DialogHeader className="space-y-3">
+                                       <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                                         <User className="h-4 w-4" />
+                                         {candidato.nome}
+                                       </DialogTitle>
+                                       <DialogDescription className="text-sm text-muted-foreground">
+                                         Candidatura enviada em {new Date(candidato.created_at).toLocaleDateString('pt-BR')}
+                                       </DialogDescription>
+                                     </DialogHeader>
+                                     
+                                     <div className="space-y-4 sm:space-y-6">
+                                       {/* Informações de Contato */}
+                                       <div className="space-y-2">
+                                         <Label className="text-sm sm:text-base font-medium">Informações de Contato</Label>
+                                         <div className="grid gap-2">
+                                           <div className="flex items-center gap-2">
+                                             <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                                             <span className="text-sm break-words">{candidato.email}</span>
+                                           </div>
+                                           <div className="flex items-center gap-2">
+                                             <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                                             <span className="text-sm">{candidato.telefone}</span>
+                                           </div>
+                                         </div>
+                                       </div>
+                                       
+                                       {/* Sobre o Candidato */}
+                                       <div className="space-y-2">
+                                         <Label className="text-sm sm:text-base font-medium">Sobre o Candidato</Label>
+                                         <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
+                                           {candidato.sobre_voce}
+                                         </p>
+                                       </div>
+                                       
+                                       {/* Objetivo de Vendas */}
+                                       <div className="space-y-2">
+                                         <Label className="text-sm sm:text-base font-medium">Objetivo de Vendas</Label>
+                                         <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
+                                           {candidato.objetivo_vendas}
+                                         </p>
+                                       </div>
+                                       
+                                       {/* Status */}
+                                       <div className="flex items-center justify-between pt-4 border-t">
+                                         <Label className="text-sm sm:text-base font-medium">Status:</Label>
+                                         <CandidaturaStatusSelector candidatura={candidato} allowStatusChange size="sm" />
+                                       </div>
+                                     </div>
                                   </DialogContent>
                                 </Dialog>
                                 
