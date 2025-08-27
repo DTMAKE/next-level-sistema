@@ -37,11 +37,6 @@ export default function Projetos() {
     projeto.descricao?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Statistics
-  const totalProjetos = projetos.length;
-  const projetosAtivos = projetos.filter(p => p.ativo).length;
-  const projetosPrivados = projetos.filter(p => p.privado).length;
-
   const handleEditProject = (projeto: any, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingProjeto(projeto);
@@ -100,37 +95,6 @@ export default function Projetos() {
         </Button>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Projetos</CardTitle>
-            <FolderOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalProjetos}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Projetos Ativos</CardTitle>
-            <Grid className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{projetosAtivos}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Projetos Privados</CardTitle>
-            <Lock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{projetosPrivados}</div>
-          </CardContent>
-        </Card>
-      </div>
-
       <Card>
         <CardHeader className="p-4 sm:p-6">
           <div className="flex flex-col gap-4">
@@ -153,7 +117,7 @@ export default function Projetos() {
             
             {filteredProjetos.length > 0 && (
               <div className="text-sm text-muted-foreground">
-                Mostrando {filteredProjetos.length} de {totalProjetos} projetos
+                Mostrando {filteredProjetos.length} de {projetos.length} projetos
               </div>
             )}
           </div>
