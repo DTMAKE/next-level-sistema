@@ -213,7 +213,7 @@ export default function Candidatos() {
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-3">
                             <User className="h-4 w-4 text-accent shrink-0" />
-                            <h3 className="font-semibold text-base truncate">{candidato.nome}</h3>
+                            <h3 className="font-semibold text-base break-words">{candidato.nome}</h3>
                           </div>
                           <CandidaturaStatusSelector candidatura={candidato} size="sm" />
                         </div>
