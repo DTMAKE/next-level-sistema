@@ -119,7 +119,7 @@ export function StatusSelector({ cliente, disabled = false, size = "md" }: Statu
       >
         <DropdownMenuItem 
           onClick={() => handleStatusChange("Cliente")}
-          className="cursor-pointer hover:bg-muted/80 focus:bg-muted/80"
+          className="cursor-pointer"
           disabled={currentStatus === "Cliente"}
         >
           <div className="flex items-center gap-2">
@@ -130,7 +130,7 @@ export function StatusSelector({ cliente, disabled = false, size = "md" }: Statu
         
         <DropdownMenuItem 
           onClick={() => handleStatusChange("Lead")}
-          className="cursor-pointer hover:bg-muted/80 focus:bg-muted/80"
+          className="cursor-pointer"
           disabled={currentStatus === "Lead"}
         >
           <div className="flex items-center gap-2">
