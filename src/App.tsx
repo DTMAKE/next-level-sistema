@@ -21,6 +21,8 @@ import VendaDetalhes from "./pages/VendaDetalhes";
 import Contratos from "./pages/Contratos";
 import NovoContrato from "./pages/NovoContrato";
 import ContratoDetalhes from "./pages/ContratoDetalhes";
+import NovoServico from "./pages/NovoServico";
+import ServicoDetalhes from "./pages/ServicoDetalhes";
 import Servicos from "./pages/Servicos";
 import Projetos from "./pages/Projetos";
 import Financeiro from "./pages/Financeiro";
@@ -121,6 +123,16 @@ const App = () => {
                       <Layout>
                         <Servicos />
                       </Layout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/servicos/novo" element={
+                    <ProtectedRoute>
+                      <NovoServico />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/servicos/:id" element={
+                    <ProtectedRoute>
+                      <ServicoDetalhes />
                     </ProtectedRoute>
                   } />
                   <Route path="/projetos" element={

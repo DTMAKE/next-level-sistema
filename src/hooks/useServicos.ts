@@ -9,6 +9,7 @@ interface Servico {
   nome: string;
   descricao?: string;
   valor: number;
+  custo?: number;
   ativo: boolean;
   categoria?: string;
   nivel_complexidade?: string;
@@ -22,6 +23,7 @@ interface CreateServicoData {
   nome: string;
   descricao?: string;
   valor: number;
+  custo?: number;
   ativo?: boolean;
   categoria?: string;
   nivel_complexidade?: string;
@@ -33,6 +35,7 @@ interface UpdateServicoData {
   nome?: string;
   descricao?: string;
   valor?: number;
+  custo?: number;
   ativo?: boolean;
   categoria?: string;
   nivel_complexidade?: string;
@@ -70,7 +73,6 @@ export function useServicos(searchTerm?: string) {
       let query = supabase
         .from("servicos")
         .select("*")
-        .eq("ativo", true)
         .order("nome");
 
       if (searchTerm) {
@@ -93,11 +95,11 @@ export function useServico(servicoId: string) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
-      const { data, error } = await supabase
-        .from("servicos")
-        .select("*")
-        .eq("id", servicoId)
-        .single();
+        const { data, error } = await supabase
+          .from("servicos")
+          .select("*")
+          .eq("id", servicoId)
+          .single();
 
       if (error) throw error;
       return data as Servico;
@@ -259,3 +261,6 @@ export function useDeleteVendaServico() {
     },
   });
 }
+
+// Export the types for external use
+export type { Servico, CreateServicoData, UpdateServicoData, VendaServico, CreateVendaServicoData };

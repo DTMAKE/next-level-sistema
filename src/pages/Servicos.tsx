@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +16,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 type FilterType = "todos" | "ativo" | "inativo";
 
 export default function Servicos() {
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -93,11 +95,6 @@ export default function Servicos() {
     setDeleteDialogOpen(true);
   };
   
-  const handleNewServico = () => {
-    setSelectedServico(null);
-    setDialogOpen(true);
-  };
-  
   const confirmDelete = () => {
     if (selectedServico) {
       deleteServico.mutate(selectedServico.id);
@@ -114,7 +111,7 @@ export default function Servicos() {
   return <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
     <div className="flex flex-row justify-between items-center gap-4">
         <h1 className="font-bold mx-0 py-0 text-3xl">Serviços</h1>
-        <Button className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0" onClick={handleNewServico}>
+        <Button className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0" onClick={() => navigate("/servicos/novo")}>
           <Plus className="mr-2 h-4 w-4" />
           Novo Serviço
         </Button>
@@ -201,7 +198,7 @@ export default function Servicos() {
               <p className="text-muted-foreground mb-4 text-sm">
                 {searchTerm ? "Não encontramos serviços com os termos buscados." : "Comece criando seu primeiro serviço."}
               </p>
-              {!searchTerm && statusFilter === "todos" && <Button className="gradient-premium border-0 text-background" onClick={handleNewServico}>
+                {!searchTerm && statusFilter === "todos" && <Button className="gradient-premium border-0 text-background" onClick={() => navigate("/servicos/novo")}>
                   <Plus className="mr-2 h-4 w-4" />
                   Criar Primeiro Serviço
                 </Button>}
@@ -209,7 +206,7 @@ export default function Servicos() {
               {viewMode === "cards" || isMobile ?
           // Card View (Mobile and Desktop when cards selected)
           <div className="space-y-3">
-                  {paginatedData.map(servico => <Card key={servico.id} className="p-4 hover:shadow-md transition-shadow">
+                  {paginatedData.map(servico => <Card key={servico.id} className="p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/servicos/${servico.id}`)}>
                       <div className="flex flex-col gap-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -230,7 +227,7 @@ export default function Servicos() {
                           </div>
                         </div>
                         
-                        <div className="flex gap-2">
+                        <div className="flex gap-2" onClick={e => e.stopPropagation()}>
                           <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEdit(servico)}>
                             <Edit className="h-3 w-3 mr-1" />
                             Editar
@@ -255,7 +252,7 @@ export default function Servicos() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {paginatedData.map(servico => <TableRow key={servico.id} className="cursor-pointer">
+                      {paginatedData.map(servico => <TableRow key={servico.id} className="cursor-pointer" onClick={() => navigate(`/servicos/${servico.id}`)}>
                           <TableCell>
                             <Badge variant={servico.ativo ? "default" : "secondary"}>
                               {servico.ativo ? "Ativo" : "Inativo"}
@@ -273,23 +270,25 @@ export default function Servicos() {
                             </span>
                           </TableCell>
                           <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm">
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEdit(servico)}>
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDelete(servico)} className="text-destructive">
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Excluir
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            <div onClick={e => e.stopPropagation()}>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => handleEdit(servico)}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Editar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleDelete(servico)} className="text-destructive">
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Excluir
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
                           </TableCell>
                         </TableRow>)}
                     </TableBody>
