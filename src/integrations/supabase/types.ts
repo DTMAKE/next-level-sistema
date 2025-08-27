@@ -759,6 +759,7 @@ export type Database = {
           ativo: boolean
           categoria: string | null
           created_at: string
+          custo: number | null
           descricao: string | null
           id: string
           nivel_complexidade: string | null
@@ -773,6 +774,7 @@ export type Database = {
           ativo?: boolean
           categoria?: string | null
           created_at?: string
+          custo?: number | null
           descricao?: string | null
           id?: string
           nivel_complexidade?: string | null
@@ -787,6 +789,7 @@ export type Database = {
           ativo?: boolean
           categoria?: string | null
           created_at?: string
+          custo?: number | null
           descricao?: string | null
           id?: string
           nivel_complexidade?: string | null
