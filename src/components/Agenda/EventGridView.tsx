@@ -60,57 +60,76 @@ export function EventGridView({ events, viewMode, selectedDate, onEventSelect }:
     
     return (
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-5xl mx-auto p-6 space-y-6">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-semibold text-foreground">
-              {format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
-            </h2>
-            <p className="text-muted-foreground mt-2 text-lg">
-              {dayEvents.length} evento{dayEvents.length !== 1 ? 's' : ''} agendado{dayEvents.length !== 1 ? 's' : ''}
-            </p>
-          </div>
+        <div className={`${isMobile ? 'p-3' : 'max-w-5xl mx-auto p-6'} space-y-6`}>
+          {!isMobile && (
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-semibold text-foreground">
+                {format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
+              </h2>
+              <p className="text-muted-foreground mt-2 text-lg">
+                {dayEvents.length} evento{dayEvents.length !== 1 ? 's' : ''} agendado{dayEvents.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+          )}
+          
+          {/* Mobile date header */}
+          {isMobile && (
+            <div className="text-center mb-4">
+              <h2 className="text-xl font-semibold text-foreground">
+                {format(selectedDate, "EEEE", { locale: ptBR })}
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                {format(selectedDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+              </p>
+              <p className="text-muted-foreground text-xs mt-1">
+                {dayEvents.length} evento{dayEvents.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+          )}
           
           {dayEvents.length === 0 ? (
             <div className="bg-background border border-calendar-border rounded-lg">
-              <div className="flex flex-col items-center justify-center p-16 text-center">
-                <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
-                  <CalendarDays className="w-8 h-8 text-muted-foreground" />
+              <div className={`flex flex-col items-center justify-center text-center ${isMobile ? 'p-8' : 'p-16'}`}>
+                <div className={`bg-muted/50 rounded-full flex items-center justify-center mb-4 ${isMobile ? 'w-12 h-12' : 'w-16 h-16'}`}>
+                  <CalendarDays className={`text-muted-foreground ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
                 </div>
-                <p className="text-lg text-muted-foreground">Nenhum evento para hoje</p>
-                <p className="text-sm text-muted-foreground/70 mt-1">Que tal adicionar um novo evento?</p>
+                <p className={`text-muted-foreground ${isMobile ? 'text-base' : 'text-lg'}`}>Nenhum evento para hoje</p>
+                <p className={`text-muted-foreground/70 mt-1 ${isMobile ? 'text-xs' : 'text-sm'}`}>Que tal adicionar um novo evento?</p>
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {dayEvents.map((event, index) => (
                 <div
                   key={event.id || index}
-                  className="bg-background border border-calendar-border rounded-lg p-5 hover:shadow-md hover:border-calendar-event-blue/40 transition-all cursor-pointer calendar-event"
+                  className={`bg-background border border-calendar-border rounded-lg hover:shadow-md hover:border-calendar-event-blue/40 transition-all cursor-pointer calendar-event ${isMobile ? 'p-4 active:bg-muted/20' : 'p-5'}`}
                   onClick={() => onEventSelect(event)}
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="w-1 h-12 bg-calendar-event-blue rounded-full"></div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-lg text-foreground mb-2">{event.titulo}</h4>
-                      <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                  <div className="flex items-start gap-3">
+                    <div className={`bg-calendar-event-blue rounded-full ${isMobile ? 'w-1 h-8' : 'w-1 h-12'}`}></div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className={`font-semibold text-foreground mb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>{event.titulo}</h4>
+                      <div className={`flex items-center gap-4 text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
                         <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
+                          <Clock className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
                           <span className="font-medium">{formatEventTime(event)}</span>
                         </div>
                         {event.local && (
                           <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4" />
-                            <span>{event.local}</span>
+                            <MapPin className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+                            <span className="truncate">{event.local}</span>
                           </div>
                         )}
                       </div>
                     </div>
-                    <Badge 
-                      variant="outline" 
-                      className={`px-3 py-1 ${formatEventTime(event) !== 'Dia inteiro' ? 'border-calendar-event-blue text-calendar-event-blue' : 'border-calendar-event-green text-calendar-event-green'}`}
-                    >
-                      {formatEventTime(event) !== 'Dia inteiro' ? 'Horário' : 'Dia inteiro'}
-                    </Badge>
+                    {!isMobile && (
+                      <Badge 
+                        variant="outline" 
+                        className={`px-3 py-1 flex-shrink-0 ${formatEventTime(event) !== 'Dia inteiro' ? 'border-calendar-event-blue text-calendar-event-blue' : 'border-calendar-event-green text-calendar-event-green'}`}
+                      >
+                        {formatEventTime(event) !== 'Dia inteiro' ? 'Horário' : 'Dia inteiro'}
+                      </Badge>
+                    )}
                   </div>
                 </div>
               ))}
@@ -124,10 +143,10 @@ export function EventGridView({ events, viewMode, selectedDate, onEventSelect }:
   if (viewMode === 'week') {
     return (
       <div className="flex-1 overflow-y-auto">
-        <div className={`p-3 sm:p-6`}>
+        <div className={`${isMobile ? 'p-2' : 'p-6'}`}>
           {isMobile ? (
-            // Mobile: Single column list
-            <div className="space-y-3">
+            // Mobile: Single column list with better touch targets
+            <div className="space-y-2">
               {days.map((day, index) => {
                 const dayEvents = getEventsForDay(day);
                 const isToday = isSameDay(day, new Date());
@@ -144,23 +163,31 @@ export function EventGridView({ events, viewMode, selectedDate, onEventSelect }:
                             {format(day, 'd MMM', { locale: ptBR })}
                           </div>
                         </div>
-                        {isToday && <Badge variant="outline" className="text-xs">Hoje</Badge>}
+                        <div className="flex items-center gap-2">
+                          {dayEvents.length > 0 && (
+                            <Badge variant="outline" className="text-xs">
+                              {dayEvents.length}
+                            </Badge>
+                          )}
+                          {isToday && <Badge variant="outline" className="text-xs">Hoje</Badge>}
+                        </div>
                       </div>
                     </div>
-                    <div className="p-3">
+                    <div className="p-3 min-h-[60px]">
                       {dayEvents.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-2">Nenhum evento</p>
+                        <p className="text-sm text-muted-foreground text-center py-4">Nenhum evento</p>
                       ) : (
                         <div className="space-y-2">
                           {dayEvents.map((event, eventIndex) => (
                             <div
                               key={event.id || eventIndex}
-                              className="p-2 bg-calendar-event-blue/10 border-l-2 border-calendar-event-blue rounded-sm cursor-pointer hover:bg-calendar-event-blue/20 transition-colors"
+                              className="p-3 bg-calendar-event-blue/10 border-l-2 border-calendar-event-blue rounded-sm cursor-pointer active:bg-calendar-event-blue/20 transition-colors"
                               onClick={() => onEventSelect(event)}
                             >
                               <div className="font-medium text-sm text-calendar-event-blue">{event.titulo}</div>
                               {formatEventTime(event) !== 'Dia inteiro' && (
-                                <div className="text-xs text-calendar-event-blue/70 mt-1">
+                                <div className="text-xs text-calendar-event-blue/70 mt-1 flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
                                   {formatEventTime(event)}
                                 </div>
                               )}
@@ -242,64 +269,106 @@ export function EventGridView({ events, viewMode, selectedDate, onEventSelect }:
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className={`p-3 sm:p-6`}>
+      <div className={`p-2 sm:p-6`}>
         <div className="max-w-7xl mx-auto">
           {isMobile ? (
-            // Mobile: Single column week view
-            <div className="space-y-2">
-              {weeks.map((week, weekIndex) => (
-                <div key={weekIndex} className="space-y-2">
-                  {week.map((day, dayIndex) => {
-                    const dayEvents = getEventsForDay(day);
-                    const isCurrentMonth = day.getMonth() === selectedDate.getMonth();
-                    const isToday = isSameDay(day, new Date());
-                    
-                    if (!isCurrentMonth && dayEvents.length === 0) return null;
-                    
-                    return (
-                      <div
-                        key={dayIndex}
-                        className={`bg-background border border-calendar-border rounded-lg p-3 ${
-                          !isCurrentMonth ? 'opacity-60' : ''
-                        } ${isToday ? 'bg-calendar-today/5 border-calendar-today/30' : ''}`}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className={`text-sm font-medium ${
-                            isToday ? 'text-calendar-today' : isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'
+            // Mobile: Compact calendar grid
+            <>
+              {/* Days of week header - Mobile */}
+              <div className="grid grid-cols-7 gap-0 mb-1 bg-background border border-calendar-border rounded-t-lg overflow-hidden">
+                {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, index) => (
+                  <div key={day + index} className="text-center text-xs font-semibold text-muted-foreground py-2 border-r border-calendar-border last:border-r-0 bg-muted/30">
+                    {day}
+                  </div>
+                ))}
+              </div>
+              
+              {/* Mobile Calendar grid */}
+              <div className="border border-t-0 border-calendar-border rounded-b-lg overflow-hidden bg-background">
+                {weeks.map((week, weekIndex) => (
+                  <div key={weekIndex} className="grid grid-cols-7 gap-0 border-b border-calendar-border last:border-b-0">
+                    {week.map((day, dayIndex) => {
+                      const dayEvents = getEventsForDay(day);
+                      const isCurrentMonth = day.getMonth() === selectedDate.getMonth();
+                      const isToday = isSameDay(day, new Date());
+                      
+                      return (
+                        <div
+                          key={dayIndex}
+                          className={`min-h-[60px] border-r border-calendar-border last:border-r-0 p-1 active:bg-muted/30 transition-colors ${
+                            !isCurrentMonth ? 'opacity-40 bg-muted/10' : ''
+                          } ${isToday ? 'bg-calendar-today/5' : ''}`}
+                        >
+                          <div className={`text-xs font-medium mb-1 flex items-center justify-center ${
+                            isToday 
+                              ? 'text-calendar-today bg-calendar-today/10 w-5 h-5 rounded-full text-[10px] font-bold mx-auto' 
+                              : isCurrentMonth 
+                                ? 'text-foreground' 
+                                : 'text-muted-foreground'
                           }`}>
-                            {format(day, 'EEE, d MMM', { locale: ptBR })}
+                            {format(day, 'd')}
                           </div>
-                          {isToday && <Badge variant="outline" className="text-xs">Hoje</Badge>}
-                        </div>
-                        
-                        {dayEvents.length === 0 ? (
-                          isCurrentMonth && <p className="text-xs text-muted-foreground">Nenhum evento</p>
-                        ) : (
-                          <div className="space-y-1">
-                            {dayEvents.map((event, eventIndex) => (
+                          
+                          {/* Mobile event indicators */}
+                          <div className="flex flex-col items-center space-y-0.5">
+                            {dayEvents.slice(0, 2).map((event, eventIndex) => (
                               <div
                                 key={event.id || eventIndex}
-                                className="text-xs p-2 bg-calendar-event-blue/10 border-l-2 border-calendar-event-blue rounded-sm cursor-pointer hover:bg-calendar-event-blue/20 transition-colors"
+                                className="w-full h-1 bg-calendar-event-blue/60 rounded-full cursor-pointer"
                                 onClick={() => onEventSelect(event)}
-                              >
-                                <div className="font-medium text-calendar-event-blue">
-                                  {event.titulo}
-                                </div>
-                                {formatEventTime(event) !== 'Dia inteiro' && (
-                                  <div className="text-calendar-event-blue/70 mt-1">
-                                    {formatEventTime(event)}
-                                  </div>
-                                )}
-                              </div>
+                              />
                             ))}
+                            {dayEvents.length > 2 && (
+                              <div className="w-1 h-1 bg-muted-foreground rounded-full" />
+                            )}
                           </div>
-                        )}
+                          
+                          {/* Show event count for days with events */}
+                          {dayEvents.length > 0 && (
+                            <div className="text-[8px] text-center text-muted-foreground mt-0.5 font-medium">
+                              {dayEvents.length}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+              
+              {/* Mobile: Show today's events below calendar */}
+              {(() => {
+                const todayEvents = getEventsForDay(new Date());
+                if (todayEvents.length > 0) {
+                  return (
+                    <div className="mt-4 bg-background border border-calendar-border rounded-lg p-3">
+                      <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                        <CalendarDays className="w-4 h-4" />
+                        Hoje ({todayEvents.length} evento{todayEvents.length !== 1 ? 's' : ''})
+                      </h3>
+                      <div className="space-y-2">
+                        {todayEvents.map((event, eventIndex) => (
+                          <div
+                            key={event.id || eventIndex}
+                            className="p-2 bg-calendar-event-blue/10 border-l-2 border-calendar-event-blue rounded-sm cursor-pointer active:bg-calendar-event-blue/20 transition-colors"
+                            onClick={() => onEventSelect(event)}
+                          >
+                            <div className="font-medium text-sm text-calendar-event-blue">{event.titulo}</div>
+                            {formatEventTime(event) !== 'Dia inteiro' && (
+                              <div className="text-xs text-calendar-event-blue/70 mt-1 flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {formatEventTime(event)}
+                              </div>
+                            )}
+                          </div>
+                        ))}
                       </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+            </>
           ) : (
             // Desktop: Grid layout
             <>
