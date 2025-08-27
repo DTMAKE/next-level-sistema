@@ -239,7 +239,7 @@ export default function Candidatos() {
                           {/* Ver detalhes */}
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button variant="outline" size="sm" className="w-full sm:flex-1">
+                              <Button variant="outline" size="sm" className="w-full">
                                 <Eye className="h-3 w-3 mr-1" />
                                 Ver Detalhes
                               </Button>
@@ -290,33 +290,6 @@ export default function Candidatos() {
                               </div>
                             </DialogContent>
                           </Dialog>
-                          
-                          {candidato.status === 'pendente' && (
-                            <div className="flex gap-2">
-                              <Button 
-                                size="sm" 
-                                onClick={() => updateStatus.mutate({ id: candidato.id, status: 'aprovado' })}
-                                disabled={updateStatus.isPending}
-                                className="flex-1"
-                              >
-                                <UserCheck className="h-3 w-3 mr-1" />
-                                <span className="hidden sm:inline">Aprovar</span>
-                                <span className="sm:hidden">✓</span>
-                              </Button>
-                              
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => updateStatus.mutate({ id: candidato.id, status: 'rejeitado' })}
-                                disabled={updateStatus.isPending}
-                                className="flex-1"
-                              >
-                                <UserX className="h-3 w-3 mr-1" />
-                                <span className="hidden sm:inline">Rejeitar</span>
-                                <span className="sm:hidden">✗</span>
-                              </Button>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </Card>
