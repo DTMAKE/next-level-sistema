@@ -880,8 +880,11 @@ export type Database = {
           comprovante_url: string | null
           created_at: string
           data_transacao: string
+          data_vencimento: string | null
           descricao: string | null
           id: string
+          observacoes: string | null
+          status: string | null
           tipo: string
           updated_at: string
           user_id: string
@@ -893,8 +896,11 @@ export type Database = {
           comprovante_url?: string | null
           created_at?: string
           data_transacao?: string
+          data_vencimento?: string | null
           descricao?: string | null
           id?: string
+          observacoes?: string | null
+          status?: string | null
           tipo: string
           updated_at?: string
           user_id: string
@@ -906,8 +912,11 @@ export type Database = {
           comprovante_url?: string | null
           created_at?: string
           data_transacao?: string
+          data_vencimento?: string | null
           descricao?: string | null
           id?: string
+          observacoes?: string | null
+          status?: string | null
           tipo?: string
           updated_at?: string
           user_id?: string

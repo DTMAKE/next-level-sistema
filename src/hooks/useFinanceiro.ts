@@ -25,6 +25,9 @@ export interface TransacaoFinanceira {
   data_transacao: string;
   venda_id: string | null;
   comprovante_url: string | null;
+  status?: string;
+  data_vencimento?: string;
+  observacoes?: string;
   created_at: string;
   updated_at: string;
   categoria?: CategoriaFinanceira;

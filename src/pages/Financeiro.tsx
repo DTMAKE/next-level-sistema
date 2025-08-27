@@ -210,66 +210,35 @@ export default function Financeiro() {
         </CardContent>
       </Card>
 
-      {/* Seções Financeiras */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        <Card>
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-base sm:text-lg">Receitas por Categoria</CardTitle>
-            <CardDescription className="text-sm">
-              Distribuição de receitas no período selecionado
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            {isLoadingTransacoes ? (
-              <div className="text-center text-muted-foreground text-sm">Carregando...</div>
-            ) : Object.keys(receitasPorCategoria).length === 0 ? (
-              <div className="text-center text-muted-foreground text-sm">
-                Nenhuma receita encontrada no período
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {Object.entries(receitasPorCategoria).map(([categoria, valor]) => (
-                  <div key={categoria} className="flex items-center justify-between">
-                    <span className="text-sm">{categoria}</span>
-                    <span className="font-medium text-green-600 text-sm">
-                      {formatCurrency(valor)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-base sm:text-lg">Despesas por Categoria</CardTitle>
-            <CardDescription className="text-sm">
-              Controle de gastos no período selecionado
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            {isLoadingTransacoes ? (
-              <div className="text-center text-muted-foreground text-sm">Carregando...</div>
-            ) : Object.keys(despesasPorCategoria).length === 0 ? (
-              <div className="text-center text-muted-foreground text-sm">
-                Nenhuma despesa encontrada no período
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {Object.entries(despesasPorCategoria).map(([categoria, valor]) => (
-                  <div key={categoria} className="flex items-center justify-between">
-                    <span className="text-sm">{categoria}</span>
-                    <span className="font-medium text-red-600 text-sm">
-                      {formatCurrency(valor)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      {/* Despesas por Categoria */}
+      <Card>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Despesas por Categoria</CardTitle>
+          <CardDescription className="text-sm">
+            Controle de gastos no período selecionado
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6 pt-0">
+          {isLoadingTransacoes ? (
+            <div className="text-center text-muted-foreground text-sm">Carregando...</div>
+          ) : Object.keys(despesasPorCategoria).length === 0 ? (
+            <div className="text-center text-muted-foreground text-sm">
+              Nenhuma despesa encontrada no período
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {Object.entries(despesasPorCategoria).map(([categoria, valor]) => (
+                <div key={categoria} className="flex items-center justify-between">
+                  <span className="text-sm">{categoria}</span>
+                  <span className="font-medium text-red-600 text-sm">
+                    {formatCurrency(valor)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Lista de Transações Recentes */}
       <Card>

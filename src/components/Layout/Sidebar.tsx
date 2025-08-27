@@ -27,6 +27,8 @@ import {
   Kanban,
   CheckSquare,
   CalendarDays,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -87,6 +89,18 @@ const adminItems = [
     title: "Financeiro",
     url: "/financeiro",
     icon: DollarSign,
+    roles: ["admin"],
+  },
+  {
+    title: "Contas a Receber",
+    url: "/contas-receber",
+    icon: TrendingUp,
+    roles: ["admin"],
+  },
+  {
+    title: "Contas a Pagar",
+    url: "/contas-pagar",
+    icon: TrendingDown,
     roles: ["admin"],
   },
   {

@@ -26,6 +26,8 @@ import ServicoDetalhes from "./pages/ServicoDetalhes";
 import Servicos from "./pages/Servicos";
 import Projetos from "./pages/Projetos";
 import Financeiro from "./pages/Financeiro";
+import ContasReceber from "./pages/ContasReceber";
+import ContasPagar from "./pages/ContasPagar";
 import Relatorios from "./pages/Relatorios";
 import Configuracoes from "./pages/Configuracoes";
 import Metas from "./pages/Metas";
@@ -146,6 +148,20 @@ const App = () => {
                    <ProtectedRoute requiredRole="admin">
                      <Layout>
                        <Financeiro />
+                     </Layout>
+                   </ProtectedRoute>
+                 } />
+                 <Route path="/contas-receber" element={
+                   <ProtectedRoute requiredRole="admin">
+                     <Layout>
+                       <ContasReceber />
+                     </Layout>
+                   </ProtectedRoute>
+                 } />
+                 <Route path="/contas-pagar" element={
+                   <ProtectedRoute requiredRole="admin">
+                     <Layout>
+                       <ContasPagar />
                      </Layout>
                    </ProtectedRoute>
                  } />
