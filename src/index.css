@@ -290,39 +290,29 @@
     transform: translate(-50%, -50%);
   }
 
-  /* Projeto card hover animations */
+  /* Projeto card hover fix */
   .projeto-card {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: translateY(0px);
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    transition: transform 0.2s ease-in-out;
   }
   
-  .projeto-card:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-    border-color: hsl(var(--primary) / 0.2);
+  .projeto-card:hover,
+  .projeto-card:hover *,
+  .projeto-card:focus,
+  .projeto-card:focus * {
+    background-color: hsl(var(--card)) !important;
+    transform: translateY(-1px);
   }
   
-  .projeto-card:hover .projeto-title {
-    color: hsl(var(--primary));
+  .dark .projeto-card:hover,
+  .dark .projeto-card:hover *,
+  .dark .projeto-card:focus,
+  .dark .projeto-card:focus * {
+    background-color: hsl(var(--card)) !important;
   }
   
-  .projeto-card:active {
-    transform: translateY(-2px) scale(1.01);
-    transition: all 0.1s ease-out;
-  }
-  
-  /* Mobile touch improvements */
-  @media (hover: none) and (pointer: coarse) {
-    .projeto-card:hover {
-      transform: none;
-      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-    }
-    
-    .projeto-card:active {
-      transform: scale(0.98);
-      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    }
+  /* Força o card a manter sua aparência original */
+  .projeto-card * {
+    background-color: inherit !important;
   }
 }
 
