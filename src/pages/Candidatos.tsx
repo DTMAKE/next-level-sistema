@@ -244,7 +244,7 @@ export default function Candidatos() {
                                 Ver Detalhes
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                            <DialogContent className="max-w-[95vw] sm:max-w-2xl m-4 sm:m-0 max-h-[90vh] sm:max-h-[80vh] overflow-y-auto">
                               <DialogHeader>
                                 <DialogTitle className="flex items-center gap-2">
                                   <User className="h-5 w-5" />
@@ -254,36 +254,36 @@ export default function Candidatos() {
                                   Candidatura enviada em {new Date(candidato.created_at).toLocaleDateString('pt-BR')}
                                 </DialogDescription>
                               </DialogHeader>
-                              <div className="space-y-4">
+                              <div className="space-y-4 pr-2">
                                 <div>
-                                  <h4 className="font-medium mb-2">Informações de Contato</h4>
-                                  <div className="space-y-2 text-sm">
-                                    <div className="flex items-center gap-2">
-                                      <Mail className="h-4 w-4 text-muted-foreground" />
-                                      {candidato.email}
+                                  <h4 className="font-medium mb-3">Informações de Contato</h4>
+                                  <div className="space-y-3 text-sm">
+                                    <div className="flex items-start gap-3">
+                                      <Mail className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                                      <span className="break-all">{candidato.email}</span>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                      <Phone className="h-4 w-4 text-muted-foreground" />
-                                      {candidato.telefone}
+                                    <div className="flex items-start gap-3">
+                                      <Phone className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                                      <span>{candidato.telefone}</span>
                                     </div>
                                   </div>
                                 </div>
                                 
                                 <div>
-                                  <h4 className="font-medium mb-2">Sobre o Candidato</h4>
-                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                  <h4 className="font-medium mb-3">Sobre o Candidato</h4>
+                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
                                     {candidato.sobre_voce}
                                   </p>
                                 </div>
                                 
                                 <div>
-                                  <h4 className="font-medium mb-2">Objetivo de Vendas</h4>
-                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                  <h4 className="font-medium mb-3">Objetivo de Vendas</h4>
+                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
                                     {candidato.objetivo_vendas}
                                   </p>
                                 </div>
                                 
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-2 border-t">
                                   <span className="font-medium">Status:</span>
                                   <CandidaturaStatusSelector candidatura={candidato} allowStatusChange size="sm" />
                                 </div>
@@ -337,7 +337,7 @@ export default function Candidatos() {
                                       Ver Detalhes
                                     </DropdownMenuItem>
                                   </DialogTrigger>
-                                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                                  <DialogContent className="max-w-[95vw] sm:max-w-2xl m-4 sm:m-0 max-h-[90vh] sm:max-h-[80vh] overflow-y-auto">
                                     <DialogHeader>
                                       <DialogTitle className="flex items-center gap-2">
                                         <User className="h-5 w-5" />
@@ -347,36 +347,36 @@ export default function Candidatos() {
                                         Candidatura enviada em {new Date(candidato.created_at).toLocaleDateString('pt-BR')}
                                       </DialogDescription>
                                     </DialogHeader>
-                                    <div className="space-y-4">
+                                    <div className="space-y-4 pr-2">
                                       <div>
-                                        <h4 className="font-medium mb-2">Informações de Contato</h4>
-                                        <div className="space-y-2 text-sm">
-                                          <div className="flex items-center gap-2">
-                                            <Mail className="h-4 w-4 text-muted-foreground" />
-                                            {candidato.email}
+                                        <h4 className="font-medium mb-3">Informações de Contato</h4>
+                                        <div className="space-y-3 text-sm">
+                                          <div className="flex items-start gap-3">
+                                            <Mail className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                                            <span className="break-all">{candidato.email}</span>
                                           </div>
-                                          <div className="flex items-center gap-2">
-                                            <Phone className="h-4 w-4 text-muted-foreground" />
-                                            {candidato.telefone}
+                                          <div className="flex items-start gap-3">
+                                            <Phone className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                                            <span>{candidato.telefone}</span>
                                           </div>
                                         </div>
                                       </div>
                                       
                                       <div>
-                                        <h4 className="font-medium mb-2">Sobre o Candidato</h4>
-                                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                        <h4 className="font-medium mb-3">Sobre o Candidato</h4>
+                                        <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
                                           {candidato.sobre_voce}
                                         </p>
                                       </div>
                                       
                                       <div>
-                                        <h4 className="font-medium mb-2">Objetivo de Vendas</h4>
-                                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                        <h4 className="font-medium mb-3">Objetivo de Vendas</h4>
+                                        <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
                                           {candidato.objetivo_vendas}
                                         </p>
                                       </div>
                                       
-                                      <div className="flex items-center gap-2">
+                                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-2 border-t">
                                         <span className="font-medium">Status:</span>
                                         <CandidaturaStatusSelector candidatura={candidato} allowStatusChange size="sm" />
                                       </div>
