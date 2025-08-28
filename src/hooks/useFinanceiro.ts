@@ -244,29 +244,38 @@ export function useSincronizarVendas() {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error("Usuário não autenticado");
 
-      // Buscar vendas que não estão sincronizadas
+      // Buscar todas as vendas fechadas
       const { data: vendas, error: errorVendas } = await supabase
         .from("vendas")
         .select("id, valor, data_venda, cliente_id")
         .eq("status", "fechada")
-        .not("id", "in", `(
-          SELECT venda_id 
-          FROM transacoes_financeiras 
-          WHERE venda_id IS NOT NULL
-        )`);
+        .eq("user_id", user.user.id);
 
       if (errorVendas) throw errorVendas;
 
-      if (!vendas || vendas.length === 0) {
+      // Buscar transações que já têm venda_id para filtrar as vendas já sincronizadas
+      const { data: transacoesExistentes, error: errorTransacoes } = await supabase
+        .from("transacoes_financeiras")
+        .select("venda_id")
+        .not("venda_id", "is", null)
+        .eq("user_id", user.user.id);
+
+      if (errorTransacoes) throw errorTransacoes;
+
+      // Filtrar vendas que ainda não foram sincronizadas
+      const vendasSincronizadas = new Set(transacoesExistentes?.map(t => t.venda_id) || []);
+      const vendasParaSincronizar = vendas?.filter(venda => !vendasSincronizadas.has(venda.id)) || [];
+
+      if (vendasParaSincronizar.length === 0) {
         toast({
           title: "Info",
           description: "Todas as vendas já estão sincronizadas.",
         });
-        return;
+        return 0;
       }
 
-      // Criar transações para as vendas
-      const transacoes = vendas.map(venda => ({
+      // Criar transações para as vendas não sincronizadas
+      const transacoes = vendasParaSincronizar.map(venda => ({
         user_id: user.user.id,
         tipo: 'receita' as const,
         valor: venda.valor,
@@ -281,7 +290,7 @@ export function useSincronizarVendas() {
 
       if (errorInsert) throw errorInsert;
 
-      return vendas.length;
+      return vendasParaSincronizar.length;
     },
     onSuccess: (count) => {
       queryClient.invalidateQueries({ queryKey: ["transacoes-financeiras"] });
