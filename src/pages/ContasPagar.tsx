@@ -494,7 +494,7 @@ export default function ContasPagar() {
                         <TableHead>Valor</TableHead>
                         <TableHead>Data</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead className="w-[100px]">Ações</TableHead>
+                        
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -527,21 +527,6 @@ export default function ContasPagar() {
                               transacao={despesa}
                               size="sm"
                             />
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              {isAdmin && despesa.status === 'pendente' && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleMarcarComoPaga(despesa)}
-                                  disabled={marcarComissaoPaga.isPending || updateTransacaoStatus.isPending}
-                                  className="text-green-600 hover:text-green-700"
-                                >
-                                  <Check className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
