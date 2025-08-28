@@ -1040,6 +1040,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_missing_commissions: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       create_default_kanban_columns: {
         Args: { projeto_id: string; user_id: string }
         Returns: undefined

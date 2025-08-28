@@ -16,6 +16,7 @@ import { VendaDialog } from "@/components/Vendas/VendaDialog";
 import { DeleteVendaDialog } from "@/components/Vendas/DeleteVendaDialog";
 import { QuickStatusChanger } from "@/components/Vendas/QuickStatusChanger";
 import { ComissaoIndicator } from "@/components/Vendas/ComissaoIndicator";
+import { ComissaoCard } from "@/components/Vendas/ComissaoCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 const getStatusColor = (status: string) => {
   return "bg-black text-white";

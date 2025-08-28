@@ -11,15 +11,8 @@ export interface ComissaoVendedor {
   status: 'pendente' | 'paga';
   observacoes?: string;
   created_at: string;
-  // Dados da venda
-  vendas?: {
-    id: string;
-    cliente_id: string;
-    data_venda: string;
-    clientes?: {
-      nome: string;
-    };
-  };
+  venda_id: string;
+  vendedor_id: string;
 }
 
 export interface ComissaoMesAtual {
@@ -39,15 +32,7 @@ export function useComissoesVendedor() {
 
       const { data, error } = await supabase
         .from('comissoes')
-        .select(`
-          *,
-          vendas!inner(
-            id,
-            cliente_id,
-            data_venda,
-            clientes!inner(nome)
-          )
-        `)
+        .select('*')
         .eq('vendedor_id', user.id)
         .order('created_at', { ascending: false });
 

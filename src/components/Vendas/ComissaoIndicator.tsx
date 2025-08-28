@@ -12,7 +12,7 @@ export function ComissaoIndicator({ venda }: ComissaoIndicatorProps) {
   const { data: comissoes } = useComissoesVendedor();
   
   // Find commission for this specific sale
-  const comissao = comissoes?.find(c => c.vendas?.id === venda.id);
+  const comissao = comissoes?.find(c => c.venda_id === venda.id);
   
   // Only show indicator for closed sales
   if (venda.status !== 'fechada' || !comissao) {

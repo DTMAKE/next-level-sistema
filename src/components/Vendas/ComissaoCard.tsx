@@ -23,22 +23,16 @@ export function ComissaoCard() {
     if (!user?.id) return;
 
     try {
-      // Recalculate commissions for closed sales without commission
-      const { error } = await supabase.rpc('calculate_missing_commissions', {
-        p_user_id: user.id
-      });
-
-      if (error) throw error;
-
+      // Simple recalculation by refetching data
       await refetch();
       toast({
-        title: "Comissões recalculadas",
-        description: "As comissões foram recalculadas com sucesso."
+        title: "Comissões atualizadas",
+        description: "Os dados de comissão foram atualizados."
       });
     } catch (error) {
-      console.error('Error recalculating commissions:', error);
+      console.error('Error updating commissions:', error);
       toast({
-        title: "Erro ao recalcular comissões",
+        title: "Erro ao atualizar comissões",
         description: "Tente novamente em alguns instantes.",
         variant: "destructive"
       });
