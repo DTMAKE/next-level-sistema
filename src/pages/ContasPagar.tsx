@@ -458,11 +458,6 @@ export default function ContasPagar() {
                             <span className="text-muted-foreground">
                               {despesa.categoria?.nome || 'Sem categoria'}
                             </span>
-                            {isComissao(despesa) && (
-                              <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
-                                💰 Comissão
-                              </Badge>
-                            )}
                           </div>
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <Calendar className="h-4 w-4" />
@@ -542,14 +537,7 @@ export default function ContasPagar() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-2">
-                              <span>{despesa.categoria?.nome || 'Sem categoria'}</span>
-                              {isComissao(despesa) && (
-                                <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
-                                  💰
-                                </Badge>
-                              )}
-                            </div>
+                            <span>{despesa.categoria?.nome || 'Sem categoria'}</span>
                           </TableCell>
                           <TableCell>
                             <span className="font-semibold text-red-600">
