@@ -14,13 +14,16 @@ import {
   Search, 
   Filter, 
   Plus,
+  Edit,
+  Eye,
   Calendar,
   DollarSign,
   RefreshCw,
   Wallet,
   Check,
   Grid,
-  List
+  List,
+  MoreVertical
 } from "lucide-react";
 import { format, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
