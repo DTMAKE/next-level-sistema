@@ -12,12 +12,14 @@ import {
   Edit,
   Eye,
   Calendar,
-  DollarSign
+  DollarSign,
+  RefreshCw,
+  Wallet
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { useTransacoesMes, useCategorias } from "@/hooks/useFinanceiro";
+import { useTransacoesMes, useCategorias, useSincronizarComissoes } from "@/hooks/useFinanceiro";
 import { TransacaoDialog } from "@/components/Financeiro/TransacaoDialog";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import {
@@ -39,6 +41,7 @@ export default function ContasPagar() {
 
   const { data: transacoes, isLoading } = useTransacoesMes(selectedDate);
   const { data: categorias } = useCategorias();
+  const sincronizarComissoes = useSincronizarComissoes();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -97,6 +100,11 @@ export default function ContasPagar() {
   const totalDespesas = filteredDespesas.reduce((sum, d) => sum + Number(d.valor), 0);
   const despesasPendentes = filteredDespesas.filter(d => d.status === 'pendente').reduce((sum, d) => sum + Number(d.valor), 0);
   const despesasPagas = filteredDespesas.filter(d => d.status === 'confirmada').reduce((sum, d) => sum + Number(d.valor), 0);
+  
+  // Calcular comissões especificamente
+  const comissoes = filteredDespesas.filter(d => d.categoria?.nome?.toLowerCase().includes('comiss'));
+  const totalComissoes = comissoes.reduce((sum, d) => sum + Number(d.valor), 0);
+  const comissoesPendentes = comissoes.filter(d => d.status === 'pendente').reduce((sum, d) => sum + Number(d.valor), 0);
 
   return (
     <div className="space-y-3 sm:space-y-6 p-3 sm:p-6">
@@ -116,17 +124,29 @@ export default function ContasPagar() {
             onSelect={setSelectedDate}
           />
           
-          <TransacaoDialog tipo="despesa">
-            <Button className="w-full sm:w-auto">
-              <Plus className="h-4 w-4 mr-2" />
-              <span className="sm:inline">Nova Despesa</span>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => sincronizarComissoes.mutate()}
+              disabled={sincronizarComissoes.isPending}
+              className="w-full sm:w-auto"
+            >
+              <RefreshCw className={cn("h-4 w-4 mr-2", sincronizarComissoes.isPending && "animate-spin")} />
+              Sincronizar Comissões
             </Button>
-          </TransacaoDialog>
+            
+            <TransacaoDialog tipo="despesa">
+              <Button className="w-full sm:w-auto">
+                <Plus className="h-4 w-4 mr-2" />
+                <span className="sm:inline">Nova Despesa</span>
+              </Button>
+            </TransacaoDialog>
+          </div>
         </div>
       </div>
 
       {/* Cards de Resumo */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
             <CardTitle className="text-xs sm:text-sm font-medium">Total a Pagar</CardTitle>
@@ -151,7 +171,7 @@ export default function ContasPagar() {
           </CardContent>
         </Card>
 
-        <Card className="col-span-2 lg:col-span-1">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
             <CardTitle className="text-xs sm:text-sm font-medium">Pagas</CardTitle>
             <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
@@ -159,6 +179,21 @@ export default function ContasPagar() {
           <CardContent className="p-3 sm:p-6 pt-0">
             <div className="text-lg sm:text-2xl font-bold text-green-600">
               {formatCurrency(despesasPagas)}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Comissões</CardTitle>
+            <Wallet className="h-3 w-3 sm:h-4 sm:w-4 text-purple-500" />
+          </CardHeader>
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-purple-600">
+              {formatCurrency(totalComissoes)}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {comissoesPendentes > 0 && `${formatCurrency(comissoesPendentes)} pendentes`}
             </div>
           </CardContent>
         </Card>

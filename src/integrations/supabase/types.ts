@@ -877,6 +877,7 @@ export type Database = {
       transacoes_financeiras: {
         Row: {
           categoria_id: string | null
+          comissao_id: string | null
           comprovante_url: string | null
           created_at: string
           data_transacao: string
@@ -893,6 +894,7 @@ export type Database = {
         }
         Insert: {
           categoria_id?: string | null
+          comissao_id?: string | null
           comprovante_url?: string | null
           created_at?: string
           data_transacao?: string
@@ -909,6 +911,7 @@ export type Database = {
         }
         Update: {
           categoria_id?: string | null
+          comissao_id?: string | null
           comprovante_url?: string | null
           created_at?: string
           data_transacao?: string
@@ -929,6 +932,13 @@ export type Database = {
             columns: ["categoria_id"]
             isOneToOne: false
             referencedRelation: "categorias_financeiras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transacoes_financeiras_comissao_id_fkey"
+            columns: ["comissao_id"]
+            isOneToOne: false
+            referencedRelation: "comissoes"
             referencedColumns: ["id"]
           },
           {
@@ -1055,6 +1065,10 @@ export type Database = {
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      sync_commissions_to_financial: {
+        Args: { p_user_id: string }
+        Returns: undefined
       }
       validate_password_strength: {
         Args: { password: string }
