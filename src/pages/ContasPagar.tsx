@@ -32,7 +32,8 @@ import { useTransacoesMes, useCategorias, useSincronizarComissoes, useSincroniza
 import { useAuth } from "@/contexts/AuthContext";
 import { TransacaoDialog } from "@/components/Financeiro/TransacaoDialog";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
-import { StatusSelector } from "@/components/Financeiro/StatusSelector";
+import { StatusFilter } from "@/components/Financeiro/StatusFilter";
+import { TransacaoStatusSelector } from "@/components/Financeiro/TransacaoStatusSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function ContasPagar() {
@@ -344,11 +345,11 @@ export default function ContasPagar() {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-2">
-                <StatusSelector 
-                  value={statusFilter} 
-                  onValueChange={setStatusFilter} 
-                  size="sm" 
-                />
+                  <StatusFilter
+                    value={statusFilter}
+                    onValueChange={setStatusFilter}
+                    size="sm"
+                  />
 
                 <Select value={categoriaFilter} onValueChange={setCategoriaFilter}>
                   <SelectTrigger className="w-full sm:w-[160px]">
@@ -443,9 +444,10 @@ export default function ContasPagar() {
                               )}
                             </div>
                           </div>
-                          <Badge className={cn("text-xs", getStatusColor(despesa.status || 'confirmada'))}>
-                            {getStatusLabel(despesa.status || 'confirmada')}
-                          </Badge>
+                          <TransacaoStatusSelector 
+                            transacao={despesa}
+                            size="sm"
+                          />
                         </div>
                         
                         <div className="flex items-center justify-between text-sm">
@@ -541,9 +543,10 @@ export default function ContasPagar() {
                           </TableCell>
                           <TableCell>{format(new Date(despesa.data_transacao), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
                           <TableCell>
-                            <Badge className={cn("text-xs", getStatusColor(despesa.status || 'confirmada'))}>
-                              {getStatusLabel(despesa.status || 'confirmada')}
-                            </Badge>
+                            <TransacaoStatusSelector 
+                              transacao={despesa}
+                              size="sm"
+                            />
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
