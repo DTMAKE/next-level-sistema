@@ -19,7 +19,8 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { useTransacoesMes, useCategorias, useSincronizarComissoes } from "@/hooks/useFinanceiro";
+import { useTransacoesMes, useCategorias, useSincronizarComissoes, useSincronizarTodasComissoes } from "@/hooks/useFinanceiro";
+import { useAuth } from "@/contexts/AuthContext";
 import { TransacaoDialog } from "@/components/Financeiro/TransacaoDialog";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import {
@@ -41,7 +42,11 @@ export default function ContasPagar() {
 
   const { data: transacoes, isLoading } = useTransacoesMes(selectedDate);
   const { data: categorias } = useCategorias();
+  const { user } = useAuth();
   const sincronizarComissoes = useSincronizarComissoes();
+  const sincronizarTodasComissoes = useSincronizarTodasComissoes();
+  
+  const isAdmin = user?.role === 'admin';
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -125,15 +130,27 @@ export default function ContasPagar() {
           />
           
           <div className="flex flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
-              onClick={() => sincronizarComissoes.mutate()}
-              disabled={sincronizarComissoes.isPending}
-              className="w-full sm:w-auto"
-            >
-              <RefreshCw className={cn("h-4 w-4 mr-2", sincronizarComissoes.isPending && "animate-spin")} />
-              Sincronizar Comissões
-            </Button>
+            {isAdmin ? (
+              <Button
+                variant="default"
+                onClick={() => sincronizarTodasComissoes.mutate()}
+                disabled={sincronizarTodasComissoes.isPending}
+                className="w-full sm:w-auto"
+              >
+                <RefreshCw className={cn("h-4 w-4 mr-2", sincronizarTodasComissoes.isPending && "animate-spin")} />
+                Sincronizar Todas as Comissões
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => sincronizarComissoes.mutate()}
+                disabled={sincronizarComissoes.isPending}
+                className="w-full sm:w-auto"
+              >
+                <RefreshCw className={cn("h-4 w-4 mr-2", sincronizarComissoes.isPending && "animate-spin")} />
+                Sincronizar Comissões
+              </Button>
+            )}
             
             <TransacaoDialog tipo="despesa">
               <Button className="w-full sm:w-auto">

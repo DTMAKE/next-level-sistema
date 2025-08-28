@@ -348,3 +348,40 @@ export function useSincronizarComissoes() {
     },
   });
 }
+
+// Hook para administradores sincronizarem comissões de todos os usuários
+export function useSincronizarTodasComissoes() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      // Chamar a função do banco para sincronizar todas as comissões
+      const { error } = await supabase.rpc('sync_all_commissions_to_financial');
+
+      if (error) throw error;
+
+      return { message: 'Todas as comissões foram sincronizadas com sucesso' };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['transacoes-financeiras'] });
+      queryClient.invalidateQueries({ queryKey: ['resumo-financeiro'] });
+      queryClient.invalidateQueries({ queryKey: ['categorias-financeiras'] });
+      toast({
+        title: "Sincronização global concluída",
+        description: data.message,
+      });
+    },
+    onError: (error) => {
+      console.error('Erro ao sincronizar todas as comissões:', error);
+      toast({
+        title: "Erro ao sincronizar",
+        description: "Erro ao sincronizar todas as comissões do sistema",
+        variant: "destructive",
+      });
+    },
+  });
+}
