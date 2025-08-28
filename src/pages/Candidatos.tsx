@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { CandidaturaStatusSelector } from "@/components/Candidatos/CandidaturaStatusSelector";
 import { Search, Users, UserCheck, UserX, Trash2, Eye, CheckCircle, XCircle, Clock, Mail, Phone, User, MoreVertical, Grid, List, Filter } from "lucide-react";
@@ -247,8 +248,7 @@ export default function Candidatos() {
                             </DialogTrigger>
                             <DialogContent className="w-[95vw] max-w-[600px] max-h-[95vh] overflow-y-auto">
                               <DialogHeader className="space-y-3">
-                                <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                                  <User className="h-4 w-4" />
+                                <DialogTitle className="text-lg sm:text-xl">
                                   {candidato.nome}
                                 </DialogTitle>
                                 <DialogDescription className="text-sm text-muted-foreground">
@@ -257,41 +257,73 @@ export default function Candidatos() {
                               </DialogHeader>
                               
                               <div className="space-y-4 sm:space-y-6">
-                                {/* Informações de Contato */}
                                 <div className="space-y-2">
-                                  <Label className="text-sm sm:text-base font-medium">Informações de Contato</Label>
-                                  <div className="grid gap-2">
-                                    <div className="flex items-center gap-2">
-                                      <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-                                      <span className="text-sm break-words">{candidato.email}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-                                      <span className="text-sm">{candidato.telefone}</span>
-                                    </div>
+                                  <Label htmlFor="nome" className="text-sm font-medium">Nome *</Label>
+                                  <Input
+                                    id="nome"
+                                    value={candidato.nome}
+                                    readOnly
+                                    className="h-10 sm:h-11"
+                                  />
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
+                                  <Input
+                                    id="email"
+                                    type="email"
+                                    value={candidato.email}
+                                    readOnly
+                                    className="h-10 sm:h-11"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label htmlFor="telefone" className="text-sm font-medium">Telefone</Label>
+                                  <Input
+                                    id="telefone"
+                                    value={candidato.telefone}
+                                    readOnly
+                                    className="h-10 sm:h-11"
+                                  />
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <Label htmlFor="sobre" className="text-sm font-medium">Sobre o Candidato</Label>
+                                  <Textarea
+                                    id="sobre"
+                                    value={candidato.sobre_voce}
+                                    readOnly
+                                    className="min-h-[80px] resize-none"
+                                  />
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <Label htmlFor="objetivo" className="text-sm font-medium">Objetivo de Vendas</Label>
+                                  <Textarea
+                                    id="objetivo"
+                                    value={candidato.objetivo_vendas}
+                                    readOnly
+                                    className="min-h-[80px] resize-none"
+                                  />
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <Label htmlFor="status" className="text-sm font-medium">Status *</Label>
+                                  <div className="flex items-center h-10 sm:h-11">
+                                    <CandidaturaStatusSelector candidatura={candidato} allowStatusChange size="sm" />
                                   </div>
                                 </div>
                                 
-                                {/* Sobre o Candidato */}
-                                <div className="space-y-2">
-                                  <Label className="text-sm sm:text-base font-medium">Sobre o Candidato</Label>
-                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
-                                    {candidato.sobre_voce}
-                                  </p>
-                                </div>
-                                
-                                {/* Objetivo de Vendas */}
-                                <div className="space-y-2">
-                                  <Label className="text-sm sm:text-base font-medium">Objetivo de Vendas</Label>
-                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
-                                    {candidato.objetivo_vendas}
-                                  </p>
-                                </div>
-                                
-                                {/* Status */}
-                                <div className="flex items-center justify-between pt-4 border-t">
-                                  <Label className="text-sm sm:text-base font-medium">Status:</Label>
-                                  <CandidaturaStatusSelector candidatura={candidato} allowStatusChange size="sm" />
+                                <div className="flex justify-end pt-4 border-t">
+                                  <DialogClose asChild>
+                                    <Button
+                                      variant="outline"
+                                      className="w-full sm:w-auto"
+                                    >
+                                      Fechar
+                                    </Button>
+                                  </DialogClose>
                                 </div>
                               </div>
                             </DialogContent>
@@ -343,56 +375,87 @@ export default function Candidatos() {
                                       Ver Detalhes
                                     </DropdownMenuItem>
                                   </DialogTrigger>
-                                   <DialogContent className="w-[95vw] max-w-[600px] max-h-[95vh] overflow-y-auto">
-                                     <DialogHeader className="space-y-3">
-                                       <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                                         <User className="h-4 w-4" />
-                                         {candidato.nome}
-                                       </DialogTitle>
-                                       <DialogDescription className="text-sm text-muted-foreground">
-                                         Candidatura enviada em {new Date(candidato.created_at).toLocaleDateString('pt-BR')}
-                                       </DialogDescription>
-                                     </DialogHeader>
-                                     
-                                     <div className="space-y-4 sm:space-y-6">
-                                       {/* Informações de Contato */}
-                                       <div className="space-y-2">
-                                         <Label className="text-sm sm:text-base font-medium">Informações de Contato</Label>
-                                         <div className="grid gap-2">
-                                           <div className="flex items-center gap-2">
-                                             <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-                                             <span className="text-sm break-words">{candidato.email}</span>
-                                           </div>
-                                           <div className="flex items-center gap-2">
-                                             <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-                                             <span className="text-sm">{candidato.telefone}</span>
-                                           </div>
-                                         </div>
-                                       </div>
-                                       
-                                       {/* Sobre o Candidato */}
-                                       <div className="space-y-2">
-                                         <Label className="text-sm sm:text-base font-medium">Sobre o Candidato</Label>
-                                         <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
-                                           {candidato.sobre_voce}
-                                         </p>
-                                       </div>
-                                       
-                                       {/* Objetivo de Vendas */}
-                                       <div className="space-y-2">
-                                         <Label className="text-sm sm:text-base font-medium">Objetivo de Vendas</Label>
-                                         <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
-                                           {candidato.objetivo_vendas}
-                                         </p>
-                                       </div>
-                                       
-                                       {/* Status */}
-                                       <div className="flex items-center justify-between pt-4 border-t">
-                                         <Label className="text-sm sm:text-base font-medium">Status:</Label>
-                                         <CandidaturaStatusSelector candidatura={candidato} allowStatusChange size="sm" />
-                                       </div>
-                                     </div>
-                                  </DialogContent>
+                                    <DialogContent className="w-[95vw] max-w-[600px] max-h-[95vh] overflow-y-auto">
+                                      <DialogHeader className="space-y-3">
+                                        <DialogTitle className="text-lg sm:text-xl">
+                                          {candidato.nome}
+                                        </DialogTitle>
+                                        <DialogDescription className="text-sm text-muted-foreground">
+                                          Candidatura enviada em {new Date(candidato.created_at).toLocaleDateString('pt-BR')}
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      
+                                      <div className="space-y-4 sm:space-y-6">
+                                        <div className="space-y-2">
+                                          <Label htmlFor="nome" className="text-sm font-medium">Nome *</Label>
+                                          <Input
+                                            id="nome"
+                                            value={candidato.nome}
+                                            readOnly
+                                            className="h-10 sm:h-11"
+                                          />
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                          <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
+                                          <Input
+                                            id="email"
+                                            type="email"
+                                            value={candidato.email}
+                                            readOnly
+                                            className="h-10 sm:h-11"
+                                          />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                          <Label htmlFor="telefone" className="text-sm font-medium">Telefone</Label>
+                                          <Input
+                                            id="telefone"
+                                            value={candidato.telefone}
+                                            readOnly
+                                            className="h-10 sm:h-11"
+                                          />
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                          <Label htmlFor="sobre" className="text-sm font-medium">Sobre o Candidato</Label>
+                                          <Textarea
+                                            id="sobre"
+                                            value={candidato.sobre_voce}
+                                            readOnly
+                                            className="min-h-[80px] resize-none"
+                                          />
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                          <Label htmlFor="objetivo" className="text-sm font-medium">Objetivo de Vendas</Label>
+                                          <Textarea
+                                            id="objetivo"
+                                            value={candidato.objetivo_vendas}
+                                            readOnly
+                                            className="min-h-[80px] resize-none"
+                                          />
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                          <Label htmlFor="status" className="text-sm font-medium">Status *</Label>
+                                          <div className="flex items-center h-10 sm:h-11">
+                                            <CandidaturaStatusSelector candidatura={candidato} allowStatusChange size="sm" />
+                                          </div>
+                                        </div>
+                                        
+                                        <div className="flex justify-end pt-4 border-t">
+                                          <DialogClose asChild>
+                                            <Button
+                                              variant="outline"
+                                              className="w-full sm:w-auto"
+                                            >
+                                              Fechar
+                                            </Button>
+                                          </DialogClose>
+                                        </div>
+                                      </div>
+                                   </DialogContent>
                                 </Dialog>
                                 
                                 {candidato.status === 'pendente' && (
