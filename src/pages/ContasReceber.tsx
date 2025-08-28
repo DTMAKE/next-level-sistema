@@ -251,6 +251,11 @@ export default function ContasReceber() {
                             {" • "}Vencimento: {format(new Date(receita.data_vencimento), "dd/MM/yyyy", { locale: ptBR })}
                           </span>
                         )}
+                        {receita.venda?.vendedor?.name && (
+                          <div className="text-xs text-muted-foreground/80">
+                            Venda feita por {receita.venda.vendedor.name}
+                          </div>
+                        )}
                       </div>
                     </div>
                     

@@ -31,12 +31,13 @@ export interface TransacaoFinanceira {
   observacoes?: string;
   created_at: string;
   updated_at: string;
+  comissao_id?: string | null;
   categoria?: CategoriaFinanceira;
   venda?: {
     id: string;
     cliente_id: string;
     user_id: string;
-    profiles?: {
+    vendedor?: {
       id: string;
       name: string;
     };
@@ -124,7 +125,10 @@ export function useTransacoesMes(data: Date) {
             id,
             cliente_id,
             user_id,
-            profiles(id, name)
+            vendedor:profiles!vendas_user_id_fkey(
+              id,
+              name
+            )
           )
         `)
         .gte("data_transacao", inicioMes)
