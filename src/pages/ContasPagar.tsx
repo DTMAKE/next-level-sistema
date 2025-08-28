@@ -222,52 +222,11 @@ export default function ContasPagar() {
       </div>
 
       {/* Monthly navigation */}
-      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-        <Button variant="outline" size="sm" onClick={handlePreviousMonth}>
-          ←
-        </Button>
-        
+      <div className="flex justify-center">
         <MonthYearPicker 
           selected={selectedDate}
           onSelect={handleDateChange}
         />
-        
-        <Button variant="outline" size="sm" onClick={handleNextMonth}>
-          →
-        </Button>
-        
-        <Button variant="outline" size="sm" onClick={handleCurrentMonth}>
-          Hoje
-        </Button>
-        
-        {/* Commission sync button */}
-        {isAdmin ? (
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => sincronizarTodasComissoes.mutate()}
-            disabled={sincronizarTodasComissoes.isPending}
-          >
-            <RefreshCw className={cn(
-              "h-4 w-4 mr-2",
-              sincronizarTodasComissoes.isPending && "animate-spin"
-            )} />
-            Sincronizar Todas
-          </Button>
-        ) : (
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => sincronizarComissoes.mutate()}
-            disabled={sincronizarComissoes.isPending}
-          >
-            <RefreshCw className={cn(
-              "h-4 w-4 mr-2",
-              sincronizarComissoes.isPending && "animate-spin"
-            )} />
-            Sincronizar
-          </Button>
-        )}
       </div>
 
       {/* Stats cards */}
