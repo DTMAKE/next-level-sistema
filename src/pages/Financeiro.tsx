@@ -29,10 +29,22 @@ import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 export default function Financeiro() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-  const { data: resumo, isLoading: isLoadingResumo } = useResumoFinanceiro(selectedDate);
-  const { data: transacoes, isLoading: isLoadingTransacoes } = useTransacoesMes(selectedDate);
-  const { data: categorias } = useCategorias();
+  const { data: resumo, isLoading: isLoadingResumo, error: errorResumo } = useResumoFinanceiro(selectedDate);
+  const { data: transacoes, isLoading: isLoadingTransacoes, error: errorTransacoes } = useTransacoesMes(selectedDate);
+  const { data: categorias, error: errorCategorias } = useCategorias();
   const sincronizarVendas = useSincronizarVendas();
+
+  // Debug do componente Financeiro
+  console.log('💼 Financeiro Component - Estado atual:');
+  console.log('- selectedDate:', selectedDate);
+  console.log('- resumo:', resumo);
+  console.log('- resumo loading:', isLoadingResumo);
+  console.log('- resumo error:', errorResumo);
+  console.log('- transacoes:', transacoes);
+  console.log('- transacoes loading:', isLoadingTransacoes);
+  console.log('- transacoes error:', errorTransacoes);
+  console.log('- categorias:', categorias);
+  console.log('- categorias error:', errorCategorias);
 
   const handlePreviousMonth = () => {
     setSelectedDate(prev => subMonths(prev, 1));

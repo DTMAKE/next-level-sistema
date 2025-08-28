@@ -73,6 +73,11 @@ export function useCategorias() {
   return useQuery({
     queryKey: ["categorias-financeiras", user?.id],
     queryFn: async () => {
+      console.log('🏷️ useCategorias - Executando query com os parâmetros:');
+      console.log('- User:', user);
+      console.log('- User ID:', user?.id);
+      console.log('- User Role:', user?.role);
+
       let query = supabase
         .from("categorias_financeiras")
         .select("*")
@@ -80,12 +85,19 @@ export function useCategorias() {
 
       // Filter by user_id unless user is admin
       if (user && user.role !== 'admin') {
+        console.log('🔒 Aplicando filtro de user_id para categorias (não é admin)');
         query = query.eq("user_id", user.id);
+      } else {
+        console.log('🔓 Admin mode para categorias - sem filtro de user_id');
       }
 
       const { data, error } = await query.order("nome");
 
-      if (error) throw error;
+      console.log('📂 Categorias encontradas:', data?.length || 0, data);
+      if (error) {
+        console.error('❌ Erro ao buscar categorias:', error);
+        throw error;
+      }
       return data as CategoriaFinanceira[];
     },
     enabled: !!user,
@@ -101,6 +113,14 @@ export function useTransacoesMes(data: Date) {
   return useQuery({
     queryKey: ["transacoes-financeiras", inicioMes, fimMes, user?.id],
     queryFn: async () => {
+      console.log('🔍 useTransacoesMes - Executando query com os parâmetros:');
+      console.log('- User:', user);
+      console.log('- User ID:', user?.id);
+      console.log('- User Role:', user?.role);
+      console.log('- Início do mês:', inicioMes);
+      console.log('- Fim do mês:', fimMes);
+      console.log('- Data original:', data);
+
       let query = supabase
         .from("transacoes_financeiras")
         .select(`
@@ -118,12 +138,23 @@ export function useTransacoesMes(data: Date) {
 
       // Filter by user_id unless user is admin
       if (user && user.role !== 'admin') {
+        console.log('💡 Aplicando filtro por user_id (não é admin)');
         query = query.eq("user_id", user.id);
+      } else {
+        console.log('👑 Usuário é admin - sem filtro de user_id');
       }
 
       const { data: transacoes, error } = await query.order("data_transacao", { ascending: false });
 
-      if (error) throw error;
+      console.log('📊 Resultado da query transações:');
+      console.log('- Erro:', error);
+      console.log('- Dados retornados:', transacoes);
+      console.log('- Quantidade de transações:', transacoes?.length || 0);
+
+      if (error) {
+        console.error('❌ Erro na query de transações:', error);
+        throw error;
+      }
       return transacoes as any;
     },
     enabled: !!user,
@@ -139,6 +170,13 @@ export function useResumoFinanceiro(data: Date) {
   return useQuery({
     queryKey: ["resumo-financeiro", inicioMes, fimMes, user?.id],
     queryFn: async () => {
+      console.log('💰 useResumoFinanceiro - Executando query com os parâmetros:');
+      console.log('- User:', user);
+      console.log('- User ID:', user?.id);
+      console.log('- User Role:', user?.role);
+      console.log('- Início do mês:', inicioMes);
+      console.log('- Fim do mês:', fimMes);
+
       // Buscar receitas
       let receitasQuery = supabase
         .from("transacoes_financeiras")
@@ -149,11 +187,18 @@ export function useResumoFinanceiro(data: Date) {
 
       // Filter by user_id unless user is admin
       if (user && user.role !== 'admin') {
+        console.log('🔒 Aplicando filtro de user_id para receitas (não é admin)');
         receitasQuery = receitasQuery.eq("user_id", user.id);
+      } else {
+        console.log('🔓 Admin mode para receitas - sem filtro de user_id');
       }
 
       const { data: receitas, error: errorReceitas } = await receitasQuery;
-      if (errorReceitas) throw errorReceitas;
+      console.log('💵 Receitas encontradas:', receitas?.length || 0, receitas);
+      if (errorReceitas) {
+        console.error('❌ Erro ao buscar receitas:', errorReceitas);
+        throw errorReceitas;
+      }
 
       // Buscar despesas
       let despesasQuery = supabase
@@ -165,23 +210,34 @@ export function useResumoFinanceiro(data: Date) {
 
       // Filter by user_id unless user is admin
       if (user && user.role !== 'admin') {
+        console.log('🔒 Aplicando filtro de user_id para despesas (não é admin)');
         despesasQuery = despesasQuery.eq("user_id", user.id);
+      } else {
+        console.log('🔓 Admin mode para despesas - sem filtro de user_id');
       }
 
       const { data: despesas, error: errorDespesas } = await despesasQuery;
-      if (errorDespesas) throw errorDespesas;
+      console.log('💸 Despesas encontradas:', despesas?.length || 0, despesas);
+      if (errorDespesas) {
+        console.error('❌ Erro ao buscar despesas:', errorDespesas);
+        throw errorDespesas;
+      }
 
       const receita_total = receitas?.reduce((acc, item) => acc + Number(item.valor), 0) || 0;
       const despesa_total = despesas?.reduce((acc, item) => acc + Number(item.valor), 0) || 0;
       const lucro_liquido = receita_total - despesa_total;
       const margem_lucro = receita_total > 0 ? (lucro_liquido / receita_total) * 100 : 0;
 
-      return {
+      const resumo = {
         receita_total,
         despesa_total,
         lucro_liquido,
         margem_lucro,
       } as ResumoFinanceiro;
+
+      console.log('📈 Resumo calculado:', resumo);
+
+      return resumo;
     },
     enabled: !!user,
   });

@@ -41,9 +41,20 @@ export default function ContasPagar() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const { data: transacoes, isLoading } = useTransacoesMes(selectedDate);
-  const { data: categorias } = useCategorias();
+  const { data: transacoes, isLoading, error: errorTransacoes } = useTransacoesMes(selectedDate);
+  const { data: categorias, error: errorCategorias } = useCategorias();
   const { user } = useAuth();
+
+  // Debug do componente ContasPagar
+  console.log('💳 ContasPagar Component - Estado atual:');
+  console.log('- selectedDate:', selectedDate);
+  console.log('- user:', user);
+  console.log('- transacoes:', transacoes);
+  console.log('- transacoes loading:', isLoading);
+  console.log('- transacoes error:', errorTransacoes);
+  console.log('- categorias:', categorias);
+  console.log('- categorias error:', errorCategorias);
+
   const sincronizarComissoes = useSincronizarComissoes();
   const sincronizarTodasComissoes = useSincronizarTodasComissoes();
   const marcarComissaoPaga = useMarcarComissaoPaga();
