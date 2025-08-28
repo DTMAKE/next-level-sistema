@@ -6,60 +6,47 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { 
   TrendingDown, 
   Search, 
   Filter, 
   Plus,
+  Edit,
+  Eye,
   Calendar,
   DollarSign,
-  RefreshCw,
-  Wallet,
   Check,
-  Grid,
-  List
+  Wallet
 } from "lucide-react";
-import { format, addMonths, subMonths } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { useTransacoesMes, useCategorias, useSincronizarComissoes, useSincronizarTodasComissoes, useMarcarComissaoPaga, useUpdateTransacaoStatus } from "@/hooks/useFinanceiro";
+import { useTransacoesMes, useCategorias, useMarcarComissaoPaga, useUpdateTransacaoStatus } from "@/hooks/useFinanceiro";
 import { useAuth } from "@/contexts/AuthContext";
 import { TransacaoDialog } from "@/components/Financeiro/TransacaoDialog";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
-import { StatusFilter } from "@/components/Financeiro/StatusFilter";
 import { TransacaoStatusSelector } from "@/components/Financeiro/TransacaoStatusSelector";
-import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export default function ContasPagar() {
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categoriaFilter, setCategoriaFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [viewMode, setViewMode] = useState<"cards" | "table">(isMobile ? "cards" : "table");
-  const itemsPerPage = 25;
+  const itemsPerPage = 10;
 
-  const { data: transacoes, isLoading, error: errorTransacoes } = useTransacoesMes(selectedDate);
-  const { data: categorias, error: errorCategorias } = useCategorias();
+  const { data: transacoes, isLoading } = useTransacoesMes(selectedDate);
+  const { data: categorias } = useCategorias();
   const { user } = useAuth();
 
-  // Debug do componente ContasPagar
-  console.log('💳 ContasPagar Component - Estado atual:');
-  console.log('- selectedDate:', selectedDate);
-  console.log('- user:', user);
-  console.log('- transacoes:', transacoes);
-  console.log('- transacoes loading:', isLoading);
-  console.log('- transacoes error:', errorTransacoes);
-  console.log('- categorias:', categorias);
-  console.log('- categorias error:', errorCategorias);
-
-  const sincronizarComissoes = useSincronizarComissoes();
-  const sincronizarTodasComissoes = useSincronizarTodasComissoes();
   const marcarComissaoPaga = useMarcarComissaoPaga();
   const updateTransacaoStatus = useUpdateTransacaoStatus();
   
@@ -98,38 +85,10 @@ export default function ContasPagar() {
     }
   };
 
-  // Reset page when search changes
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
-  };
-
-  // Reset page when date changes
-  const handleDateChange = (date: Date) => {
-    setSelectedDate(date);
-    setCurrentPage(1);
-  };
-
-  const handlePreviousMonth = () => {
-    const newDate = subMonths(selectedDate, 1);
-    handleDateChange(newDate);
-  };
-
-  const handleNextMonth = () => {
-    const newDate = addMonths(selectedDate, 1);
-    handleDateChange(newDate);
-  };
-
-  const handleCurrentMonth = () => {
-    handleDateChange(new Date());
-  };
-
   const handleMarcarComoPaga = (despesa: any) => {
     if (despesa.comissao_id) {
-      // Se tem comissao_id, marcar a comissão como paga (isso vai sincronizar automaticamente)
       marcarComissaoPaga.mutate(despesa.comissao_id);
     } else {
-      // Caso contrário, apenas atualizar o status da transação
       updateTransacaoStatus.mutate({ id: despesa.id, status: 'confirmada' });
     }
   };
@@ -166,198 +125,153 @@ export default function ContasPagar() {
   // Calcular comissões especificamente
   const comissoes = filteredDespesas.filter(d => d.categoria?.nome?.toLowerCase().includes('comiss'));
   const totalComissoes = comissoes.reduce((sum, d) => sum + Number(d.valor), 0);
-  const comissoesPendentes = comissoes.filter(d => d.status === 'pendente').reduce((sum, d) => sum + Number(d.valor), 0);
 
-  // Generate pagination numbers
-  const generatePaginationNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = isMobile ? 3 : 5;
-    const halfVisible = Math.floor(maxVisiblePages / 2);
-    let startPage = Math.max(1, currentPage - halfVisible);
-    let endPage = Math.min(totalPages, currentPage + halfVisible);
+  return (
+    <div className="space-y-3 sm:space-y-6 p-3 sm:p-6">
+      {/* Header */}
+      <div className="space-y-3 sm:space-y-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Contas a Pagar</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Controle de despesas e contas a pagar
+          </p>
+        </div>
 
-    // Adjust if we're near the beginning or end
-    if (currentPage <= halfVisible) {
-      endPage = Math.min(totalPages, maxVisiblePages);
-    }
-    if (currentPage > totalPages - halfVisible) {
-      startPage = Math.max(1, totalPages - maxVisiblePages + 1);
-    }
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-    return pages;
-  };
+        {/* Controles de data */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <MonthYearPicker 
+            selected={selectedDate}
+            onSelect={setSelectedDate}
+          />
+          
+          <TransacaoDialog tipo="despesa">
+            <Button className="w-full sm:w-auto">
+              <Plus className="h-4 w-4 mr-2" />
+              <span className="sm:inline">Nova Despesa</span>
+            </Button>
+          </TransacaoDialog>
+        </div>
+      </div>
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Contas a Pagar</h1>
+      {/* Cards de Resumo */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <Card>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                </div>
-              ))}
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Total a Pagar</CardTitle>
+            <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-red-600">
+              {formatCurrency(totalDespesas)}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Pendentes</CardTitle>
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-yellow-600">
+              {formatCurrency(despesasPendentes)}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-2 lg:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Pagas</CardTitle>
+            <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-green-600">
+              {formatCurrency(despesasPagas)}
             </div>
           </CardContent>
         </Card>
       </div>
-    );
-  }
 
-  return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div className="flex flex-row justify-between items-center gap-2 sm:gap-4">
-        <h1 className="font-bold mx-0 py-0 text-xl sm:text-2xl lg:text-3xl truncate">Contas a Pagar</h1>
-        <TransacaoDialog tipo="despesa">
-          <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm shrink-0 whitespace-nowrap">
-            <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden xs:inline">Nova </span>Despesa
-          </Button>
-        </TransacaoDialog>
-      </div>
-
-      {/* Monthly navigation */}
-      <div className="flex justify-center">
-        <MonthYearPicker 
-          selected={selectedDate}
-          onSelect={handleDateChange}
-        />
-      </div>
-
-      {/* Stats cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-        <Card className="p-3 sm:p-4 lg:p-6">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="p-2 sm:p-3 rounded-lg bg-red-500/10 shrink-0">
-              <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-red-500" />
+      {/* Card de Comissões (separado) */}
+      {totalComissoes > 0 && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Comissões Total</CardTitle>
+            <Wallet className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-purple-600">
+              {formatCurrency(totalComissoes)}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm lg:text-base text-muted-foreground">Total a Pagar</p>
-              <p className="text-sm sm:text-lg lg:text-xl xl:text-2xl font-bold truncate">
-                {formatCurrency(totalDespesas)}
-              </p>
-            </div>
-          </div>
+          </CardContent>
         </Card>
+      )}
 
-        <Card className="p-3 sm:p-4 lg:p-6">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="p-2 sm:p-3 rounded-lg bg-yellow-500/10 shrink-0">
-              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-yellow-500" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm lg:text-base text-muted-foreground">Pendentes</p>
-              <p className="text-sm sm:text-lg lg:text-xl xl:text-2xl font-bold truncate">
-                {formatCurrency(despesasPendentes)}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-3 sm:p-4 lg:p-6">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="p-2 sm:p-3 rounded-lg bg-green-500/10 shrink-0">
-              <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-green-500" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm lg:text-base text-muted-foreground">Pagas</p>
-              <p className="text-sm sm:text-lg lg:text-xl xl:text-2xl font-bold truncate">
-                {formatCurrency(despesasPagas)}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-3 sm:p-4 lg:p-6">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="p-2 sm:p-3 rounded-lg bg-purple-500/10 shrink-0">
-              <Wallet className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-purple-500" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm lg:text-base text-muted-foreground">Comissões</p>
-              <p className="text-sm sm:text-lg lg:text-xl xl:text-2xl font-bold truncate">
-                {formatCurrency(totalComissoes)}
-              </p>
-              {comissoesPendentes > 0 && (
-                <div className="text-xs text-muted-foreground mt-1">
-                  {formatCurrency(comissoesPendentes)} pendentes
-                </div>
-              )}
-            </div>
-          </div>
-        </Card>
-      </div>
-
+      {/* Filtros */}
       <Card>
-        <CardHeader className="p-4 sm:p-6">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-row gap-2 items-center">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Buscar despesas..." 
-                  className="pl-10 h-10 text-sm" 
-                  value={searchTerm} 
-                  onChange={e => handleSearchChange(e.target.value)} 
-                />
-              </div>
-              
-              <StatusFilter
-                value={statusFilter}
-                onValueChange={setStatusFilter}
-                size="sm"
-              />
-
-              <Select value={categoriaFilter} onValueChange={setCategoriaFilter}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  {categorias?.filter(c => c.tipo === 'despesa').map(categoria => (
-                    <SelectItem key={categoria.id} value={categoria.id}>
-                      {categoria.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Button variant="outline" size="sm" onClick={() => {
-                setSearchTerm("");
-                setStatusFilter("all");
-                setCategoriaFilter("all");
-                setCurrentPage(1);
-              }}>
-                <Filter className="h-4 w-4" />
-                <span className="ml-2 hidden sm:inline">Limpar</span>
-              </Button>
-              
-              {!isMobile && (
-                <div className="flex items-center gap-2 ml-2">
-                  <Button variant={viewMode === "cards" ? "default" : "outline"} size="sm" onClick={() => setViewMode("cards")}>
-                    <Grid className="h-4 w-4" />
-                  </Button>
-                  <Button variant={viewMode === "table" ? "default" : "outline"} size="sm" onClick={() => setViewMode("table")}>
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-            
-            {filteredDespesas.length > 0 && (
-              <div className="text-sm text-muted-foreground">
-                Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredDespesas.length)} de {filteredDespesas.length} despesas
-              </div>
-            )}
-          </div>
+        <CardHeader className="p-3 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Filtros</CardTitle>
         </CardHeader>
-        
-        <CardContent className="p-4 sm:p-6">
+        <CardContent className="p-3 sm:p-6 pt-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por descrição..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os status</SelectItem>
+                <SelectItem value="pendente">Pendente</SelectItem>
+                <SelectItem value="confirmada">Paga</SelectItem>
+                <SelectItem value="cancelada">Cancelada</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={categoriaFilter} onValueChange={setCategoriaFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as categorias</SelectItem>
+                {categorias?.filter(c => c.tipo === 'despesa').map(categoria => (
+                  <SelectItem key={categoria.id} value={categoria.id}>
+                    {categoria.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Button variant="outline" onClick={() => {
+              setSearchTerm("");
+              setStatusFilter("all");
+              setCategoriaFilter("all");
+              setCurrentPage(1);
+            }} className="col-span-1 sm:col-span-2 lg:col-span-1">
+              <Filter className="h-4 w-4 mr-2" />
+              Limpar
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Lista de Despesas */}
+      <Card>
+        <CardHeader className="p-3 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Despesas do Período</CardTitle>
+          <CardDescription className="text-sm">
+            {filteredDespesas.length} despesa(s) encontrada(s)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-3 sm:p-6 pt-0">
           {isLoading ? (
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -376,7 +290,7 @@ export default function ContasPagar() {
               </p>
               {!searchTerm && (
                 <TransacaoDialog tipo="despesa">
-                  <Button className="gradient-premium border-0 text-background">
+                  <Button>
                     <Plus className="mr-2 h-4 w-4" />
                     Adicionar Despesa
                   </Button>
@@ -384,121 +298,64 @@ export default function ContasPagar() {
               )}
             </div>
           ) : (
-            <>
-              {viewMode === "cards" || isMobile ? (
-                // Card View (Mobile and Desktop when cards selected)
-                <div className="space-y-3">
-                  {paginatedDespesas.map(despesa => (
-                    <Card key={despesa.id} className="p-4 hover:shadow-md transition-shadow">
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <DollarSign className="h-4 w-4 text-red-500 shrink-0" />
-                            <div className="min-w-0 flex-1">
-                              <h3 className="font-semibold text-base truncate">
-                                {despesa.descricao || 'Despesa sem descrição'}
-                              </h3>
-                              {isComissao(despesa) && despesa.venda?.profiles?.name && (
-                                <p className="text-sm text-muted-foreground">
-                                  Venda feita por {despesa.venda.profiles.name}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                          <TransacaoStatusSelector 
-                            transacao={despesa}
-                            size="sm"
-                          />
-                        </div>
-                        
-                        <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground">
-                              {despesa.categoria?.nome || 'Sem categoria'}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Calendar className="h-4 w-4" />
-                            <span>{format(new Date(despesa.data_transacao), "dd/MM/yyyy", { locale: ptBR })}</span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-red-600 text-lg">
-                            {formatCurrency(Number(despesa.valor))}
-                          </span>
-                          
-                          <div className="flex gap-2">
-                            {isAdmin && despesa.status === 'pendente' && (
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleMarcarComoPaga(despesa)}
-                                disabled={marcarComissaoPaga.isPending || updateTransacaoStatus.isPending}
-                                className="text-green-600 hover:text-green-700"
-                              >
-                                <Check className="h-3 w-3 mr-1" />
-                                Marcar Paga
-                              </Button>
-                            )}
-                          </div>
-                        </div>
+            <div className="space-y-3 sm:space-y-4">
+              {paginatedDespesas.map((despesa) => (
+                <div key={despesa.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 min-w-0 flex-1">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-sm sm:text-base">
+                        {despesa.descricao || 'Despesa sem descrição'}
                       </div>
-                    </Card>
-                  ))}
+                      <div className="text-xs sm:text-sm text-muted-foreground">
+                        {despesa.categoria?.nome || 'Sem categoria'} • {format(new Date(despesa.data_transacao), "dd/MM/yyyy", { locale: ptBR })}
+                        {despesa.data_vencimento && (
+                          <span className="block sm:inline">
+                            {" • "}Vencimento: {format(new Date(despesa.data_vencimento), "dd/MM/yyyy", { locale: ptBR })}
+                          </span>
+                        )}
+                      </div>
+                      {isComissao(despesa) && despesa.venda?.profiles?.name && (
+                        <div className="text-xs text-muted-foreground">
+                          Venda feita por {despesa.venda.profiles.name}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center justify-between sm:justify-end gap-2">
+                      <Badge className={cn("text-xs", getStatusColor(despesa.status || 'pendente'))}>
+                        {getStatusLabel(despesa.status || 'pendente')}
+                      </Badge>
+                      
+                      <div className="font-bold text-red-600 text-sm sm:text-base">
+                        {formatCurrency(Number(despesa.valor))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-1 justify-end sm:justify-start">
+                    {despesa.status === 'pendente' && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleMarcarComoPaga(despesa)}
+                        disabled={marcarComissaoPaga.isPending || updateTransacaoStatus.isPending}
+                      >
+                        <Check className="h-4 w-4" />
+                        <span className="sr-only">Marcar como paga</span>
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="sm">
+                      <Eye className="h-4 w-4" />
+                      <span className="sr-only">Visualizar</span>
+                    </Button>
+                    <Button variant="ghost" size="sm">
+                      <Edit className="h-4 w-4" />
+                      <span className="sr-only">Editar</span>
+                    </Button>
+                  </div>
                 </div>
-              ) : (
-                // Table View (Desktop only)
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Descrição</TableHead>
-                        <TableHead>Categoria</TableHead>
-                        <TableHead>Valor</TableHead>
-                        <TableHead>Data</TableHead>
-                        <TableHead>Status</TableHead>
-                        
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {paginatedDespesas.map(despesa => (
-                        <TableRow key={despesa.id} className="hover:bg-muted/50">
-                          <TableCell className="font-medium">
-                            <div className="flex items-center gap-2">
-                              <DollarSign className="h-4 w-4 text-red-500" />
-                              <div>
-                                <div>{despesa.descricao || 'Despesa sem descrição'}</div>
-                                {isComissao(despesa) && despesa.venda?.profiles?.name && (
-                                  <div className="text-xs text-muted-foreground">
-                                    Venda feita por {despesa.venda.profiles.name}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <span>{despesa.categoria?.nome || 'Sem categoria'}</span>
-                          </TableCell>
-                          <TableCell>
-                            <span className="font-semibold text-red-600">
-                              {formatCurrency(Number(despesa.valor))}
-                            </span>
-                          </TableCell>
-                          <TableCell>{format(new Date(despesa.data_transacao), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
-                          <TableCell>
-                            <TransacaoStatusSelector 
-                              transacao={despesa}
-                              size="sm"
-                            />
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -510,30 +367,11 @@ export default function ContasPagar() {
             <PaginationItem>
               <PaginationPrevious 
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                className={cn(
-                  "cursor-pointer",
-                  currentPage === 1 && "pointer-events-none opacity-50"
-                )}
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
               />
             </PaginationItem>
             
-            {/* Show ellipsis and smart pagination */}
-            {currentPage > 2 && (
-              <>
-                <PaginationItem>
-                  <PaginationLink onClick={() => setCurrentPage(1)} className="cursor-pointer">
-                    1
-                  </PaginationLink>
-                </PaginationItem>
-                {currentPage > 3 && (
-                  <PaginationItem>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                )}
-              </>
-            )}
-            
-            {generatePaginationNumbers().map(page => (
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
               <PaginationItem key={page}>
                 <PaginationLink
                   onClick={() => setCurrentPage(page)}
@@ -545,28 +383,10 @@ export default function ContasPagar() {
               </PaginationItem>
             ))}
             
-            {currentPage < totalPages - 1 && (
-              <>
-                {currentPage < totalPages - 2 && (
-                  <PaginationItem>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                )}
-                <PaginationItem>
-                  <PaginationLink onClick={() => setCurrentPage(totalPages)} className="cursor-pointer">
-                    {totalPages}
-                  </PaginationLink>
-                </PaginationItem>
-              </>
-            )}
-            
             <PaginationItem>
               <PaginationNext 
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                className={cn(
-                  "cursor-pointer",
-                  currentPage === totalPages && "pointer-events-none opacity-50"
-                )}
+                className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
               />
             </PaginationItem>
           </PaginationContent>
