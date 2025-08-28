@@ -14,16 +14,13 @@ import {
   Search, 
   Filter, 
   Plus,
-  Edit,
-  Eye,
   Calendar,
   DollarSign,
   RefreshCw,
   Wallet,
   Check,
   Grid,
-  List,
-  MoreVertical
+  List
 } from "lucide-react";
 import { format, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -480,23 +477,6 @@ export default function ContasPagar() {
                                 Marcar Paga
                               </Button>
                             )}
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm">
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  Visualizar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Editar
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
                           </div>
                         </div>
                       </div>
@@ -514,7 +494,7 @@ export default function ContasPagar() {
                         <TableHead>Valor</TableHead>
                         <TableHead>Data</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead className="w-[100px]">Ações</TableHead>
+                        
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -547,38 +527,6 @@ export default function ContasPagar() {
                               transacao={despesa}
                               size="sm"
                             />
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              {isAdmin && despesa.status === 'pendente' && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleMarcarComoPaga(despesa)}
-                                  disabled={marcarComissaoPaga.isPending || updateTransacaoStatus.isPending}
-                                  className="text-green-600 hover:text-green-700"
-                                >
-                                  <Check className="h-4 w-4" />
-                                </Button>
-                              )}
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm">
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>
-                                    <Eye className="h-4 w-4 mr-2" />
-                                    Visualizar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Editar
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
