@@ -12,11 +12,11 @@ export interface ComissaoVendedor {
   observacoes?: string;
   created_at: string;
   // Dados da venda
-  venda?: {
+  vendas?: {
     id: string;
     cliente_id: string;
     data_venda: string;
-    cliente?: {
+    clientes?: {
       nome: string;
     };
   };
@@ -41,11 +41,11 @@ export function useComissoesVendedor() {
         .from('comissoes')
         .select(`
           *,
-          vendas!comissoes_venda_id_fkey(
+          vendas!inner(
             id,
             cliente_id,
             data_venda,
-            clientes(nome)
+            clientes!inner(nome)
           )
         `)
         .eq('vendedor_id', user.id)
