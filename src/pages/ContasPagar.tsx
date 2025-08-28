@@ -210,66 +210,64 @@ export default function ContasPagar() {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold">Contas a Pagar</h1>
-          <TransacaoDialog tipo="despesa">
-            <Button className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0 w-full sm:w-auto">
-              <Plus className="mr-2 h-4 w-4" />
-              Nova Despesa
-            </Button>
-          </TransacaoDialog>
-        </div>
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-row justify-between items-center gap-4">
+        <h1 className="font-bold mx-0 py-0 text-3xl">Contas a Pagar</h1>
+        <TransacaoDialog tipo="despesa">
+          <Button className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0">
+            <Plus className="mr-2 h-4 w-4" />
+            Nova Despesa
+          </Button>
+        </TransacaoDialog>
+      </div>
+
+      {/* Monthly navigation */}
+      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+        <Button variant="outline" size="sm" onClick={handlePreviousMonth}>
+          ←
+        </Button>
         
-        {/* Monthly navigation */}
-        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-          <Button variant="outline" size="sm" onClick={handlePreviousMonth}>
-            ←
+        <MonthYearPicker 
+          selected={selectedDate}
+          onSelect={handleDateChange}
+        />
+        
+        <Button variant="outline" size="sm" onClick={handleNextMonth}>
+          →
+        </Button>
+        
+        <Button variant="outline" size="sm" onClick={handleCurrentMonth}>
+          Hoje
+        </Button>
+        
+        {/* Commission sync button */}
+        {isAdmin ? (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => sincronizarTodasComissoes.mutate()}
+            disabled={sincronizarTodasComissoes.isPending}
+          >
+            <RefreshCw className={cn(
+              "h-4 w-4 mr-2",
+              sincronizarTodasComissoes.isPending && "animate-spin"
+            )} />
+            Sincronizar Todas
           </Button>
-          
-          <MonthYearPicker 
-            selected={selectedDate}
-            onSelect={handleDateChange}
-          />
-          
-          <Button variant="outline" size="sm" onClick={handleNextMonth}>
-            →
+        ) : (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => sincronizarComissoes.mutate()}
+            disabled={sincronizarComissoes.isPending}
+          >
+            <RefreshCw className={cn(
+              "h-4 w-4 mr-2",
+              sincronizarComissoes.isPending && "animate-spin"
+            )} />
+            Sincronizar
           </Button>
-          
-          <Button variant="outline" size="sm" onClick={handleCurrentMonth}>
-            Hoje
-          </Button>
-          
-          {/* Commission sync button */}
-          {isAdmin ? (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => sincronizarTodasComissoes.mutate()}
-              disabled={sincronizarTodasComissoes.isPending}
-            >
-              <RefreshCw className={cn(
-                "h-4 w-4 mr-2",
-                sincronizarTodasComissoes.isPending && "animate-spin"
-              )} />
-              Sincronizar Todas
-            </Button>
-          ) : (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => sincronizarComissoes.mutate()}
-              disabled={sincronizarComissoes.isPending}
-            >
-              <RefreshCw className={cn(
-                "h-4 w-4 mr-2",
-                sincronizarComissoes.isPending && "animate-spin"
-              )} />
-              Sincronizar
-            </Button>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Stats cards */}
@@ -337,61 +335,59 @@ export default function ContasPagar() {
       </div>
 
       <Card>
-        <CardHeader className="p-3 sm:p-4 lg:p-6">
-          <div className="flex flex-col gap-3 sm:gap-4">
-            <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-6 lg:items-center">
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-row gap-2 items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
                   placeholder="Buscar despesas..." 
-                  className="pl-10 h-9 sm:h-10 text-sm" 
+                  className="pl-10 h-10 text-sm" 
                   value={searchTerm} 
                   onChange={e => handleSearchChange(e.target.value)} 
                 />
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 lg:gap-2">
-                  <StatusFilter
-                    value={statusFilter}
-                    onValueChange={setStatusFilter}
-                    size="sm"
-                  />
+              <StatusFilter
+                value={statusFilter}
+                onValueChange={setStatusFilter}
+                size="sm"
+              />
 
-                <Select value={categoriaFilter} onValueChange={setCategoriaFilter}>
-                  <SelectTrigger className="w-full sm:w-[160px]">
-                    <SelectValue placeholder="Categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
-                    {categorias?.filter(c => c.tipo === 'despesa').map(categoria => (
-                      <SelectItem key={categoria.id} value={categoria.id}>
-                        {categoria.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <Select value={categoriaFilter} onValueChange={setCategoriaFilter}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {categorias?.filter(c => c.tipo === 'despesa').map(categoria => (
+                    <SelectItem key={categoria.id} value={categoria.id}>
+                      {categoria.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-                <Button variant="outline" size="sm" onClick={() => {
-                  setSearchTerm("");
-                  setStatusFilter("all");
-                  setCategoriaFilter("all");
-                  setCurrentPage(1);
-                }}>
-                  <Filter className="h-4 w-4 mr-2" />
-                  Limpar
-                </Button>
-                
-                {!isMobile && (
-                  <div className="flex items-center gap-2">
-                    <Button variant={viewMode === "cards" ? "default" : "outline"} size="sm" onClick={() => setViewMode("cards")}>
-                      <Grid className="h-4 w-4" />
-                    </Button>
-                    <Button variant={viewMode === "table" ? "default" : "outline"} size="sm" onClick={() => setViewMode("table")}>
-                      <List className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
+              <Button variant="outline" size="sm" onClick={() => {
+                setSearchTerm("");
+                setStatusFilter("all");
+                setCategoriaFilter("all");
+                setCurrentPage(1);
+              }}>
+                <Filter className="h-4 w-4" />
+                <span className="ml-2 hidden sm:inline">Limpar</span>
+              </Button>
+              
+              {!isMobile && (
+                <div className="flex items-center gap-2 ml-2">
+                  <Button variant={viewMode === "cards" ? "default" : "outline"} size="sm" onClick={() => setViewMode("cards")}>
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                  <Button variant={viewMode === "table" ? "default" : "outline"} size="sm" onClick={() => setViewMode("table")}>
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
             
             {filteredDespesas.length > 0 && (
