@@ -258,49 +258,59 @@ export default function Candidatos() {
                               
                               <div className="space-y-4 sm:space-y-6">
                                 <div className="space-y-2">
-                                  <Label className="text-sm font-medium">Nome</Label>
-                                  <p className="text-sm text-foreground p-3 bg-muted/30 rounded-md border">
-                                    {candidato.nome}
-                                  </p>
+                                  <Label htmlFor="nome" className="text-sm font-medium">Nome *</Label>
+                                  <Input
+                                    id="nome"
+                                    value={candidato.nome}
+                                    readOnly
+                                    className="h-10 sm:h-11"
+                                  />
                                 </div>
                                 
                                 <div className="space-y-2">
-                                  <Label className="text-sm font-medium">Email</Label>
-                                  <p className="text-sm text-foreground p-3 bg-muted/30 rounded-md border">
-                                    {candidato.email}
-                                  </p>
+                                  <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
+                                  <Input
+                                    id="email"
+                                    type="email"
+                                    value={candidato.email}
+                                    readOnly
+                                    className="h-10 sm:h-11"
+                                  />
                                 </div>
 
-                                {candidato.telefone && (
-                                  <div className="space-y-2">
-                                    <Label className="text-sm font-medium">Telefone</Label>
-                                    <p className="text-sm text-foreground p-3 bg-muted/30 rounded-md border">
-                                      {candidato.telefone}
-                                    </p>
-                                  </div>
-                                )}
-                                
-                                {candidato.sobre_voce && (
-                                  <div className="space-y-2">
-                                    <Label className="text-sm font-medium">Sobre o Candidato</Label>
-                                    <div className="text-sm text-foreground p-3 bg-muted/30 rounded-md border min-h-[80px] whitespace-pre-wrap">
-                                      {candidato.sobre_voce}
-                                    </div>
-                                  </div>
-                                )}
-                                
-                                {candidato.objetivo_vendas && (
-                                  <div className="space-y-2">
-                                    <Label className="text-sm font-medium">Objetivo de Vendas</Label>
-                                    <div className="text-sm text-foreground p-3 bg-muted/30 rounded-md border min-h-[80px] whitespace-pre-wrap">
-                                      {candidato.objetivo_vendas}
-                                    </div>
-                                  </div>
-                                )}
+                                <div className="space-y-2">
+                                  <Label htmlFor="telefone" className="text-sm font-medium">Telefone</Label>
+                                  <Input
+                                    id="telefone"
+                                    value={candidato.telefone}
+                                    readOnly
+                                    className="h-10 sm:h-11"
+                                  />
+                                </div>
                                 
                                 <div className="space-y-2">
-                                  <Label className="text-sm font-medium">Status</Label>
-                                  <div className="flex items-center">
+                                  <Label htmlFor="sobre" className="text-sm font-medium">Sobre o Candidato</Label>
+                                  <Textarea
+                                    id="sobre"
+                                    value={candidato.sobre_voce}
+                                    readOnly
+                                    className="min-h-[80px] resize-none"
+                                  />
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <Label htmlFor="objetivo" className="text-sm font-medium">Objetivo de Vendas</Label>
+                                  <Textarea
+                                    id="objetivo"
+                                    value={candidato.objetivo_vendas}
+                                    readOnly
+                                    className="min-h-[80px] resize-none"
+                                  />
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <Label htmlFor="status" className="text-sm font-medium">Status *</Label>
+                                  <div className="flex items-center h-10 sm:h-11">
                                     <CandidaturaStatusSelector candidatura={candidato} allowStatusChange size="sm" />
                                   </div>
                                 </div>
@@ -376,53 +386,63 @@ export default function Candidatos() {
                                       </DialogHeader>
                                       
                                       <div className="space-y-4 sm:space-y-6">
-                                         <div className="space-y-2">
-                                           <Label className="text-sm font-medium">Nome</Label>
-                                           <p className="text-sm text-foreground p-3 bg-muted/30 rounded-md border">
-                                             {candidato.nome}
-                                           </p>
-                                         </div>
-                                         
-                                         <div className="space-y-2">
-                                           <Label className="text-sm font-medium">Email</Label>
-                                           <p className="text-sm text-foreground p-3 bg-muted/30 rounded-md border">
-                                             {candidato.email}
-                                           </p>
-                                         </div>
+                                        <div className="space-y-2">
+                                          <Label htmlFor="nome" className="text-sm font-medium">Nome *</Label>
+                                          <Input
+                                            id="nome"
+                                            value={candidato.nome}
+                                            readOnly
+                                            className="h-10 sm:h-11"
+                                          />
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                          <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
+                                          <Input
+                                            id="email"
+                                            type="email"
+                                            value={candidato.email}
+                                            readOnly
+                                            className="h-10 sm:h-11"
+                                          />
+                                        </div>
 
-                                         {candidato.telefone && (
-                                           <div className="space-y-2">
-                                             <Label className="text-sm font-medium">Telefone</Label>
-                                             <p className="text-sm text-foreground p-3 bg-muted/30 rounded-md border">
-                                               {candidato.telefone}
-                                             </p>
-                                           </div>
-                                         )}
-                                         
-                                         {candidato.sobre_voce && (
-                                           <div className="space-y-2">
-                                             <Label className="text-sm font-medium">Sobre o Candidato</Label>
-                                             <div className="text-sm text-foreground p-3 bg-muted/30 rounded-md border min-h-[80px] whitespace-pre-wrap">
-                                               {candidato.sobre_voce}
-                                             </div>
-                                           </div>
-                                         )}
-                                         
-                                         {candidato.objetivo_vendas && (
-                                           <div className="space-y-2">
-                                             <Label className="text-sm font-medium">Objetivo de Vendas</Label>
-                                             <div className="text-sm text-foreground p-3 bg-muted/30 rounded-md border min-h-[80px] whitespace-pre-wrap">
-                                               {candidato.objetivo_vendas}
-                                             </div>
-                                           </div>
-                                         )}
-                                         
-                                         <div className="space-y-2">
-                                           <Label className="text-sm font-medium">Status</Label>
-                                           <div className="flex items-center">
-                                             <CandidaturaStatusSelector candidatura={candidato} allowStatusChange size="sm" />
-                                           </div>
-                                         </div>
+                                        <div className="space-y-2">
+                                          <Label htmlFor="telefone" className="text-sm font-medium">Telefone</Label>
+                                          <Input
+                                            id="telefone"
+                                            value={candidato.telefone}
+                                            readOnly
+                                            className="h-10 sm:h-11"
+                                          />
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                          <Label htmlFor="sobre" className="text-sm font-medium">Sobre o Candidato</Label>
+                                          <Textarea
+                                            id="sobre"
+                                            value={candidato.sobre_voce}
+                                            readOnly
+                                            className="min-h-[80px] resize-none"
+                                          />
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                          <Label htmlFor="objetivo" className="text-sm font-medium">Objetivo de Vendas</Label>
+                                          <Textarea
+                                            id="objetivo"
+                                            value={candidato.objetivo_vendas}
+                                            readOnly
+                                            className="min-h-[80px] resize-none"
+                                          />
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                          <Label htmlFor="status" className="text-sm font-medium">Status *</Label>
+                                          <div className="flex items-center h-10 sm:h-11">
+                                            <CandidaturaStatusSelector candidatura={candidato} allowStatusChange size="sm" />
+                                          </div>
+                                        </div>
                                         
                                         <div className="flex justify-end pt-4 border-t">
                                           <DialogClose asChild>
