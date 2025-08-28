@@ -210,12 +210,12 @@ export default function ContasPagar() {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
       <div className="space-y-4">
-        <div className="flex flex-row justify-between items-center gap-4 sm:gap-6">
-          <h1 className="text-3xl font-bold">Contas a Pagar</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-2xl sm:text-3xl font-bold">Contas a Pagar</h1>
           <TransacaoDialog tipo="despesa">
-            <Button className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0">
+            <Button className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0 w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" />
               Nova Despesa
             </Button>
@@ -223,7 +223,7 @@ export default function ContasPagar() {
         </div>
         
         {/* Monthly navigation */}
-        <div className="flex items-center justify-center sm:justify-start gap-2">
+        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
           <Button variant="outline" size="sm" onClick={handlePreviousMonth}>
             ←
           </Button>
@@ -273,57 +273,61 @@ export default function ContasPagar() {
       </div>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-        <Card className="p-4 sm:p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-red-500/10">
-              <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-red-500" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+        <Card className="p-3 sm:p-4 lg:p-6">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-lg bg-red-500/10 shrink-0">
+              <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-red-500" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm sm:text-base text-muted-foreground">Total a Pagar</p>
-              <p className="text-lg sm:text-xl lg:text-2xl font-bold truncate">
+              <p className="text-xs sm:text-sm lg:text-base text-muted-foreground">Total a Pagar</p>
+              <p className="text-sm sm:text-lg lg:text-xl xl:text-2xl font-bold truncate">
                 {formatCurrency(totalDespesas)}
               </p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-4 sm:p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-yellow-500/10">
-              <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500" />
+        <Card className="p-3 sm:p-4 lg:p-6">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-lg bg-yellow-500/10 shrink-0">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-yellow-500" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm sm:text-base text-muted-foreground">Pendentes</p>
-              <p className="text-xl sm:text-2xl font-bold">{formatCurrency(despesasPendentes)}</p>
+              <p className="text-xs sm:text-sm lg:text-base text-muted-foreground">Pendentes</p>
+              <p className="text-sm sm:text-lg lg:text-xl xl:text-2xl font-bold truncate">
+                {formatCurrency(despesasPendentes)}
+              </p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-4 sm:p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-green-500/10">
-              <TrendingDown className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />
+        <Card className="p-3 sm:p-4 lg:p-6">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-lg bg-green-500/10 shrink-0">
+              <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-green-500" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm sm:text-base text-muted-foreground">Pagas</p>
-              <p className="text-xl sm:text-2xl font-bold">{formatCurrency(despesasPagas)}</p>
+              <p className="text-xs sm:text-sm lg:text-base text-muted-foreground">Pagas</p>
+              <p className="text-sm sm:text-lg lg:text-xl xl:text-2xl font-bold truncate">
+                {formatCurrency(despesasPagas)}
+              </p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-4 sm:p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-purple-500/10">
-              <Wallet className="h-5 w-5 sm:h-6 sm:w-6 text-purple-500" />
+        <Card className="p-3 sm:p-4 lg:p-6">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-lg bg-purple-500/10 shrink-0">
+              <Wallet className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-purple-500" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm sm:text-base text-muted-foreground">Comissões</p>
-              <p className="text-lg sm:text-xl lg:text-2xl font-bold truncate">
+              <p className="text-xs sm:text-sm lg:text-base text-muted-foreground">Comissões</p>
+              <p className="text-sm sm:text-lg lg:text-xl xl:text-2xl font-bold truncate">
                 {formatCurrency(totalComissoes)}
               </p>
               {comissoesPendentes > 0 && (
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-muted-foreground mt-1">
                   {formatCurrency(comissoesPendentes)} pendentes
                 </div>
               )}
@@ -333,15 +337,20 @@ export default function ContasPagar() {
       </div>
 
       <Card>
-        <CardHeader className="p-4 sm:p-6">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-center">
+        <CardHeader className="p-3 sm:p-4 lg:p-6">
+          <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-6 lg:items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Buscar despesas..." className="pl-10 h-10 text-sm" value={searchTerm} onChange={e => handleSearchChange(e.target.value)} />
+                <Input 
+                  placeholder="Buscar despesas..." 
+                  className="pl-10 h-9 sm:h-10 text-sm" 
+                  value={searchTerm} 
+                  onChange={e => handleSearchChange(e.target.value)} 
+                />
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 lg:gap-2">
                   <StatusFilter
                     value={statusFilter}
                     onValueChange={setStatusFilter}
