@@ -313,8 +313,8 @@ export default function ContasPagar() {
                       <div className="font-medium text-sm sm:text-base">
                         {despesa.descricao || 'Despesa sem descrição'}
                         {isComissao(despesa) && (
-                          <Badge variant="secondary" className="ml-2 text-xs">
-                            Comissão
+                          <Badge variant="secondary" className="ml-2 text-xs bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
+                            💰 Comissão
                           </Badge>
                         )}
                       </div>
