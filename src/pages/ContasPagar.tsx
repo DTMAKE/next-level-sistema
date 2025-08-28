@@ -211,12 +211,12 @@ export default function ContasPagar() {
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
-      <div className="flex flex-row justify-between items-center gap-4">
-        <h1 className="font-bold mx-0 py-0 text-3xl">Contas a Pagar</h1>
+      <div className="flex flex-row justify-between items-center gap-2 sm:gap-4">
+        <h1 className="font-bold mx-0 py-0 text-xl sm:text-2xl lg:text-3xl truncate">Contas a Pagar</h1>
         <TransacaoDialog tipo="despesa">
-          <Button className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0">
-            <Plus className="mr-2 h-4 w-4" />
-            Nova Despesa
+          <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm shrink-0 whitespace-nowrap">
+            <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Nova </span>Despesa
           </Button>
         </TransacaoDialog>
       </div>
