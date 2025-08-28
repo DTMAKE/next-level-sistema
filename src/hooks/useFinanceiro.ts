@@ -310,7 +310,7 @@ export function useSincronizarVendas() {
   });
 }
 
-// Hook para sincronizar comissões como despesas
+// Hook para sincronizar comissões como despesas  
 export function useSincronizarComissoes() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
