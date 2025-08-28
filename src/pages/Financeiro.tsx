@@ -13,6 +13,7 @@ import {
   Settings,
   RefreshCw
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -65,8 +66,30 @@ export default function Financeiro() {
     }).format(value);
   };
 
+  const formatCompactCurrency = (value: number) => {
+    const absValue = Math.abs(value);
+    if (absValue >= 1000000) {
+      return `R$ ${(value / 1000000).toFixed(1)}M`;
+    }
+    if (absValue >= 1000) {
+      return `R$ ${(value / 1000).toFixed(0)}K`;
+    }
+    return formatCurrency(value);
+  };
+
+  const formatFullCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
   const formatPercentage = (value: number) => {
     return `${value.toFixed(1)}%`;
+  };
+
+  const shouldUseCompactFormat = (value: number) => {
+    return Math.abs(value) >= 100000; // Use compact format for values >= 100K
   };
 
   // Agrupar transações por categoria
@@ -119,61 +142,116 @@ export default function Financeiro() {
       </div>
 
       {/* Cards de Resumo Mensal */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Receita Total</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <div className="text-lg sm:text-2xl font-bold text-green-600">
-              {isLoadingResumo ? "..." : formatCurrency(resumo?.receita_total || 0)}
-            </div>
-          </CardContent>
-        </Card>
+      <TooltipProvider>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {/* Receita Total */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium leading-tight">Receita Total</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            </CardHeader>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className={cn(
+                    "font-bold text-green-600 leading-tight cursor-default",
+                    shouldUseCompactFormat(resumo?.receita_total || 0)
+                      ? "text-base sm:text-xl"
+                      : "text-lg sm:text-2xl"
+                  )}>
+                    {isLoadingResumo 
+                      ? "..." 
+                      : shouldUseCompactFormat(resumo?.receita_total || 0)
+                        ? formatCompactCurrency(resumo?.receita_total || 0)
+                        : formatCurrency(resumo?.receita_total || 0)
+                    }
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{formatFullCurrency(resumo?.receita_total || 0)}</p>
+                </TooltipContent>
+              </Tooltip>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Despesas Totais</CardTitle>
-            <TrendingDown className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <div className="text-lg sm:text-2xl font-bold text-red-600">
-              {isLoadingResumo ? "..." : formatCurrency(resumo?.despesa_total || 0)}
-            </div>
-          </CardContent>
-        </Card>
+          {/* Despesas Totais */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium leading-tight">Despesas Totais</CardTitle>
+              <TrendingDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            </CardHeader>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className={cn(
+                    "font-bold text-red-600 leading-tight cursor-default",
+                    shouldUseCompactFormat(resumo?.despesa_total || 0)
+                      ? "text-base sm:text-xl"
+                      : "text-lg sm:text-2xl"
+                  )}>
+                    {isLoadingResumo 
+                      ? "..." 
+                      : shouldUseCompactFormat(resumo?.despesa_total || 0)
+                        ? formatCompactCurrency(resumo?.despesa_total || 0)
+                        : formatCurrency(resumo?.despesa_total || 0)
+                    }
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{formatFullCurrency(resumo?.despesa_total || 0)}</p>
+                </TooltipContent>
+              </Tooltip>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Lucro Líquido</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <div className={cn(
-              "text-lg sm:text-2xl font-bold",
-              (resumo?.lucro_liquido || 0) >= 0 ? "text-green-600" : "text-red-600"
-            )}>
-              {isLoadingResumo ? "..." : formatCurrency(resumo?.lucro_liquido || 0)}
-            </div>
-          </CardContent>
-        </Card>
+          {/* Lucro Líquido */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium leading-tight">Lucro Líquido</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            </CardHeader>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className={cn(
+                    "font-bold leading-tight cursor-default",
+                    (resumo?.lucro_liquido || 0) >= 0 ? "text-green-600" : "text-red-600",
+                    shouldUseCompactFormat(resumo?.lucro_liquido || 0)
+                      ? "text-base sm:text-xl"
+                      : "text-lg sm:text-2xl"
+                  )}>
+                    {isLoadingResumo 
+                      ? "..." 
+                      : shouldUseCompactFormat(resumo?.lucro_liquido || 0)
+                        ? formatCompactCurrency(resumo?.lucro_liquido || 0)
+                        : formatCurrency(resumo?.lucro_liquido || 0)
+                    }
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{formatFullCurrency(resumo?.lucro_liquido || 0)}</p>
+                </TooltipContent>
+              </Tooltip>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Margem de Lucro</CardTitle>
-            <Calculator className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <div className={cn(
-              "text-lg sm:text-2xl font-bold",
-              (resumo?.margem_lucro || 0) >= 0 ? "text-green-600" : "text-red-600"
-            )}>
-              {isLoadingResumo ? "..." : formatPercentage(resumo?.margem_lucro || 0)}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          {/* Margem de Lucro */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium leading-tight">Margem de Lucro</CardTitle>
+              <Calculator className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            </CardHeader>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className={cn(
+                "text-lg sm:text-2xl font-bold leading-tight",
+                (resumo?.margem_lucro || 0) >= 0 ? "text-green-600" : "text-red-600"
+              )}>
+                {isLoadingResumo ? "..." : formatPercentage(resumo?.margem_lucro || 0)}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </TooltipProvider>
 
       {/* Ações Rápidas */}
       <Card>
@@ -241,10 +319,22 @@ export default function Financeiro() {
             <div className="space-y-3">
               {Object.entries(despesasPorCategoria).map(([categoria, valor]) => (
                 <div key={categoria} className="flex items-center justify-between">
-                  <span className="text-sm">{categoria}</span>
-                  <span className="font-medium text-red-600 text-sm">
-                    {formatCurrency(Number(valor))}
-                  </span>
+                  <span className="text-sm truncate pr-2">{categoria}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="font-medium text-red-600 text-sm flex-shrink-0 cursor-default">
+                          {shouldUseCompactFormat(Number(valor)) 
+                            ? formatCompactCurrency(Number(valor))
+                            : formatCurrency(Number(valor))
+                          }
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{formatFullCurrency(Number(valor))}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               ))}
             </div>
@@ -290,12 +380,31 @@ export default function Financeiro() {
                       )}
                     </div>
                   </div>
-                  <div className={cn(
-                    "font-medium text-sm sm:text-base flex-shrink-0",
-                    transacao.tipo === 'receita' ? 'text-green-600' : 'text-red-600'
-                  )}>
-                    {transacao.tipo === 'receita' ? '+' : '-'}{formatCurrency(Number(transacao.valor || 0))}
-                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className={cn(
+                          "font-medium flex-shrink-0 cursor-default leading-tight",
+                          transacao.tipo === 'receita' ? 'text-green-600' : 'text-red-600',
+                          shouldUseCompactFormat(Number(transacao.valor || 0))
+                            ? "text-xs sm:text-sm"
+                            : "text-sm sm:text-base"
+                        )}>
+                          {transacao.tipo === 'receita' ? '+' : '-'}
+                          {shouldUseCompactFormat(Number(transacao.valor || 0))
+                            ? formatCompactCurrency(Number(transacao.valor || 0)).replace('R$ ', '')
+                            : formatCurrency(Number(transacao.valor || 0))
+                          }
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          {transacao.tipo === 'receita' ? '+' : '-'}
+                          {formatFullCurrency(Number(transacao.valor || 0))}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               ))}
             </div>
