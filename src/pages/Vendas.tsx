@@ -134,15 +134,15 @@ export default function Vendas() {
       </div>
 
       {/* Stats rápidas */}
-      <div className={`grid grid-cols-1 xs:grid-cols-2 ${user?.role === 'vendedor' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 sm:gap-6`}>
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${user?.role === 'vendedor' ? 'md:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-3 lg:grid-cols-3'} gap-4 sm:gap-6`}>
         <Card className="p-4 sm:p-6">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-lg bg-accent/10">
               <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-accent" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm sm:text-base text-muted-foreground">Total em Vendas</p>
-              <p className="text-xl sm:text-2xl font-bold">
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold truncate">
                 {new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
                 currency: 'BRL'
@@ -157,19 +157,19 @@ export default function Vendas() {
             <div className="p-3 rounded-lg bg-green-500/10">
               <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm sm:text-base text-muted-foreground">Vendas Fechadas</p>
               <p className="text-xl sm:text-2xl font-bold">{vendasFechadas}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-4 sm:p-6 xs:col-span-2 lg:col-span-1">
+        <Card className="p-4 sm:p-6">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-lg bg-yellow-500/10">
               <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm sm:text-base text-muted-foreground">Em Negociação</p>
               <p className="text-xl sm:text-2xl font-bold">{vendasNegociacao}</p>
             </div>
@@ -183,9 +183,9 @@ export default function Vendas() {
               <div className="p-3 rounded-lg bg-primary/10">
                 <Wallet className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-sm sm:text-base text-muted-foreground">Comissões do Mês</p>
-                <p className="text-xl sm:text-2xl font-bold">
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold truncate">
                   {new Intl.NumberFormat('pt-BR', {
                     style: 'currency',
                     currency: 'BRL'
