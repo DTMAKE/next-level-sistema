@@ -282,12 +282,12 @@ export default function Financeiro() {
                       </div>
                       <div className="text-xs sm:text-sm text-muted-foreground">
                         {transacao.categoria?.nome || 'Sem categoria'} • {format(new Date(transacao.data_transacao), "dd/MM/yyyy")}
-                        {transacao.venda?.vendedor?.name && (
-                          <div className="text-xs text-muted-foreground/80">
-                            Venda feita por {transacao.venda.vendedor.name}
-                          </div>
-                        )}
                       </div>
+                      {transacao.venda?.profiles && (
+                        <div className="text-xs text-muted-foreground/80">
+                          Venda feita por {transacao.venda.profiles.name}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className={cn(
