@@ -499,17 +499,47 @@ export function useUpdateTransacaoStatus() {
 
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      // First, get the transaction details to check if it has a comissao_id
+      const { data: transacao, error: fetchError } = await supabase
+        .from('transacoes_financeiras')
+        .select('comissao_id')
+        .eq('id', id)
+        .single();
+      
+      if (fetchError) throw fetchError;
+
+      // Update the transaction status
       const { error } = await supabase
         .from('transacoes_financeiras')
         .update({ status })
         .eq('id', id);
       
       if (error) throw error;
+
+      // If this is a commission transaction being marked as 'confirmada' (paid)
+      // also update the commission status to 'paga'
+      if (transacao?.comissao_id && status === 'confirmada') {
+        const { error: comissaoError } = await supabase
+          .from('comissoes')
+          .update({ 
+            status: 'paga',
+            data_pagamento: new Date().toISOString().split('T')[0],
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', transacao.comissao_id);
+        
+        if (comissaoError) {
+          console.error('Erro ao atualizar status da comissão:', comissaoError);
+          // Don't throw here to avoid breaking the main transaction update
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transacoes-financeiras"] });
       queryClient.invalidateQueries({ queryKey: ["resumo-financeiro"] });
       queryClient.invalidateQueries({ queryKey: ["comissoes-vendedor"] });
+      queryClient.invalidateQueries({ queryKey: ["comissoes-mes-atual"] });
+      queryClient.invalidateQueries({ queryKey: ["comissoes-mes"] });
       toast({
         title: "Sucesso",
         description: "Status da transação atualizado!",
