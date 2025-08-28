@@ -120,7 +120,12 @@ export function useTransacoesMes(data: Date) {
         .select(`
           *,
           categoria:categorias_financeiras(*),
-          venda:vendas(*)
+          venda:vendas(
+            id,
+            cliente_id,
+            user_id,
+            profiles(id, name)
+          )
         `)
         .gte("data_transacao", inicioMes)
         .lte("data_transacao", fimMes);
