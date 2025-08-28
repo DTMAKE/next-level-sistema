@@ -28,16 +28,19 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
   const createTransacao = useCreateTransacao();
   const { data: categorias } = useCategorias();
 
+  // Determina o tipo atual - usa o prop fixo se fornecido, senão usa o do formData
+  const tipoAtual = tipo || formData.tipo;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.valor || !formData.tipo) {
+    if (!formData.valor || !tipoAtual) {
       return;
     }
 
     try {
       await createTransacao.mutateAsync({
-        tipo: formData.tipo,
+        tipo: tipoAtual,
         categoria_id: formData.categoria_id,
         valor: Number(formData.valor),
         descricao: formData.descricao,
@@ -55,7 +58,7 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
     }
   };
 
-  const categoriasFiltradas = categorias?.filter(cat => cat.tipo === formData.tipo);
+  const categoriasFiltradas = categorias?.filter(cat => cat.tipo === tipoAtual);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -70,30 +73,48 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            Nova {formData.tipo === 'receita' ? 'Receita' : 'Despesa'}
+            Nova {tipoAtual === 'receita' ? 'Receita' : 'Despesa'}
           </DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="tipo">Tipo</Label>
-              <Select
-                value={formData.tipo}
-                onValueChange={(value: 'receita' | 'despesa') => 
-                  setFormData(prev => ({ ...prev, tipo: value, categoria_id: undefined }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="receita">Receita</SelectItem>
-                  <SelectItem value="despesa">Despesa</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Só mostra o grid com tipo e valor quando não há tipo fixo */}
+          {!tipo ? (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="tipo">Tipo</Label>
+                <Select
+                  value={formData.tipo}
+                  onValueChange={(value: 'receita' | 'despesa') => 
+                    setFormData(prev => ({ ...prev, tipo: value, categoria_id: undefined }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="receita">Receita</SelectItem>
+                    <SelectItem value="despesa">Despesa</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="valor">Valor (R$)</Label>
+                <Input
+                  id="valor"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0,00"
+                  value={formData.valor || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, valor: Number(e.target.value) }))}
+                  required
+                />
+              </div>
+            </div>
+          ) : (
+            /* Quando há tipo fixo, valor ocupa toda a linha */
             <div className="space-y-2">
               <Label htmlFor="valor">Valor (R$)</Label>
               <Input
@@ -107,7 +128,7 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
                 required
               />
             </div>
-          </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="categoria">Categoria</Label>
