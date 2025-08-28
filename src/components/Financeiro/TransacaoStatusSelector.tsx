@@ -18,15 +18,29 @@ export function TransacaoStatusSelector({ transacao, disabled = false, size = "m
   const updateTransacaoStatus = useUpdateTransacaoStatus();
   const { toast } = useToast();
 
-  const currentStatus = transacao.status === "pendente" ? "Pendente" : "Pago";
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "pendente":
+        return "Pendente";
+      case "confirmada":
+        return "Pago";
+      case "cancelada":
+        return "Cancelada";
+      default:
+        return "Pendente";
+    }
+  };
+
+  const currentStatus = getStatusLabel(transacao.status);
   
-  const handleStatusChange = async (newStatus: "Pendente" | "Pago") => {
+  const handleStatusChange = async (newStatus: "Pendente" | "Pago" | "Cancelada") => {
     if (disabled || updateTransacaoStatus.isPending) return;
 
     // Don't update if it's the same status
     if (currentStatus === newStatus) return;
 
-    const statusValue = newStatus === "Pendente" ? "pendente" : "confirmada";
+    const statusValue = newStatus === "Pendente" ? "pendente" : 
+                       newStatus === "Pago" ? "confirmada" : "cancelada";
     
     try {
       await updateTransacaoStatus.mutateAsync({
@@ -50,16 +64,27 @@ export function TransacaoStatusSelector({ transacao, disabled = false, size = "m
   };
 
   const getStatusStyles = (status: string) => {
-    if (status === "Pendente") {
-      return {
-        badge: "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100",
-        dot: "bg-yellow-600"
-      };
-    } else {
-      return {
-        badge: "bg-green-100 text-green-800 border-green-200 hover:bg-green-100", 
-        dot: "bg-green-600"
-      };
+    switch (status) {
+      case "Pendente":
+        return {
+          badge: "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100",
+          dot: "bg-yellow-600"
+        };
+      case "Pago":
+        return {
+          badge: "bg-green-100 text-green-800 border-green-200 hover:bg-green-100", 
+          dot: "bg-green-600"
+        };
+      case "Cancelada":
+        return {
+          badge: "bg-red-100 text-red-800 border-red-200 hover:bg-red-100",
+          dot: "bg-red-600"
+        };
+      default:
+        return {
+          badge: "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100",
+          dot: "bg-yellow-600"
+        };
     }
   };
 
@@ -131,6 +156,17 @@ export function TransacaoStatusSelector({ transacao, disabled = false, size = "m
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-yellow-600" />
             <span className="font-medium">Pendente</span>
+          </div>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem 
+          onClick={() => handleStatusChange("Cancelada")}
+          className="cursor-pointer"
+          disabled={currentStatus === "Cancelada"}
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-red-600" />
+            <span className="font-medium">Cancelada</span>
           </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
