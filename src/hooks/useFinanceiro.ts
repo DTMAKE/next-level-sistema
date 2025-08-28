@@ -123,11 +123,7 @@ export function useTransacoesMes(data: Date) {
           venda:vendas(
             id,
             cliente_id,
-            user_id,
-            profiles:user_id(
-              id,
-              name
-            )
+            user_id
           )
         `)
         .gte("data_transacao", inicioMes)
