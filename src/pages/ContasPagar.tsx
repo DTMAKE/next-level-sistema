@@ -14,12 +14,13 @@ import {
   Calendar,
   DollarSign,
   RefreshCw,
-  Wallet
+  Wallet,
+  Check
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { useTransacoesMes, useCategorias, useSincronizarComissoes, useSincronizarTodasComissoes } from "@/hooks/useFinanceiro";
+import { useTransacoesMes, useCategorias, useSincronizarComissoes, useSincronizarTodasComissoes, useMarcarComissaoPaga, useUpdateTransacaoStatus } from "@/hooks/useFinanceiro";
 import { useAuth } from "@/contexts/AuthContext";
 import { TransacaoDialog } from "@/components/Financeiro/TransacaoDialog";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
@@ -45,6 +46,8 @@ export default function ContasPagar() {
   const { user } = useAuth();
   const sincronizarComissoes = useSincronizarComissoes();
   const sincronizarTodasComissoes = useSincronizarTodasComissoes();
+  const marcarComissaoPaga = useMarcarComissaoPaga();
+  const updateTransacaoStatus = useUpdateTransacaoStatus();
   
   const isAdmin = user?.role === 'admin';
 
@@ -79,6 +82,20 @@ export default function ContasPagar() {
       default:
         return status;
     }
+  };
+
+  const handleMarcarComoPaga = (despesa: any) => {
+    if (despesa.comissao_id) {
+      // Se tem comissao_id, marcar a comissão como paga (isso vai sincronizar automaticamente)
+      marcarComissaoPaga.mutate(despesa.comissao_id);
+    } else {
+      // Caso contrário, apenas atualizar o status da transação
+      updateTransacaoStatus.mutate({ id: despesa.id, status: 'confirmada' });
+    }
+  };
+
+  const isComissao = (despesa: any) => {
+    return despesa.categoria?.nome?.toLowerCase().includes('comiss') || despesa.comissao_id;
   };
 
   // Filtrar apenas despesas
@@ -295,6 +312,11 @@ export default function ContasPagar() {
                     <div className="min-w-0 flex-1">
                       <div className="font-medium text-sm sm:text-base">
                         {despesa.descricao || 'Despesa sem descrição'}
+                        {isComissao(despesa) && (
+                          <Badge variant="secondary" className="ml-2 text-xs">
+                            Comissão
+                          </Badge>
+                        )}
                       </div>
                       <div className="text-xs sm:text-sm text-muted-foreground">
                         {despesa.categoria?.nome || 'Sem categoria'} • {format(new Date(despesa.data_transacao), "dd/MM/yyyy", { locale: ptBR })}
@@ -318,6 +340,20 @@ export default function ContasPagar() {
                   </div>
                   
                   <div className="flex gap-1 justify-end sm:justify-start">
+                    {/* Botão para marcar como paga (apenas para admins e se estiver pendente) */}
+                    {isAdmin && despesa.status === 'pendente' && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleMarcarComoPaga(despesa)}
+                        disabled={marcarComissaoPaga.isPending || updateTransacaoStatus.isPending}
+                        className="text-green-600 hover:text-green-700"
+                      >
+                        <Check className="h-4 w-4" />
+                        <span className="sr-only">Marcar como paga</span>
+                      </Button>
+                    )}
+                    
                     <Button variant="ghost" size="sm">
                       <Eye className="h-4 w-4" />
                       <span className="sr-only">Visualizar</span>

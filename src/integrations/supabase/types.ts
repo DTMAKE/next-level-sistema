@@ -1066,6 +1066,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      mark_commission_as_paid: {
+        Args: { p_comissao_id: string }
+        Returns: undefined
+      }
       sync_all_commissions_to_financial: {
         Args: Record<PropertyKey, never>
         Returns: undefined

@@ -417,3 +417,70 @@ export function useSincronizarTodasComissoes() {
     },
   });
 }
+
+// Hook para marcar comissão como paga
+export function useMarcarComissaoPaga() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (comissaoId: string) => {
+      const { error } = await supabase.rpc('mark_commission_as_paid', {
+        p_comissao_id: comissaoId
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transacoes-financeiras"] });
+      queryClient.invalidateQueries({ queryKey: ["resumo-financeiro"] });
+      queryClient.invalidateQueries({ queryKey: ["comissoes-vendedor"] });
+      toast({
+        title: "Sucesso",
+        description: "Comissão marcada como paga!",
+      });
+    },
+    onError: (error: any) => {
+      console.error("Erro ao marcar comissão como paga:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao marcar comissão como paga",
+        variant: "destructive",
+      });
+    },
+  });
+
+}
+
+// Hook para atualizar status de transação financeira
+export function useUpdateTransacaoStatus() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase
+        .from('transacoes_financeiras')
+        .update({ status })
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transacoes-financeiras"] });
+      queryClient.invalidateQueries({ queryKey: ["resumo-financeiro"] });
+      queryClient.invalidateQueries({ queryKey: ["comissoes-vendedor"] });
+      toast({
+        title: "Sucesso",
+        description: "Status da transação atualizado!",
+      });
+    },
+    onError: (error: any) => {
+      console.error("Erro ao atualizar status da transação:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar status da transação",
+        variant: "destructive",
+      });
+    },
+  });
+}
