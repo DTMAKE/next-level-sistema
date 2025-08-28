@@ -480,23 +480,6 @@ export default function ContasPagar() {
                                 Marcar Paga
                               </Button>
                             )}
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm">
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  Visualizar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Editar
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
                           </div>
                         </div>
                       </div>
@@ -561,23 +544,6 @@ export default function ContasPagar() {
                                   <Check className="h-4 w-4" />
                                 </Button>
                               )}
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm">
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>
-                                    <Eye className="h-4 w-4 mr-2" />
-                                    Visualizar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Editar
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
                             </div>
                           </TableCell>
                         </TableRow>
