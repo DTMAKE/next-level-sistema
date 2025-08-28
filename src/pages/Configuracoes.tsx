@@ -107,7 +107,7 @@ export default function Configuracoes() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0">
-                <div className="text-xl sm:text-2xl font-bold text-secondary">
+                <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {usuarios?.filter(u => u.role === 'vendedor').length || 0}
                 </div>
               </CardContent>
