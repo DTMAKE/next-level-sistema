@@ -62,7 +62,7 @@ export function ComissaoCard() {
               <span className="text-sm">Pendente</span>
             </div>
             <Badge variant="outline" className="bg-yellow-500/10 text-yellow-700 border-yellow-200">
-              {formatCurrency(comissaoMes.totalPendente)}
+              {formatCurrency(comissaoMes.comissaoPendente)}
             </Badge>
           </div>
 
@@ -72,13 +72,13 @@ export function ComissaoCard() {
               <span className="text-sm">Pago</span>
             </div>
             <Badge variant="outline" className="bg-green-500/10 text-green-700 border-green-200">
-              {formatCurrency(comissaoMes.totalPago)}
+              {formatCurrency(comissaoMes.comissaoPaga)}
             </Badge>
           </div>
 
           <div className="pt-2 border-t">
             <div className="flex justify-between items-center text-xs text-muted-foreground">
-              <span>{comissaoMes.quantidadeVendas} vendas com comissão</span>
+              <span>{comissaoMes.numeroVendas} vendas com comissão</span>
               <Button 
                 variant="ghost" 
                 size="sm" 

@@ -17,25 +17,37 @@ export interface ComissaoVendedor {
 
 export interface ComissaoMesAtual {
   totalComissao: number;
-  totalPendente: number;
-  totalPago: number;
-  quantidadeVendas: number;
+  comissaoPendente: number;
+  comissaoPaga: number;
+  numeroVendas: number;
 }
 
-export function useComissoesVendedor() {
+export function useComissoesVendedor(selectedDate?: Date) {
   const { user } = useAuth();
-
+  
   return useQuery({
-    queryKey: ['comissoes-vendedor', user?.id],
+    queryKey: ['comissoes-vendedor', user?.id, selectedDate],
     queryFn: async () => {
       if (!user?.id) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
+      
+      let query = supabase
         .from('comissoes')
         .select('*')
         .eq('vendedor_id', user.id)
         .order('created_at', { ascending: false });
-
+      
+      // Filter by month if selectedDate is provided
+      if (selectedDate) {
+        const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+        const endOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+        
+        query = query
+          .gte('mes_referencia', startOfMonth.toISOString().split('T')[0])
+          .lte('mes_referencia', endOfMonth.toISOString().split('T')[0]);
+      }
+      
+      const { data, error } = await query;
+      
       if (error) throw error;
       return data as ComissaoVendedor[];
     },
@@ -68,18 +80,59 @@ export function useComissoesMesAtual() {
       const comissoes = data || [];
       
       const totalComissao = comissoes.reduce((sum, c) => sum + (c.valor_comissao || 0), 0);
-      const totalPendente = comissoes
+      const comissaoPendente = comissoes
         .filter(c => c.status === 'pendente')
         .reduce((sum, c) => sum + (c.valor_comissao || 0), 0);
-      const totalPago = comissoes
+      const comissaoPaga = comissoes
         .filter(c => c.status === 'paga')
         .reduce((sum, c) => sum + (c.valor_comissao || 0), 0);
 
       return {
         totalComissao,
-        totalPendente,
-        totalPago,
-        quantidadeVendas: comissoes.length,
+        comissaoPendente,
+        comissaoPaga,
+        numeroVendas: comissoes.length,
+      };
+    },
+    enabled: !!user?.id,
+  });
+}
+
+export function useComissoesMes(selectedDate: Date) {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['comissoes-mes', user?.id, selectedDate.getFullYear(), selectedDate.getMonth()],
+    queryFn: async (): Promise<ComissaoMesAtual> => {
+      if (!user?.id) throw new Error('User not authenticated');
+      
+      const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+      const endOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+      
+      const { data, error } = await supabase
+        .from('comissoes')
+        .select('valor_comissao, status')
+        .eq('vendedor_id', user.id)
+        .gte('mes_referencia', startOfMonth.toISOString().split('T')[0])
+        .lte('mes_referencia', endOfMonth.toISOString().split('T')[0]);
+      
+      if (error) throw error;
+      
+      const comissoes = data || [];
+      const totalComissao = comissoes.reduce((sum, c) => sum + Number(c.valor_comissao), 0);
+      const comissaoPendente = comissoes
+        .filter(c => c.status === 'pendente')
+        .reduce((sum, c) => sum + Number(c.valor_comissao), 0);
+      const comissaoPaga = comissoes
+        .filter(c => c.status === 'paga')
+        .reduce((sum, c) => sum + Number(c.valor_comissao), 0);
+      const numeroVendas = comissoes.length;
+      
+      return {
+        totalComissao,
+        comissaoPendente,
+        comissaoPaga,
+        numeroVendas
       };
     },
     enabled: !!user?.id,

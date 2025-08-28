@@ -8,19 +8,26 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Plus, Search, Grid, List, Calendar, DollarSign, TrendingUp, Wallet, Building2, Edit, Trash2, MoreVertical } from "lucide-react";
+import { Plus, Search, Grid, List, Calendar, DollarSign, TrendingUp, Wallet, Building2, Edit, Trash2, MoreVertical, RefreshCw } from "lucide-react";
+import { addMonths, subMonths } from "date-fns";
 import { useVendas, useDeleteVenda, type Venda } from "@/hooks/useVendas";
-import { useComissoesMesAtual } from "@/hooks/useComissoesVendedor";
+import { useComissoesMes } from "@/hooks/useComissoesVendedor";
+import { useVendasMes } from "@/hooks/useVendasMes";
+import { useSincronizarComissoes } from "@/hooks/useFinanceiro";
 import { useAuth } from "@/contexts/AuthContext";
 import { VendaDialog } from "@/components/Vendas/VendaDialog";
 import { DeleteVendaDialog } from "@/components/Vendas/DeleteVendaDialog";
 import { QuickStatusChanger } from "@/components/Vendas/QuickStatusChanger";
 import { ComissaoIndicator } from "@/components/Vendas/ComissaoIndicator";
 import { ComissaoCard } from "@/components/Vendas/ComissaoCard";
+import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
+
 const getStatusColor = (status: string) => {
   return "bg-black text-white";
 };
+
 const getStatusLabel = (status: string) => {
   switch (status) {
     case "fechada":
@@ -35,6 +42,7 @@ const getStatusLabel = (status: string) => {
       return status;
   }
 };
+
 export default function Vendas() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -45,31 +53,41 @@ export default function Vendas() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedVenda, setSelectedVenda] = useState<Venda | undefined>();
-  const { data: vendasData, isLoading } = useVendas(searchTerm, currentPage);
-  const { data: comissoesData } = useComissoesMesAtual();
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
+  const { data: vendasData, isLoading } = useVendas(searchTerm, currentPage, 25, selectedDate);
+  const { data: vendasMesData } = useVendasMes(selectedDate);
+  const { data: comissoesData } = useComissoesMes(selectedDate);
+  const sincronizarComissoes = useSincronizarComissoes();
+  
   const vendas = vendasData?.data || [];
   const totalPages = vendasData?.totalPages || 0;
   const total = vendasData?.total || 0;
+
   const handleDialogChange = (open: boolean) => {
     setDialogOpen(open);
     if (!open) {
       setSelectedVenda(undefined);
     }
   };
+
   const handleDeleteDialogChange = (open: boolean) => {
     setDeleteDialogOpen(open);
     if (!open) {
       setSelectedVenda(undefined);
     }
   };
+
   const handleEditVenda = (venda: Venda) => {
     setSelectedVenda(venda);
     setDialogOpen(true);
   };
+
   const handleDeleteVenda = (venda: Venda) => {
     setSelectedVenda(venda);
     setDeleteDialogOpen(true);
   };
+
   const handleNewVenda = () => {
     navigate("/vendas/nova");
   };
@@ -80,10 +98,37 @@ export default function Vendas() {
     setCurrentPage(1);
   };
 
-  // Calcular estatísticas
-  const totalVendas = vendas.reduce((sum, venda) => sum + venda.valor, 0);
-  const vendasFechadas = vendas.filter(venda => venda.status === 'fechada').length;
-  const vendasNegociacao = vendas.filter(venda => venda.status === 'negociacao').length;
+  // Reset page when date changes
+  const handleDateChange = (date: Date) => {
+    setSelectedDate(date);
+    setCurrentPage(1);
+  };
+
+  const handlePreviousMonth = () => {
+    const newDate = subMonths(selectedDate, 1);
+    handleDateChange(newDate);
+  };
+
+  const handleNextMonth = () => {
+    const newDate = addMonths(selectedDate, 1);
+    handleDateChange(newDate);
+  };
+
+  const handleCurrentMonth = () => {
+    handleDateChange(new Date());
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
+  // Use monthly data for statistics
+  const totalVendas = vendasMesData?.totalFaturamento || 0;
+  const vendasFechadas = vendasMesData?.vendasFechadas || 0;
+  const vendasNegociacao = vendasMesData?.vendasNegociacao || 0;
 
   // Generate pagination numbers
   const generatePaginationNumbers = () => {
@@ -105,6 +150,7 @@ export default function Vendas() {
     }
     return pages;
   };
+
   if (!vendasData || isLoading) {
     return (
       <div className="space-y-6">
@@ -124,13 +170,53 @@ export default function Vendas() {
       </div>
     );
   }
-  return <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
-      <div className="flex flex-row justify-between items-center gap-4 sm:gap-6">
-        <h1 className="sm:text-3xl font-bold text-3xl">Vendas</h1>
-        <Button className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0" onClick={handleNewVenda}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nova Venda
-        </Button>
+
+  return (
+    <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
+      <div className="space-y-4">
+        <div className="flex flex-row justify-between items-center gap-4 sm:gap-6">
+          <h1 className="sm:text-3xl font-bold text-3xl">Vendas</h1>
+          <Button className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0" onClick={handleNewVenda}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nova Venda
+          </Button>
+        </div>
+        
+        {/* Monthly navigation */}
+        <div className="flex items-center justify-center sm:justify-start gap-2">
+          <Button variant="outline" size="sm" onClick={handlePreviousMonth}>
+            ←
+          </Button>
+          
+          <MonthYearPicker 
+            selected={selectedDate}
+            onSelect={handleDateChange}
+          />
+          
+          <Button variant="outline" size="sm" onClick={handleNextMonth}>
+            →
+          </Button>
+          
+          <Button variant="outline" size="sm" onClick={handleCurrentMonth}>
+            Hoje
+          </Button>
+          
+          {/* Commission sync button */}
+          {user?.role === 'admin' && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => sincronizarComissoes.mutate()}
+              disabled={sincronizarComissoes.isPending}
+            >
+              <RefreshCw className={cn(
+                "h-4 w-4 mr-2",
+                sincronizarComissoes.isPending && "animate-spin"
+              )} />
+              Sincronizar Comissões
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Stats rápidas */}
@@ -143,10 +229,7 @@ export default function Vendas() {
             <div className="min-w-0 flex-1">
               <p className="text-sm sm:text-base text-muted-foreground">Total em Vendas</p>
               <p className="text-lg sm:text-xl lg:text-2xl font-bold truncate">
-                {new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              }).format(totalVendas)}
+                {formatCurrency(totalVendas)}
               </p>
             </div>
           </div>
@@ -186,10 +269,7 @@ export default function Vendas() {
               <div className="min-w-0 flex-1">
                 <p className="text-sm sm:text-base text-muted-foreground">Comissões do Mês</p>
                 <p className="text-lg sm:text-xl lg:text-2xl font-bold truncate">
-                  {new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                  }).format(comissoesData?.totalComissao || 0)}
+                  {formatCurrency(comissoesData?.totalComissao || 0)}
                 </p>
               </div>
             </div>
@@ -205,45 +285,57 @@ export default function Vendas() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Buscar vendas..." className="pl-10 h-10 text-sm" value={searchTerm} onChange={e => handleSearchChange(e.target.value)} />
               </div>
-              {!isMobile && <div className="flex items-center gap-2">
+              {!isMobile && (
+                <div className="flex items-center gap-2">
                   <Button variant={viewMode === "cards" ? "default" : "outline"} size="sm" onClick={() => setViewMode("cards")}>
                     <Grid className="h-4 w-4" />
                   </Button>
                   <Button variant={viewMode === "table" ? "default" : "outline"} size="sm" onClick={() => setViewMode("table")}>
                     <List className="h-4 w-4" />
                   </Button>
-                </div>}
+                </div>
+              )}
             </div>
             
-            {total > 0 && <div className="text-sm text-muted-foreground">
-                Mostrando {(currentPage - 1) * 10 + 1} - {Math.min(currentPage * 10, total)} de {total} vendas
-              </div>}
+            {total > 0 && (
+              <div className="text-sm text-muted-foreground">
+                Mostrando {(currentPage - 1) * 25 + 1} - {Math.min(currentPage * 25, total)} de {total} vendas
+              </div>
+            )}
           </div>
         </CardHeader>
         
         <CardContent className="p-4 sm:p-6">
-          {isLoading ? <div className="space-y-4">
-              {Array.from({
-            length: 5
-          }).map((_, i) => <div key={i} className="space-y-2">
+          {isLoading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="space-y-2">
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-3/4" />
-                </div>)}
-            </div> : vendas.length === 0 ? <div className="text-center py-12">
+                </div>
+              ))}
+            </div>
+          ) : vendas.length === 0 ? (
+            <div className="text-center py-12">
               <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">Nenhuma venda encontrada</h3>
               <p className="text-muted-foreground mb-4 text-sm">
                 {searchTerm ? "Não encontramos vendas com os termos buscados." : "Comece adicionando sua primeira venda."}
               </p>
-              {!searchTerm && <Button className="gradient-premium border-0 text-background" onClick={handleNewVenda}>
+              {!searchTerm && (
+                <Button className="gradient-premium border-0 text-background" onClick={handleNewVenda}>
                   <Plus className="mr-2 h-4 w-4" />
                   Adicionar Venda
-                </Button>}
-            </div> : <>
-              {viewMode === "cards" || isMobile ?
-          // Card View (Mobile and Desktop when cards selected)
-          <div className="space-y-3">
-                  {vendas.map(venda => <Card key={venda.id} className="p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/vendas/${venda.id}`)}>
+                </Button>
+              )}
+            </div>
+          ) : (
+            <>
+              {viewMode === "cards" || isMobile ? (
+                // Card View (Mobile and Desktop when cards selected)
+                <div className="space-y-3">
+                  {vendas.map(venda => (
+                    <Card key={venda.id} className="p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/vendas/${venda.id}`)}>
                       <div className="flex flex-col gap-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -259,10 +351,7 @@ export default function Vendas() {
                           <div className="flex items-center gap-2">
                             <DollarSign className="h-4 w-4 text-accent" />
                             <span className="font-semibold text-accent">
-                              {new Intl.NumberFormat('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL'
-                      }).format(venda.valor)}
+                              {formatCurrency(venda.valor)}
                             </span>
                             {user?.role === 'vendedor' && <ComissaoIndicator venda={venda} />}
                           </div>
@@ -285,10 +374,12 @@ export default function Vendas() {
                           </Button>
                         </div>
                       </div>
-                    </Card>)}
-                </div> :
-          // Table View (Desktop only)
-          <div className="rounded-md border">
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                // Table View (Desktop only)
+                <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -300,7 +391,8 @@ export default function Vendas() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {vendas.map(venda => <TableRow key={venda.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/vendas/${venda.id}`)}>
+                      {vendas.map(venda => (
+                        <TableRow key={venda.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/vendas/${venda.id}`)}>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
                               <Building2 className="h-4 w-4 text-accent" />
@@ -310,10 +402,7 @@ export default function Vendas() {
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <span className="font-semibold text-accent">
-                                {new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL'
-                        }).format(venda.valor)}
+                                {formatCurrency(venda.valor)}
                               </span>
                               {user?.role === 'vendedor' && <ComissaoIndicator venda={venda} />}
                             </div>
@@ -345,36 +434,48 @@ export default function Vendas() {
                               </DropdownMenu>
                             </div>
                           </TableCell>
-                        </TableRow>)}
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
-                </div>}
+                </div>
+              )}
 
-              {totalPages > 1 && <div className="mt-6">
+              {totalPages > 1 && (
+                <div className="mt-6">
                   <Pagination>
                     <PaginationContent>
-                      {currentPage > 1 && <PaginationItem>
+                      {currentPage > 1 && (
+                        <PaginationItem>
                           <PaginationPrevious onClick={() => setCurrentPage(currentPage - 1)} className="cursor-pointer" />
-                        </PaginationItem>}
+                        </PaginationItem>
+                      )}
                       
-                      {generatePaginationNumbers().map(pageNum => <PaginationItem key={pageNum}>
+                      {generatePaginationNumbers().map(pageNum => (
+                        <PaginationItem key={pageNum}>
                           <PaginationLink onClick={() => setCurrentPage(pageNum)} isActive={pageNum === currentPage} className="cursor-pointer">
                             {pageNum}
                           </PaginationLink>
-                        </PaginationItem>)}
+                        </PaginationItem>
+                      ))}
                       
-                      {currentPage < totalPages && <PaginationItem>
+                      {currentPage < totalPages && (
+                        <PaginationItem>
                           <PaginationNext onClick={() => setCurrentPage(currentPage + 1)} className="cursor-pointer" />
-                        </PaginationItem>}
+                        </PaginationItem>
+                      )}
                     </PaginationContent>
                   </Pagination>
-                </div>}
-            </>}
+                </div>
+              )}
+            </>
+          )}
         </CardContent>
       </Card>
 
       <VendaDialog open={dialogOpen} onOpenChange={handleDialogChange} venda={selectedVenda} />
 
       <DeleteVendaDialog open={deleteDialogOpen} onOpenChange={handleDeleteDialogChange} venda={selectedVenda} />
-    </div>;
+    </div>
+  );
 }

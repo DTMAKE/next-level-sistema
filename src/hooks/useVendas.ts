@@ -58,11 +58,11 @@ export interface VendasResponse {
   totalPages: number;
 }
 
-export function useVendas(searchTerm?: string, page: number = 1, limit: number = 25) {
+export function useVendas(searchTerm?: string, page: number = 1, limit: number = 25, selectedDate?: Date) {
   const { user } = useAuth();
   
   return useQuery({
-    queryKey: ['vendas', user?.id, searchTerm, page, limit],
+    queryKey: ['vendas', user?.id, searchTerm, page, limit, selectedDate],
     queryFn: async (): Promise<VendasResponse> => {
       if (!user?.id) throw new Error('User not authenticated');
       
@@ -78,6 +78,16 @@ export function useVendas(searchTerm?: string, page: number = 1, limit: number =
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1);
+
+      // Filter by month if selectedDate is provided
+      if (selectedDate) {
+        const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+        const endOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+        
+        query = query
+          .gte('data_venda', startOfMonth.toISOString().split('T')[0])
+          .lte('data_venda', endOfMonth.toISOString().split('T')[0]);
+      }
 
       if (searchTerm && searchTerm.trim()) {
         // Buscar por valor, status ou nome do cliente
