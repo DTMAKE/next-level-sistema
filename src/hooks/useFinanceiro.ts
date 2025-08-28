@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 
 // Interfaces
@@ -67,30 +68,40 @@ export interface ResumoFinanceiro {
 
 // Hook para buscar categorias financeiras
 export function useCategorias() {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ["categorias-financeiras"],
+    queryKey: ["categorias-financeiras", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("categorias_financeiras")
         .select("*")
-        .eq("ativo", true)
-        .order("nome");
+        .eq("ativo", true);
+
+      // Filter by user_id unless user is admin
+      if (user && user.role !== 'admin') {
+        query = query.eq("user_id", user.id);
+      }
+
+      const { data, error } = await query.order("nome");
 
       if (error) throw error;
       return data as CategoriaFinanceira[];
     },
+    enabled: !!user,
   });
 }
 
 // Hook para buscar transações financeiras do mês
 export function useTransacoesMes(data: Date) {
+  const { user } = useAuth();
   const inicioMes = format(startOfMonth(data), 'yyyy-MM-dd');
   const fimMes = format(endOfMonth(data), 'yyyy-MM-dd');
 
   return useQuery({
-    queryKey: ["transacoes-financeiras", inicioMes, fimMes],
+    queryKey: ["transacoes-financeiras", inicioMes, fimMes, user?.id],
     queryFn: async () => {
-      const { data: transacoes, error } = await supabase
+      let query = supabase
         .from("transacoes_financeiras")
         .select(`
           *,
@@ -103,41 +114,61 @@ export function useTransacoesMes(data: Date) {
           )
         `)
         .gte("data_transacao", inicioMes)
-        .lte("data_transacao", fimMes)
-        .order("data_transacao", { ascending: false });
+        .lte("data_transacao", fimMes);
+
+      // Filter by user_id unless user is admin
+      if (user && user.role !== 'admin') {
+        query = query.eq("user_id", user.id);
+      }
+
+      const { data: transacoes, error } = await query.order("data_transacao", { ascending: false });
 
       if (error) throw error;
       return transacoes as any;
     },
+    enabled: !!user,
   });
 }
 
 // Hook para buscar resumo financeiro do mês
 export function useResumoFinanceiro(data: Date) {
+  const { user } = useAuth();
   const inicioMes = format(startOfMonth(data), 'yyyy-MM-dd');
   const fimMes = format(endOfMonth(data), 'yyyy-MM-dd');
 
   return useQuery({
-    queryKey: ["resumo-financeiro", inicioMes, fimMes],
+    queryKey: ["resumo-financeiro", inicioMes, fimMes, user?.id],
     queryFn: async () => {
       // Buscar receitas
-      const { data: receitas, error: errorReceitas } = await supabase
+      let receitasQuery = supabase
         .from("transacoes_financeiras")
         .select("valor")
         .eq("tipo", "receita")
         .gte("data_transacao", inicioMes)
         .lte("data_transacao", fimMes);
 
+      // Filter by user_id unless user is admin
+      if (user && user.role !== 'admin') {
+        receitasQuery = receitasQuery.eq("user_id", user.id);
+      }
+
+      const { data: receitas, error: errorReceitas } = await receitasQuery;
       if (errorReceitas) throw errorReceitas;
 
       // Buscar despesas
-      const { data: despesas, error: errorDespesas } = await supabase
+      let despesasQuery = supabase
         .from("transacoes_financeiras")
         .select("valor")
         .eq("tipo", "despesa")
         .gte("data_transacao", inicioMes)
         .lte("data_transacao", fimMes);
 
+      // Filter by user_id unless user is admin
+      if (user && user.role !== 'admin') {
+        despesasQuery = despesasQuery.eq("user_id", user.id);
+      }
+
+      const { data: despesas, error: errorDespesas } = await despesasQuery;
       if (errorDespesas) throw errorDespesas;
 
       const receita_total = receitas?.reduce((acc, item) => acc + Number(item.valor), 0) || 0;
@@ -152,6 +183,7 @@ export function useResumoFinanceiro(data: Date) {
         margem_lucro,
       } as ResumoFinanceiro;
     },
+    enabled: !!user,
   });
 }
 
