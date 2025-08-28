@@ -32,6 +32,7 @@ import { useTransacoesMes, useCategorias, useSincronizarComissoes, useSincroniza
 import { useAuth } from "@/contexts/AuthContext";
 import { TransacaoDialog } from "@/components/Financeiro/TransacaoDialog";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
+import { StatusSelector } from "@/components/Financeiro/StatusSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function ContasPagar() {
@@ -343,17 +344,11 @@ export default function ContasPagar() {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-2">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full sm:w-[140px]">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="pendente">Pendente</SelectItem>
-                    <SelectItem value="confirmada">Paga</SelectItem>
-                    <SelectItem value="cancelada">Cancelada</SelectItem>
-                  </SelectContent>
-                </Select>
+                <StatusSelector 
+                  value={statusFilter} 
+                  onValueChange={setStatusFilter} 
+                  size="sm" 
+                />
 
                 <Select value={categoriaFilter} onValueChange={setCategoriaFilter}>
                   <SelectTrigger className="w-full sm:w-[160px]">
