@@ -113,25 +113,14 @@ export function useTransacoesMes(data: Date) {
   return useQuery({
     queryKey: ["transacoes-financeiras", inicioMes, fimMes, user?.id],
     queryFn: async () => {
-      console.log('🔍 useTransacoesMes - Executando query com os parâmetros:');
-      console.log('- User:', user);
-      console.log('- User ID:', user?.id);
-      console.log('- User Role:', user?.role);
-      console.log('- Início do mês:', inicioMes);
-      console.log('- Fim do mês:', fimMes);
-      console.log('- Data original:', data);
+      console.log('🔍 useTransacoesMes - Parâmetros:', { user: user?.name, role: user?.role, inicioMes, fimMes });
 
       let query = supabase
         .from("transacoes_financeiras")
         .select(`
           *,
           categoria:categorias_financeiras(*),
-          venda:vendas(
-            id,
-            cliente_id,
-            user_id,
-            profiles(id, name)
-          )
+          venda:vendas(*)
         `)
         .gte("data_transacao", inicioMes)
         .lte("data_transacao", fimMes);
@@ -146,10 +135,7 @@ export function useTransacoesMes(data: Date) {
 
       const { data: transacoes, error } = await query.order("data_transacao", { ascending: false });
 
-      console.log('📊 Resultado da query transações:');
-      console.log('- Erro:', error);
-      console.log('- Dados retornados:', transacoes);
-      console.log('- Quantidade de transações:', transacoes?.length || 0);
+      console.log('📊 Resultado:', { erro: !!error, quantidade: transacoes?.length || 0 });
 
       if (error) {
         console.error('❌ Erro na query de transações:', error);
@@ -170,12 +156,7 @@ export function useResumoFinanceiro(data: Date) {
   return useQuery({
     queryKey: ["resumo-financeiro", inicioMes, fimMes, user?.id],
     queryFn: async () => {
-      console.log('💰 useResumoFinanceiro - Executando query com os parâmetros:');
-      console.log('- User:', user);
-      console.log('- User ID:', user?.id);
-      console.log('- User Role:', user?.role);
-      console.log('- Início do mês:', inicioMes);
-      console.log('- Fim do mês:', fimMes);
+      console.log('💰 useResumoFinanceiro - Parâmetros:', { user: user?.name, role: user?.role, inicioMes, fimMes });
 
       // Buscar receitas
       let receitasQuery = supabase
@@ -194,7 +175,7 @@ export function useResumoFinanceiro(data: Date) {
       }
 
       const { data: receitas, error: errorReceitas } = await receitasQuery;
-      console.log('💵 Receitas encontradas:', receitas?.length || 0, receitas);
+      console.log('💵 Receitas:', receitas?.length || 0);
       if (errorReceitas) {
         console.error('❌ Erro ao buscar receitas:', errorReceitas);
         throw errorReceitas;
@@ -217,7 +198,7 @@ export function useResumoFinanceiro(data: Date) {
       }
 
       const { data: despesas, error: errorDespesas } = await despesasQuery;
-      console.log('💸 Despesas encontradas:', despesas?.length || 0, despesas);
+      console.log('💸 Despesas:', despesas?.length || 0);
       if (errorDespesas) {
         console.error('❌ Erro ao buscar despesas:', errorDespesas);
         throw errorDespesas;
