@@ -6,7 +6,7 @@ import { CalendarWidget } from "@/components/Dashboard/CalendarWidget";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDashboardStats } from "@/hooks/useLeads";
-import { TrendingUp, Users, DollarSign, ShoppingCart, Loader2 } from "lucide-react";
+import { TrendingUp, Users, DollarSign, ShoppingCart, Loader2, Wallet } from "lucide-react";
 const Index = () => {
   const { user } = useAuth();
   const { data: stats, isLoading } = useDashboardStats();
@@ -18,7 +18,29 @@ const Index = () => {
     }).format(value);
   };
 
-  const dashboardStats = [
+  // Different stats based on user role
+  const dashboardStats = user?.role === 'vendedor' ? [
+    {
+      title: "Vendas do Mês",
+      value: stats ? formatCurrency(stats.vendasMes) : "R$ 0,00",
+      icon: DollarSign
+    },
+    {
+      title: "Total de Clientes",
+      value: stats ? stats.totalClientes.toString() : "0",
+      icon: Users
+    },
+    {
+      title: "Contratos Ativos",
+      value: stats ? stats.contratosAtivos.toString() : "0",
+      icon: ShoppingCart
+    },
+    {
+      title: "Total em Comissões",
+      value: stats ? formatCurrency(stats.comissaoMes || 0) : "R$ 0,00",
+      icon: Wallet
+    }
+  ] : [
     {
       title: "Vendas do Mês",
       value: stats ? formatCurrency(stats.vendasMes) : "R$ 0,00",

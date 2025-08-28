@@ -8,11 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, Plus, DollarSign, Calendar, Building2, Edit, Trash2, TrendingUp, MoreVertical, Grid, List } from "lucide-react";
-import { useVendas, type Venda } from "@/hooks/useVendas";
+import { Plus, Search, Grid, List, Calendar, DollarSign, TrendingUp, Wallet, Building2, Edit, Trash2, MoreVertical } from "lucide-react";
+import { useVendas, useDeleteVenda, type Venda } from "@/hooks/useVendas";
+import { useComissoesMesAtual } from "@/hooks/useComissoesVendedor";
+import { useAuth } from "@/contexts/AuthContext";
 import { VendaDialog } from "@/components/Vendas/VendaDialog";
 import { DeleteVendaDialog } from "@/components/Vendas/DeleteVendaDialog";
 import { QuickStatusChanger } from "@/components/Vendas/QuickStatusChanger";
+import { ComissaoIndicator } from "@/components/Vendas/ComissaoIndicator";
 import { useIsMobile } from "@/hooks/use-mobile";
 const getStatusColor = (status: string) => {
   return "bg-black text-white";
@@ -32,6 +35,7 @@ const getStatusLabel = (status: string) => {
   }
 };
 export default function Vendas() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState("");
@@ -40,14 +44,11 @@ export default function Vendas() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedVenda, setSelectedVenda] = useState<Venda | undefined>();
-  const {
-    data: vendasResponse,
-    isLoading,
-    error
-  } = useVendas(searchTerm, currentPage, 10);
-  const vendas = vendasResponse?.data || [];
-  const totalPages = vendasResponse?.totalPages || 0;
-  const total = vendasResponse?.total || 0;
+  const { data: vendasData, isLoading } = useVendas(searchTerm, currentPage);
+  const { data: comissoesData } = useComissoesMesAtual();
+  const vendas = vendasData?.data || [];
+  const totalPages = vendasData?.totalPages || 0;
+  const total = vendasData?.total || 0;
   const handleDialogChange = (open: boolean) => {
     setDialogOpen(open);
     if (!open) {
@@ -103,15 +104,24 @@ export default function Vendas() {
     }
     return pages;
   };
-  if (error) {
-    return <div className="space-y-6">
+  if (!vendasData || isLoading) {
+    return (
+      <div className="space-y-6">
         <h1 className="text-3xl font-bold">Vendas</h1>
         <Card>
           <CardContent className="p-6">
-            <p className="text-destructive">Erro ao carregar vendas: {error.message}</p>
+            <div className="space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
-      </div>;
+      </div>
+    );
   }
   return <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
       <div className="flex flex-row justify-between items-center gap-4 sm:gap-6">
@@ -123,7 +133,7 @@ export default function Vendas() {
       </div>
 
       {/* Stats rápidas */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className={`grid grid-cols-1 xs:grid-cols-2 ${user?.role === 'vendedor' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 sm:gap-6`}>
         <Card className="p-4 sm:p-6">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-lg bg-accent/10">
@@ -164,6 +174,26 @@ export default function Vendas() {
             </div>
           </div>
         </Card>
+
+        {/* Commission card - only for sellers */}
+        {user?.role === 'vendedor' && (
+          <Card className="p-4 sm:p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-lg bg-primary/10">
+                <Wallet className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm sm:text-base text-muted-foreground">Comissões do Mês</p>
+                <p className="text-xl sm:text-2xl font-bold">
+                  {new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                  }).format(comissoesData?.totalComissao || 0)}
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
       </div>
 
       <Card>
@@ -233,6 +263,7 @@ export default function Vendas() {
                         currency: 'BRL'
                       }).format(venda.valor)}
                             </span>
+                            {user?.role === 'vendedor' && <ComissaoIndicator venda={venda} />}
                           </div>
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <Calendar className="h-4 w-4" />
@@ -276,12 +307,15 @@ export default function Vendas() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <span className="font-semibold text-accent">
-                              {new Intl.NumberFormat('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL'
-                      }).format(venda.valor)}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-accent">
+                                {new Intl.NumberFormat('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL'
+                        }).format(venda.valor)}
+                              </span>
+                              {user?.role === 'vendedor' && <ComissaoIndicator venda={venda} />}
+                            </div>
                           </TableCell>
                           <TableCell>{new Date(venda.data_venda).toLocaleDateString('pt-BR')}</TableCell>
                           <TableCell>

@@ -158,52 +158,79 @@ export function useComissoes() {
 
 export function useDashboardStats() {
   const { user } = useAuth();
-
+  
   return useQuery({
-    queryKey: ['dashboard-stats', user?.id],
+    queryKey: ['dashboard-stats', user?.id, user?.role],
     queryFn: async () => {
       if (!user) return null;
 
-      const currentMonth = new Date().toISOString().slice(0, 7) + '-01';
-      
-      // Buscar vendas do mês atual
-      const { data: vendas } = await supabase
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      // For sellers, filter by their own data. For admins, get all data
+      const userFilter = user.role === 'admin' ? {} : { user_id: user.id };
+
+      // Vendas do mês atual
+      const { data: vendas, error: vendasError } = await supabase
         .from('vendas')
-        .select('valor, status')
-        .eq('user_id', user.id)
-        .gte('data_venda', currentMonth);
+        .select('valor, status, user_id')
+        .match(userFilter)
+        .gte('data_venda', startOfMonth.toISOString().split('T')[0])
+        .lte('data_venda', endOfMonth.toISOString().split('T')[0]);
 
-      // Buscar clientes totais
-      const { data: clientes } = await supabase
+      if (vendasError) throw vendasError;
+
+      // Total de clientes
+      const { count: totalClientes, error: clientesError } = await supabase
         .from('clientes')
-        .select('id')
-        .eq('user_id', user.id);
+        .select('id', { count: 'exact' })
+        .match(userFilter);
 
-      // Buscar contratos ativos
-      const { data: contratos } = await supabase
+      if (clientesError) throw clientesError;
+
+      // Contratos ativos
+      const { count: contratosAtivos, error: contratosError } = await supabase
         .from('contratos')
-        .select('id')
-        .eq('user_id', user.id)
+        .select('id', { count: 'exact' })
+        .match(userFilter)
         .eq('status', 'ativo');
 
-      // Buscar leads para calcular conversão
-      const { data: leads } = await supabase
+      if (contratosError) throw contratosError;
+
+      // Leads para cálculo de conversão
+      const { data: leads, error: leadsError } = await supabase
         .from('leads')
         .select('status')
-        .eq('user_id', user.id);
+        .match(userFilter);
 
-      const vendasMes = vendas?.reduce((acc, venda) => acc + Number(venda.valor), 0) || 0;
-      const totalClientes = clientes?.length || 0;
-      const contratosAtivos = contratos?.length || 0;
-      const leadsConvertidos = leads?.filter(l => l.status === 'cliente').length || 0;
+      if (leadsError) throw leadsError;
+
+      const vendasMes = vendas?.filter(v => v.status === 'fechada').reduce((sum, v) => sum + (v.valor || 0), 0) || 0;
       const totalLeads = leads?.length || 0;
-      const taxaConversao = totalLeads > 0 ? (leadsConvertidos / totalLeads) * 100 : 0;
+      const vendasConvertidas = leads?.filter(l => l.status === 'convertido').length || 0;
+      const taxaConversao = totalLeads > 0 ? (vendasConvertidas / totalLeads) * 100 : 0;
+
+      // For sellers, also get commission stats
+      let comissaoMes = 0;
+      if (user.role === 'vendedor') {
+        const { data: comissoes, error: comissoesError } = await supabase
+          .from('comissoes')
+          .select('valor_comissao')
+          .eq('vendedor_id', user.id)
+          .gte('mes_referencia', startOfMonth.toISOString().split('T')[0])
+          .lte('mes_referencia', endOfMonth.toISOString().split('T')[0]);
+
+        if (comissoesError) throw comissoesError;
+        comissaoMes = comissoes?.reduce((sum, c) => sum + (c.valor_comissao || 0), 0) || 0;
+      }
 
       return {
         vendasMes,
-        totalClientes,
-        contratosAtivos,
+        totalClientes: totalClientes || 0,
+        contratosAtivos: contratosAtivos || 0,
         taxaConversao,
+        comissaoMes, // New field for sellers
       };
     },
     enabled: !!user,
