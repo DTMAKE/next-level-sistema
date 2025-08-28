@@ -210,10 +210,10 @@ export default function ContasPagar() {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
+    <div className="space-y-6 sm:space-y-8">
       <div className="space-y-4">
         <div className="flex flex-row justify-between items-center gap-4 sm:gap-6">
-          <h1 className="sm:text-3xl font-bold text-3xl">Contas a Pagar</h1>
+          <h1 className="text-3xl font-bold">Contas a Pagar</h1>
           <TransacaoDialog tipo="despesa">
             <Button className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0">
               <Plus className="mr-2 h-4 w-4" />
