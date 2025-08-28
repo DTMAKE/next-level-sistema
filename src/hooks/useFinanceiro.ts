@@ -31,6 +31,15 @@ export interface TransacaoFinanceira {
   created_at: string;
   updated_at: string;
   categoria?: CategoriaFinanceira;
+  venda?: {
+    id: string;
+    cliente_id: string;
+    user_id: string;
+    profiles?: {
+      id: string;
+      name: string;
+    };
+  } | null;
 }
 
 export interface CreateTransacaoData {
@@ -85,14 +94,20 @@ export function useTransacoesMes(data: Date) {
         .from("transacoes_financeiras")
         .select(`
           *,
-          categoria:categorias_financeiras(*)
+          categoria:categorias_financeiras(*),
+          venda:vendas(
+            id,
+            cliente_id,
+            user_id,
+            profiles(id, name)
+          )
         `)
         .gte("data_transacao", inicioMes)
         .lte("data_transacao", fimMes)
         .order("data_transacao", { ascending: false });
 
       if (error) throw error;
-      return transacoes as TransacaoFinanceira[];
+      return transacoes as any;
     },
   });
 }

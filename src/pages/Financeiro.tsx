@@ -62,7 +62,7 @@ export default function Financeiro() {
     ?.filter(t => t.tipo === 'receita')
     .reduce((acc, transacao) => {
       const categoria = transacao.categoria?.nome || 'Sem categoria';
-      acc[categoria] = (acc[categoria] || 0) + Number(transacao.valor);
+      acc[categoria] = (acc[categoria] || 0) + Number(transacao.valor || 0);
       return acc;
     }, {} as Record<string, number>) || {};
 
@@ -70,7 +70,7 @@ export default function Financeiro() {
     ?.filter(t => t.tipo === 'despesa')
     .reduce((acc, transacao) => {
       const categoria = transacao.categoria?.nome || 'Sem categoria';
-      acc[categoria] = (acc[categoria] || 0) + Number(transacao.valor);
+      acc[categoria] = (acc[categoria] || 0) + Number(transacao.valor || 0);
       return acc;
     }, {} as Record<string, number>) || {};
 
@@ -231,7 +231,7 @@ export default function Financeiro() {
                 <div key={categoria} className="flex items-center justify-between">
                   <span className="text-sm">{categoria}</span>
                   <span className="font-medium text-red-600 text-sm">
-                    {formatCurrency(valor)}
+                    {formatCurrency(Number(valor))}
                   </span>
                 </div>
               ))}
@@ -271,13 +271,18 @@ export default function Financeiro() {
                       <div className="text-xs sm:text-sm text-muted-foreground">
                         {transacao.categoria?.nome || 'Sem categoria'} • {format(new Date(transacao.data_transacao), "dd/MM/yyyy")}
                       </div>
+                      {transacao.venda?.profiles && (
+                        <div className="text-xs text-muted-foreground/80">
+                          Venda feita por {transacao.venda.profiles.name}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className={cn(
                     "font-medium text-sm sm:text-base flex-shrink-0",
                     transacao.tipo === 'receita' ? 'text-green-600' : 'text-red-600'
                   )}>
-                    {transacao.tipo === 'receita' ? '+' : '-'}{formatCurrency(Number(transacao.valor))}
+                    {transacao.tipo === 'receita' ? '+' : '-'}{formatCurrency(Number(transacao.valor || 0))}
                   </div>
                 </div>
               ))}
