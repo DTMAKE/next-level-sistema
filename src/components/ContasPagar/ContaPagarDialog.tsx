@@ -95,10 +95,10 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
         {children}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Nova Conta a Pagar</DialogTitle>
-          <DialogDescription>
-            Adicione uma nova despesa ao sistema.
+        <DialogHeader className="text-center pb-4">
+          <DialogTitle className="text-2xl text-foreground">Nova Conta a Pagar</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Preencha os dados abaixo para cadastrar a despesa
           </DialogDescription>
         </DialogHeader>
 
@@ -109,27 +109,32 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
               name="descricao"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome da Despesa</FormLabel>
+                  <FormLabel className="text-base font-medium">Nome da Despesa *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ex: Aluguel, Energia, Fornecedor..." {...field} />
+                    <Input 
+                      placeholder="Ex: Aluguel, Energia, Fornecedor..." 
+                      className="h-12 text-base"
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="valor"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Valor (R$)</FormLabel>
+                    <FormLabel className="text-base font-medium">Valor (R$) *</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
                         step="0.01" 
                         placeholder="0,00"
+                        className="h-12 text-base"
                         {...field}
                         onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                       />
@@ -144,14 +149,14 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                 name="forma_pagamento"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Forma de Pagamento</FormLabel>
+                    <FormLabel className="text-base font-medium">Forma de Pagamento *</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="h-12 text-base">
                           <SelectValue placeholder="Selecione" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-background/95 backdrop-blur-sm border shadow-lg z-50">
                         <SelectItem value="a_vista">À Vista</SelectItem>
                         <SelectItem value="parcelado">Parcelado</SelectItem>
                       </SelectContent>
@@ -168,13 +173,14 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                 name="parcelas"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Número de Parcelas</FormLabel>
+                    <FormLabel className="text-base font-medium">Número de Parcelas</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
                         min="2" 
                         max="36" 
                         placeholder="2"
+                        className="h-12 text-base"
                         {...field}
                         onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
                       />
@@ -185,20 +191,20 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
               />
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="data_transacao"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Data da Despesa</FormLabel>
+                    <FormLabel className="text-base font-medium">Data da Despesa *</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full pl-3 text-left font-normal",
+                              "w-full pl-3 text-left font-normal h-12 text-base",
                               !field.value && "text-muted-foreground"
                             )}
                           >
@@ -218,6 +224,7 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                           onSelect={field.onChange}
                           locale={ptBR}
                           initialFocus
+                          className="pointer-events-auto"
                         />
                       </PopoverContent>
                     </Popover>
@@ -231,14 +238,14 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                 name="data_vencimento"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Data de Vencimento (Opcional)</FormLabel>
+                    <FormLabel className="text-base font-medium">Data de Vencimento</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full pl-3 text-left font-normal",
+                              "w-full pl-3 text-left font-normal h-12 text-base",
                               !field.value && "text-muted-foreground"
                             )}
                           >
@@ -258,6 +265,7 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                           onSelect={field.onChange}
                           locale={ptBR}
                           initialFocus
+                          className="pointer-events-auto"
                         />
                       </PopoverContent>
                     </Popover>
@@ -268,19 +276,22 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
             </div>
 
             <div>
-              <Label htmlFor="comprovante">Nota/Comprovante (PDF, JPG, PNG)</Label>
+              <Label htmlFor="comprovante" className="text-base font-medium">
+                Nota/Comprovante (PDF, JPG, PNG)
+              </Label>
               <div className="mt-2">
                 <label htmlFor="comprovante" className="cursor-pointer">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+                  <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-muted-foreground/50 transition-colors bg-muted/30">
                     {selectedFile ? (
                       <div className="flex items-center justify-center space-x-2">
                         <FileText className="h-5 w-5 text-green-600" />
-                        <span className="text-sm text-green-600">{selectedFile.name}</span>
+                        <span className="text-sm text-green-600 font-medium">{selectedFile.name}</span>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-center space-x-2">
-                        <Upload className="h-5 w-5 text-gray-400" />
-                        <span className="text-sm text-gray-600">Clique para selecionar arquivo</span>
+                      <div className="flex flex-col items-center justify-center space-y-2">
+                        <Upload className="h-8 w-8 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Clique para selecionar arquivo</span>
+                        <span className="text-xs text-muted-foreground">PDF, JPG ou PNG até 10MB</span>
                       </div>
                     )}
                   </div>
@@ -300,10 +311,11 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
               name="observacoes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Observações (Opcional)</FormLabel>
+                  <FormLabel className="text-base font-medium">Observações</FormLabel>
                   <FormControl>
                     <Textarea 
                       placeholder="Observações adicionais sobre esta despesa..."
+                      className="min-h-[100px] text-base resize-none"
                       {...field} 
                     />
                   </FormControl>
@@ -312,11 +324,24 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
               )}
             />
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <div className="text-sm text-muted-foreground bg-muted/30 p-4 rounded-lg border">
+              <p>* Campos obrigatórios</p>
+            </div>
+
+            <DialogFooter className="flex flex-col sm:flex-row gap-4 pt-6">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setOpen(false)}
+                className="flex-1 h-12 text-base"
+              >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={createContaPagar.isPending}>
+              <Button 
+                type="submit" 
+                disabled={createContaPagar.isPending}
+                className="flex-1 h-12 text-base gradient-premium border-0 text-background font-medium"
+              >
                 {createContaPagar.isPending ? "Criando..." : "Criar Conta"}
               </Button>
             </DialogFooter>
