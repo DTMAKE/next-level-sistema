@@ -144,16 +144,17 @@ export default function ContasPagar() {
     return pages;
   };
 
-  return <div className="space-y-6 p-4 sm:p-6">
+  return <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
       {/* Header */}
-      <div className="flex flex-row justify-between items-center gap-4">
-        <h1 className="font-bold mx-0 py-0 text-xl sm:text-2xl lg:text-3xl whitespace-nowrap">Contas a Pagar</h1>
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+        <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl">Contas a Pagar</h1>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
           <TransacaoDialog tipo="despesa">
-            <Button className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0">
-              <Plus className="mr-2 h-4 w-4" />
-              Nova Despesa
+            <Button className="gradient-premium border-0 text-background h-9 sm:h-10 px-3 sm:px-4 text-xs sm:text-sm flex-1 sm:flex-none">
+              <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Nova Despesa</span>
+              <span className="xs:hidden">Nova</span>
             </Button>
           </TransacaoDialog>
         </div>
