@@ -94,7 +94,7 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto z-50">
         <DialogHeader className="text-center pb-4">
           <DialogTitle className="text-2xl text-foreground">Nova Conta a Pagar</DialogTitle>
           <DialogDescription className="text-muted-foreground">
@@ -204,7 +204,7 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                 control={form.control}
                 name="data_transacao"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel className="text-base font-medium">Data da Despesa *</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -212,7 +212,7 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full pl-3 text-left font-normal h-12 text-base",
+                              "w-full pl-3 text-left font-normal h-12 text-base justify-start",
                               !field.value && "text-muted-foreground"
                             )}
                           >
@@ -225,14 +225,19 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent 
+                        className="w-auto p-0 bg-background border shadow-md z-[60]" 
+                        align="start"
+                        side="bottom"
+                        sideOffset={4}
+                      >
                         <Calendar
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
                           locale={ptBR}
                           initialFocus
-                          className="pointer-events-auto"
+                          className={cn("p-3 pointer-events-auto")}
                         />
                       </PopoverContent>
                     </Popover>
@@ -245,7 +250,7 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                 control={form.control}
                 name="data_vencimento"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel className="text-base font-medium">Data de Vencimento</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -253,7 +258,7 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full pl-3 text-left font-normal h-12 text-base",
+                              "w-full pl-3 text-left font-normal h-12 text-base justify-start",
                               !field.value && "text-muted-foreground"
                             )}
                           >
@@ -266,14 +271,19 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent 
+                        className="w-auto p-0 bg-background border shadow-md z-[60]" 
+                        align="start"
+                        side="bottom"
+                        sideOffset={4}
+                      >
                         <Calendar
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
                           locale={ptBR}
                           initialFocus
-                          className="pointer-events-auto"
+                          className={cn("p-3 pointer-events-auto")}
                         />
                       </PopoverContent>
                     </Popover>
