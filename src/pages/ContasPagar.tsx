@@ -148,55 +148,55 @@ export default function ContasPagar() {
   };
 
   return (
-    <div className="space-y-3 sm:space-y-6 p-2 sm:p-4 lg:p-6">
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-2">
-        <h1 className="font-bold text-xl sm:text-xl lg:text-2xl xl:text-3xl">Contas a Pagar</h1>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+      <div className="flex flex-row justify-between items-center gap-2">
+        <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl truncate">Contas a Pagar</h1>
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
           <ContaPagarDialog>
-            <Button className="gradient-premium border-0 text-background h-9 sm:h-10 px-3 sm:px-4 text-sm flex-1 sm:flex-none">
-              <Plus className="mr-2 h-4 w-4" />
-              <span className="sm:hidden">Nova</span>
+            <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm">
+              <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Nova Despesa</span>
+              <span className="sm:hidden">Nova</span>
             </Button>
           </ContaPagarDialog>
         </div>
       </div>
 
       {/* Cards de Resumo */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
-            <CardTitle className="text-sm font-medium">Total a Pagar</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Total a Pagar</CardTitle>
+            <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <div className="text-xl sm:text-2xl font-bold text-red-600">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-red-600">
               {formatCurrency(totalContas)}
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
-            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Pendentes</CardTitle>
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <div className="text-xl sm:text-2xl font-bold text-yellow-600">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-yellow-600">
               {formatCurrency(contasPendentes)}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="sm:col-span-2 lg:col-span-1">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
-            <CardTitle className="text-sm font-medium">Pagas</CardTitle>
-            <TrendingDown className="h-4 w-4 text-muted-foreground" />
+        <Card className="col-span-2 lg:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Pagas</CardTitle>
+            <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <div className="text-xl sm:text-2xl font-bold text-green-600">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-green-600">
               {formatCurrency(contasPagas)}
             </div>
           </CardContent>
@@ -205,81 +205,79 @@ export default function ContasPagar() {
 
       {/* Filtros e Controles */}
       <Card>
-        <CardHeader className="p-3 sm:p-6">
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-row gap-2 items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
                   placeholder="Buscar por nome da despesa..." 
-                  className="pl-10 h-10 text-sm w-full" 
+                  className="pl-10 h-10 text-sm" 
                   value={searchTerm} 
                   onChange={e => handleSearchChange(e.target.value)} 
                 />
               </div>
               
-              <div className="flex gap-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-10 px-3 flex-1 sm:flex-none">
-                      <Filter className="h-4 w-4" />
-                      <span className="ml-2">
-                        {statusFilter === "all" ? "Status" : getStatusLabel(statusFilter)}
-                      </span>
-                      {statusFilter !== "all" && (
-                        <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>
-                      )}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-popover border z-50">
-                    <DropdownMenuItem onClick={() => handleFilterChange("all")}>
-                      Todos os status
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleFilterChange("pendente")}>
-                      <div className="w-2 h-2 rounded-full bg-yellow-600 mr-2" />
-                      Pendente
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleFilterChange("confirmada")}>
-                      <div className="w-2 h-2 rounded-full bg-green-600 mr-2" />
-                      Paga
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleFilterChange("cancelada")}>
-                      <div className="w-2 h-2 rounded-full bg-red-600 mr-2" />
-                      Cancelada
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-10 px-3 shrink-0">
+                    <Filter className="h-4 w-4" />
+                    <span className="ml-2 hidden sm:inline">
+                      {statusFilter === "all" ? "Status" : getStatusLabel(statusFilter)}
+                    </span>
+                    {statusFilter !== "all" && (
+                      <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-popover border z-50">
+                  <DropdownMenuItem onClick={() => handleFilterChange("all")}>
+                    Todos os status
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("pendente")}>
+                    <div className="w-2 h-2 rounded-full bg-yellow-600 mr-2" />
+                    Pendente
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("confirmada")}>
+                    <div className="w-2 h-2 rounded-full bg-green-600 mr-2" />
+                    Paga
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("cancelada")}>
+                    <div className="w-2 h-2 rounded-full bg-red-600 mr-2" />
+                    Cancelada
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-                {!isMobile && (
-                  <div className="flex items-center gap-1">
-                    <Button 
-                      variant={viewMode === "cards" ? "default" : "outline"} 
-                      size="sm" 
-                      onClick={() => setViewMode("cards")}
-                    >
-                      <Grid className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant={viewMode === "table" ? "default" : "outline"} 
-                      size="sm" 
-                      onClick={() => setViewMode("table")}
-                    >
-                      <List className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
+              {!isMobile && (
+                <div className="flex items-center gap-2 ml-2">
+                  <Button 
+                    variant={viewMode === "cards" ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setViewMode("cards")}
+                  >
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant={viewMode === "table" ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setViewMode("table")}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
             
             {filteredContas.length > 0 && (
-              <div className="text-xs sm:text-sm text-muted-foreground">
+              <div className="text-sm text-muted-foreground">
                 Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredContas.length)} de {filteredContas.length} conta(s)
               </div>
             )}
           </div>
         </CardHeader>
         
-        <CardContent className="p-3 sm:p-6">
+        <CardContent className="p-4 sm:p-6">
           {isLoading ? (
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -315,50 +313,46 @@ export default function ContasPagar() {
             <>
               {viewMode === "cards" || isMobile ? (
                 // Card View (Mobile e Desktop quando cards selecionado)
-                <div className="space-y-2 sm:space-y-3">
+                <div className="space-y-3">
                   {paginatedContas.map(conta => (
-                    <Card key={conta.id} className="p-3 sm:p-4 hover:shadow-md transition-shadow">
-                      <div className="flex flex-col gap-2 sm:gap-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <Card key={conta.id} className="p-4 hover:shadow-md transition-shadow">
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
                             <DollarSign className="h-4 w-4 text-red-600 shrink-0" />
-                            <h3 className="font-semibold text-sm sm:text-base truncate">
+                            <h3 className="font-semibold text-base truncate">
                               {conta.descricao || 'Despesa sem descrição'}
                             </h3>
                           </div>
-                          <Badge className={cn("text-xs shrink-0", getStatusColor(conta.status || 'pendente'))}>
+                          <Badge className={cn("text-xs", getStatusColor(conta.status || 'pendente'))}>
                             {getStatusLabel(conta.status || 'pendente')}
                           </Badge>
                         </div>
                         
-                        <div className="flex flex-col gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-                              <span>{format(new Date(conta.data_transacao), "dd/MM/yyyy", { locale: ptBR })}</span>
-                            </div>
+                        <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 shrink-0" />
+                            <span>{format(new Date(conta.data_transacao), "dd/MM/yyyy", { locale: ptBR })}</span>
                             {conta.data_vencimento && (
                               <span className="text-xs">
                                 • Venc: {format(new Date(conta.data_vencimento), "dd/MM/yyyy", { locale: ptBR })}
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-1">
-                              <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-                              <span>{getFormaPagamentoLabel(conta.forma_pagamento, conta.parcelas, conta.parcela_atual)}</span>
-                            </div>
-                            {conta.comprovante_url && (
-                              <div className="flex items-center gap-1">
-                                <FileText className="h-3 w-3 shrink-0" />
-                                <span className="text-xs">PDF</span>
-                              </div>
-                            )}
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="h-4 w-4 shrink-0" />
+                            <span>{getFormaPagamentoLabel(conta.forma_pagamento, conta.parcelas, conta.parcela_atual)}</span>
                           </div>
+                          {conta.comprovante_url && (
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 shrink-0" />
+                              <span className="text-xs">Possui comprovante</span>
+                            </div>
+                          )}
                         </div>
                         
                         <div className="flex items-center justify-between">
-                          <div className="font-bold text-red-600 text-base sm:text-lg">
+                          <div className="font-bold text-red-600 text-lg">
                             {formatCurrency(Number(conta.valor))}
                           </div>
                           <div className="flex gap-1">
@@ -368,7 +362,6 @@ export default function ContasPagar() {
                                 size="sm" 
                                 onClick={() => handleMarcarComoPaga(conta)} 
                                 disabled={marcarComoPaga.isPending}
-                                className="h-8 w-8 p-0"
                               >
                                 <Check className="h-4 w-4" />
                               </Button>
@@ -378,7 +371,6 @@ export default function ContasPagar() {
                                 variant="ghost" 
                                 size="sm"
                                 onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
-                                className="h-8 w-8 p-0"
                               >
                                 <Download className="h-4 w-4" />
                               </Button>
@@ -387,7 +379,6 @@ export default function ContasPagar() {
                               variant="ghost" 
                               size="sm"
                               onClick={() => handleDeleteConta(conta.id)}
-                              className="h-8 w-8 p-0"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
