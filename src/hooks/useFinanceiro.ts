@@ -36,6 +36,9 @@ export interface TransacaoFinanceira {
     id: string;
     cliente_id: string;
     user_id: string;
+    cliente?: {
+      nome: string;
+    };
     profiles?: {
       id: string;
       name: string;
@@ -111,7 +114,7 @@ export function useTransacoesMes(data: Date) {
   const fimMes = format(endOfMonth(data), 'yyyy-MM-dd');
 
   return useQuery({
-    queryKey: ["transacoes-financeiras", inicioMes, fimMes, user?.id],
+    queryKey: ["transacoes-financeiras", inicioMes, fimMes, user?.id, user?.role],
     queryFn: async () => {
       console.log('🔍 useTransacoesMes - Parâmetros:', { user: user?.name, role: user?.role, inicioMes, fimMes });
 
@@ -140,15 +143,20 @@ export function useTransacoesMes(data: Date) {
 
       const { data: transacoes, error } = await query.order("data_transacao", { ascending: false });
 
-      console.log('📊 Resultado:', { erro: !!error, quantidade: transacoes?.length || 0 });
+      console.log('📊 Resultado useTransacoesMes:', { 
+        erro: !!error, 
+        quantidade: transacoes?.length || 0,
+        primeiros3: transacoes?.slice(0, 3).map(t => ({ id: t.id, descricao: t.descricao, valor: t.valor }))
+      });
 
       if (error) {
         console.error('❌ Erro na query de transações:', error);
         throw error;
       }
-      return transacoes as any;
+      return transacoes as TransacaoFinanceira[];
     },
     enabled: !!user,
+    staleTime: 0, // Always refetch to ensure fresh data
   });
 }
 
@@ -600,26 +608,38 @@ export function useDeleteTransacao() {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      console.log('🗑️ Deletando transação:', id);
+      
       const { error } = await supabase
         .from('transacoes_financeiras')
         .delete()
         .eq('id', id);
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erro ao deletar transação:', error);
+        throw error;
+      }
+      
+      console.log('✅ Transação deletada com sucesso');
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: (deletedId) => {
+      console.log('🔄 Invalidando queries após exclusão:', deletedId);
+      
+      // Invalidar todas as queries relacionadas
       queryClient.invalidateQueries({ queryKey: ["transacoes-financeiras"] });
       queryClient.invalidateQueries({ queryKey: ["resumo-financeiro"] });
+      
       toast({
         title: "Sucesso",
         description: "Transação removida com sucesso!",
       });
     },
     onError: (error: any) => {
-      console.error("Erro ao deletar transação:", error);
+      console.error('💥 Erro na exclusão:', error);
       toast({
         title: "Erro",
-        description: "Erro ao remover transação",
+        description: "Erro ao remover transação: " + error.message,
         variant: "destructive",
       });
     },
