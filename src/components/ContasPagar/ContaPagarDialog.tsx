@@ -94,7 +94,7 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto z-50">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto z-[100] max-w-[95vw] sm:max-w-[600px]">
         <DialogHeader className="text-center pb-4">
           <DialogTitle className="text-2xl text-foreground">Nova Conta a Pagar</DialogTitle>
           <DialogDescription className="text-muted-foreground">
@@ -226,10 +226,12 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent 
-                        className="w-auto p-0 bg-background border shadow-md z-[60]" 
-                        align="start"
+                        className="w-auto p-0 bg-background border shadow-md z-[110]" 
+                        align="center"
                         side="bottom"
-                        sideOffset={4}
+                        sideOffset={8}
+                        avoidCollisions={true}
+                        alignOffset={0}
                       >
                         <Calendar
                           mode="single"
@@ -237,7 +239,7 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                           onSelect={field.onChange}
                           locale={ptBR}
                           initialFocus
-                          className={cn("p-3 pointer-events-auto")}
+                          className={cn("p-3 pointer-events-auto w-full sm:w-auto")}
                         />
                       </PopoverContent>
                     </Popover>
@@ -272,10 +274,12 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent 
-                        className="w-auto p-0 bg-background border shadow-md z-[60]" 
-                        align="start"
+                        className="w-auto p-0 bg-background border shadow-md z-[110]" 
+                        align="center"
                         side="bottom"
-                        sideOffset={4}
+                        sideOffset={8}
+                        avoidCollisions={true}
+                        alignOffset={0}
                       >
                         <Calendar
                           mode="single"
@@ -283,7 +287,7 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                           onSelect={field.onChange}
                           locale={ptBR}
                           initialFocus
-                          className={cn("p-3 pointer-events-auto")}
+                          className={cn("p-3 pointer-events-auto w-full sm:w-auto")}
                         />
                       </PopoverContent>
                     </Popover>
