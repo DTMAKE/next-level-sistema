@@ -17,7 +17,7 @@ import { DeleteClienteDialog } from "@/components/Clientes/DeleteClienteDialog";
 import { StatusSelector } from "@/components/Clientes/StatusSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-type FilterType = "todos" | "clientes" | "leads";
+type FilterType = "todos" | "clientes" | "potenciais";
 type CombinedItem = (Cliente & { type: "cliente" }) | (Lead & { type: "lead" });
 export default function Clientes() {
   const navigate = useNavigate();
@@ -51,7 +51,7 @@ export default function Clientes() {
         combined = combined.filter(item => 
           (item.type === "cliente" && ((item as Cliente).status === "cliente" || !(item as Cliente).status || (item as Cliente).status === "ativo" || (item as Cliente).status === "prospecto"))
         );
-      } else if (statusFilter === "leads") {
+      } else if (statusFilter === "potenciais") {
         combined = combined.filter(item => 
           item.type === "lead" || (item.type === "cliente" && (item as Cliente).status === "lead")
         );
@@ -128,9 +128,10 @@ export default function Clientes() {
     if (item.type === "cliente") {
       return <StatusSelector cliente={item as Cliente} size="sm" />;
     } else {
-      return <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+      return <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-100 text-xs sm:text-sm">
         <div className="w-2 h-2 rounded-full bg-blue-600 mr-1" />
-        Lead
+        <span className="hidden xs:inline">Potencial Cliente</span>
+        <span className="xs:hidden">Potencial</span>
       </Badge>;
     }
   };
@@ -160,7 +161,7 @@ export default function Clientes() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
-                  placeholder="Buscar clientes e leads..." 
+                  placeholder="Buscar clientes e potenciais clientes..." 
                   className="pl-10 h-10 text-sm" 
                   value={searchTerm} 
                   onChange={e => handleSearchChange(e.target.value)} 
@@ -172,7 +173,7 @@ export default function Clientes() {
                   <Button variant="outline" size="sm" className="h-10 px-3 shrink-0">
                     <Filter className="h-4 w-4" />
                     <span className="ml-2 hidden sm:inline">
-                      {statusFilter === "todos" ? "Todos" : statusFilter === "clientes" ? "Clientes" : "Leads"}
+                      {statusFilter === "todos" ? "Todos" : statusFilter === "clientes" ? "Clientes" : "Potenciais Clientes"}
                     </span>
                     {statusFilter !== "todos" && (
                       <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>
@@ -187,9 +188,9 @@ export default function Clientes() {
                     <div className="w-2 h-2 rounded-full bg-green-600 mr-2" />
                     Clientes
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleFilterChange("leads")}>
+                  <DropdownMenuItem onClick={() => handleFilterChange("potenciais")}>
                     <div className="w-2 h-2 rounded-full bg-blue-600 mr-2" />
-                    Leads
+                    Potenciais Clientes
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -215,7 +216,7 @@ export default function Clientes() {
             </div>
             
             {total > 0 && <div className="text-sm text-muted-foreground">
-                Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, total)} de {total} {statusFilter === "todos" ? "registros" : statusFilter}
+                Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, total)} de {total} {statusFilter === "todos" ? "registros" : statusFilter === "clientes" ? "clientes" : "potenciais clientes"}
               </div>}
           </div>
         </CardHeader>

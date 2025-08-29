@@ -71,9 +71,9 @@ export function StatusSelector({ cliente, disabled = false, size = "md" }: Statu
   const styles = getStatusStyles(currentStatus);
   
   const sizeClasses = {
-    sm: "text-xs px-2 py-1 h-6",
-    md: "text-sm px-3 py-1.5 h-7",
-    lg: "text-sm px-4 py-2 h-8"
+    sm: "text-xs px-2 py-1 h-6 min-w-[70px] sm:min-w-[80px]",
+    md: "text-sm px-3 py-1.5 h-7 min-w-[90px] sm:min-w-[120px]",
+    lg: "text-sm px-4 py-2 h-8 min-w-[100px] sm:min-w-[140px]"
   };
 
   if (disabled) {
@@ -103,11 +103,12 @@ export function StatusSelector({ cliente, disabled = false, size = "md" }: Statu
               styles.badge,
               sizeClasses[size],
               "cursor-pointer transition-all duration-200 hover:shadow-sm",
-              "flex items-center gap-1.5"
+              "flex items-center gap-1.5 justify-center"
             )}
           >
             <div className={cn("w-2 h-2 rounded-full", styles.dot)} />
-            {currentStatus}
+            <span className="hidden xs:inline">{currentStatus}</span>
+            <span className="xs:hidden">{currentStatus === "Potencial Cliente" ? "Pot." : "Cliente"}</span>
             <ChevronDown className="w-3 h-3 ml-1" />
           </Badge>
         </Button>
@@ -115,7 +116,7 @@ export function StatusSelector({ cliente, disabled = false, size = "md" }: Statu
       
       <DropdownMenuContent 
         align="start" 
-        className="w-32 bg-background/95 backdrop-blur-sm border shadow-lg z-50"
+        className="w-40 sm:w-48 bg-background/95 backdrop-blur-sm border shadow-lg z-50"
       >
         <DropdownMenuItem 
           onClick={() => handleStatusChange("Cliente")}
