@@ -221,21 +221,27 @@ export default function ContasReceber() {
             </div> : <div className="space-y-3 sm:space-y-4">
               {paginatedReceitas.map(receita => <div key={receita.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 min-w-0 flex-1">
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium text-sm sm:text-base">
-                        {receita.descricao || 'Receita sem descrição'}
-                      </div>
-                      <div className="text-xs sm:text-sm text-muted-foreground">
-                        {receita.categoria?.nome || 'Sem categoria'} • {format(new Date(receita.data_transacao), "dd/MM/yyyy", {
-                    locale: ptBR
-                  })}
-                        {receita.data_vencimento && <span className="block sm:inline">
-                            {" • "}Vencimento: {format(new Date(receita.data_vencimento), "dd/MM/yyyy", {
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-sm sm:text-base">
+                          {receita.descricao || 'Receita sem descrição'}
+                        </div>
+                        <div className="text-xs sm:text-sm text-muted-foreground">
+                          {receita.categoria?.nome || 'Sem categoria'} • {format(new Date(receita.data_transacao), "dd/MM/yyyy", {
                       locale: ptBR
                     })}
-                          </span>}
+                          {receita.venda?.vendedor && <span className="block sm:inline">
+                              {" • "}Vendedor: {receita.venda.vendedor.name}
+                            </span>}
+                          {receita.venda?.cliente && <span className="block sm:inline">
+                              {" • "}Cliente: {receita.venda.cliente.nome}
+                            </span>}
+                          {receita.data_vencimento && <span className="block sm:inline">
+                              {" • "}Vencimento: {format(new Date(receita.data_vencimento), "dd/MM/yyyy", {
+                        locale: ptBR
+                      })}
+                            </span>}
+                        </div>
                       </div>
-                    </div>
                     
                     <div className="flex items-center justify-between sm:justify-end gap-2">
                       <Badge className={cn("text-xs", getStatusColor(receita.status || 'confirmada'))}>
