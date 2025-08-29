@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Building2, Save } from "lucide-react";
 import { useCreateCliente } from "@/hooks/useClientes";
 
@@ -18,6 +19,7 @@ export default function NovoCliente() {
     telefone: "",
     endereco: "",
     cnpj: "",
+    status: "cliente",
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -36,6 +38,7 @@ export default function NovoCliente() {
         telefone: formData.telefone.trim() || undefined,
         endereco: formData.endereco.trim() || undefined,
         cnpj: formData.cnpj.trim() || undefined,
+        status: formData.status,
       });
       navigate("/clientes");
     } catch (error) {
@@ -105,8 +108,8 @@ export default function NovoCliente() {
                   </div>
                 </div>
 
-                {/* Segunda linha: Telefone e CNPJ */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Segunda linha: Telefone, CNPJ e Status */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="telefone" className="text-base font-medium">
                       Telefone *
@@ -132,6 +135,31 @@ export default function NovoCliente() {
                       placeholder="00.000.000/0000-00"
                       className="h-12 text-base"
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="status" className="text-base font-medium">
+                      Status *
+                    </Label>
+                    <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
+                      <SelectTrigger className="h-12 text-base">
+                        <SelectValue placeholder="Selecione o status" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background/95 backdrop-blur-sm border shadow-lg z-50">
+                        <SelectItem value="cliente">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-600" />
+                            Cliente
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="lead">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-blue-600" />
+                            Potencial Cliente
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

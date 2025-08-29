@@ -162,7 +162,7 @@ export function ClienteDialog({ open, onOpenChange, cliente }: ClienteDialogProp
                 <SelectItem value="lead">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-blue-600" />
-                    Lead
+                    Potencial Cliente
                   </div>
                 </SelectItem>
               </SelectContent>

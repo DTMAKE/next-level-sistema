@@ -18,15 +18,15 @@ export function StatusSelector({ cliente, disabled = false, size = "md" }: Statu
   const updateCliente = useUpdateCliente();
   const { toast } = useToast();
 
-  const currentStatus = cliente.status === "lead" ? "Lead" : "Cliente";
+  const currentStatus = cliente.status === "lead" ? "Potencial Cliente" : "Cliente";
   
-  const handleStatusChange = async (newStatus: "Cliente" | "Lead") => {
+  const handleStatusChange = async (newStatus: "Cliente" | "Potencial Cliente") => {
     if (disabled || updateCliente.isPending) return;
 
     // Don't update if it's the same status
     if (currentStatus === newStatus) return;
 
-    const statusValue = newStatus === "Lead" ? "lead" : "cliente";
+    const statusValue = newStatus === "Potencial Cliente" ? "lead" : "cliente";
     
     try {
       await updateCliente.mutateAsync({
@@ -55,7 +55,7 @@ export function StatusSelector({ cliente, disabled = false, size = "md" }: Statu
   };
 
   const getStatusStyles = (status: string) => {
-    if (status === "Lead") {
+    if (status === "Potencial Cliente") {
       return {
         badge: "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100",
         dot: "bg-blue-600"
@@ -129,13 +129,13 @@ export function StatusSelector({ cliente, disabled = false, size = "md" }: Statu
         </DropdownMenuItem>
         
         <DropdownMenuItem 
-          onClick={() => handleStatusChange("Lead")}
+          onClick={() => handleStatusChange("Potencial Cliente")}
           className="cursor-pointer"
-          disabled={currentStatus === "Lead"}
+          disabled={currentStatus === "Potencial Cliente"}
         >
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-blue-600" />
-            <span className="font-medium">Lead</span>
+            <span className="font-medium">Potencial Cliente</span>
           </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
