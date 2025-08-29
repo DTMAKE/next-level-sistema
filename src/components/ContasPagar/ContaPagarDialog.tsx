@@ -44,10 +44,10 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       descricao: "",
-      valor: 0,
+      valor: undefined,
       data_transacao: new Date(),
       forma_pagamento: "a_vista",
-      parcelas: 1,
+      parcelas: 2,
       observacoes: "",
     },
   });
@@ -136,7 +136,11 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                         placeholder="0,00"
                         className="h-12 text-base"
                         {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        value={field.value || ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(value === "" ? undefined : parseFloat(value) || 0);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -182,7 +186,11 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                         placeholder="2"
                         className="h-12 text-base"
                         {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                        value={field.value || ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(value === "" ? undefined : parseInt(value) || 2);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
