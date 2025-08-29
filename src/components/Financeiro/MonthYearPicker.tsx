@@ -51,9 +51,11 @@ export function MonthYearPicker({ selected, onSelect }: MonthYearPickerProps) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="w-[200px] justify-start text-left font-normal">
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {format(selected, "MMMM yyyy", { locale: ptBR })}
+        <Button variant="outline" size="sm" className="h-10 px-3 shrink-0 text-sm">
+          <CalendarIcon className="h-4 w-4" />
+          <span className="ml-2 hidden sm:inline">
+            {format(selected, "MMM/yy", { locale: ptBR })}
+          </span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-4" align="start">
