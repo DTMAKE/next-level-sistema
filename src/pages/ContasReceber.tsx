@@ -77,22 +77,17 @@ export default function ContasReceber() {
   const totalReceitas = filteredReceitas.reduce((sum, r) => sum + Number(r.valor), 0);
   const receitasPendentes = filteredReceitas.filter(r => r.status === 'pendente').reduce((sum, r) => sum + Number(r.valor), 0);
   const receitasRecebidas = filteredReceitas.filter(r => r.status === 'confirmada').reduce((sum, r) => sum + Number(r.valor), 0);
-  return <div className="space-y-3 sm:space-y-6 p-3 sm:p-6">
+  return <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
       {/* Header */}
-      <div className="space-y-3 sm:space-y-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Contas a Receber</h1>
-          
-        </div>
-
-        {/* Controles de data */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-row justify-between items-center gap-2">
+        <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl truncate">Contas a Receber</h1>
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
-          
           <TransacaoDialog tipo="receita">
-            <Button className="w-full sm:w-auto">
-              <Plus className="h-4 w-4 mr-2" />
-              <span className="sm:inline">Nova Receita</span>
+            <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm">
+              <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Nova Receita</span>
+              <span className="sm:hidden">Nova</span>
             </Button>
           </TransacaoDialog>
         </div>
