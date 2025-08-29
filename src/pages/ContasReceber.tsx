@@ -229,9 +229,6 @@ export default function ContasReceber() {
                           {receita.categoria?.nome || 'Sem categoria'} • {format(new Date(receita.data_transacao), "dd/MM/yyyy", {
                       locale: ptBR
                     })}
-                          {receita.venda?.vendedor && <span className="block sm:inline">
-                              {" • "}Vendedor: {receita.venda.vendedor.name}
-                            </span>}
                           {receita.venda?.cliente && <span className="block sm:inline">
                               {" • "}Cliente: {receita.venda.cliente.nome}
                             </span>}
