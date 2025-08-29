@@ -1,46 +1,47 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { TrendingDown, Search, Filter, Plus, Edit, Eye, Calendar, DollarSign, Check, Wallet, Grid, List, MoreVertical, Building2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { TrendingDown, Search, Filter, Plus, Edit, Eye, Calendar, DollarSign, Check, Grid, List, MoreVertical, Trash2, FileText, CreditCard, Download } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { useTransacoesMes, useCategorias, useMarcarComissaoPaga, useUpdateTransacaoStatus } from "@/hooks/useFinanceiro";
 import { useAuth } from "@/contexts/AuthContext";
-import { TransacaoDialog } from "@/components/Financeiro/TransacaoDialog";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
-import { TransacaoStatusSelector } from "@/components/Financeiro/TransacaoStatusSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useContasPagar, useDeleteContaPagar, useMarcarComoPaga } from "@/hooks/useContasPagar";
+import { ContaPagarDialog } from "@/components/ContasPagar/ContaPagarDialog";
+
 export default function ContasPagar() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [categoriaFilter, setCategoriaFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<"cards" | "table">(isMobile ? "cards" : "table");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [contaToDelete, setContaToDelete] = useState<string | null>(null);
+  
   const itemsPerPage = 10;
-  const { data: transacoes, isLoading } = useTransacoesMes(selectedDate);
-  const { data: categorias } = useCategorias();
-  const marcarComissaoPaga = useMarcarComissaoPaga();
-  const updateTransacaoStatus = useUpdateTransacaoStatus();
-  const isAdmin = user?.role === 'admin';
+  
+  const { data: contas, isLoading } = useContasPagar(selectedDate);
+  const deleteContaPagar = useDeleteContaPagar();
+  const marcarComoPaga = useMarcarComoPaga();
+  
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   };
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pendente':
@@ -53,6 +54,7 @@ export default function ContasPagar() {
         return 'bg-gray-500/10 text-gray-700 dark:text-gray-400';
     }
   };
+  
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'pendente':
@@ -65,47 +67,53 @@ export default function ContasPagar() {
         return status;
     }
   };
-  const handleMarcarComoPaga = (despesa: any) => {
-    if (despesa.comissao_id) {
-      marcarComissaoPaga.mutate(despesa.comissao_id);
-    } else {
-      updateTransacaoStatus.mutate({
-        id: despesa.id,
-        status: 'confirmada'
-      });
+
+  const getFormaPagamentoLabel = (forma: string, parcelas: number, parcelaAtual: number) => {
+    if (forma === 'a_vista') return 'À Vista';
+    return `${parcelaAtual}/${parcelas}x`;
+  };
+
+  const handleMarcarComoPaga = (conta: any) => {
+    marcarComoPaga.mutate(conta.id);
+  };
+
+  const handleDeleteConta = (id: string) => {
+    setContaToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (contaToDelete) {
+      deleteContaPagar.mutate(contaToDelete);
+      setDeleteDialogOpen(false);
+      setContaToDelete(null);
     }
   };
-  const isComissao = (despesa: any) => {
-    return despesa.categoria?.nome?.toLowerCase().includes('comiss') || despesa.comissao_id;
+
+  const handleDownloadComprovante = (url: string) => {
+    window.open(url, '_blank');
   };
 
-  // Filtrar apenas despesas
-  const despesas = transacoes?.filter(t => t.tipo === 'despesa') || [];
-
   // Aplicar filtros e memoização para performance
-  const filteredDespesas = useMemo(() => {
-    return despesas.filter(despesa => {
+  const filteredContas = useMemo(() => {
+    if (!contas) return [];
+    
+    return contas.filter(conta => {
       const matchesSearch = !searchTerm || 
-        despesa.descricao?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        despesa.categoria?.nome?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || despesa.status === statusFilter;
-      const matchesCategoria = categoriaFilter === 'all' || despesa.categoria_id === categoriaFilter;
-      return matchesSearch && matchesStatus && matchesCategoria;
+        conta.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || conta.status === statusFilter;
+      return matchesSearch && matchesStatus;
     }).sort((a, b) => new Date(b.data_transacao).getTime() - new Date(a.data_transacao).getTime());
-  }, [despesas, searchTerm, statusFilter, categoriaFilter]);
+  }, [contas, searchTerm, statusFilter]);
 
   // Paginação
-  const totalPages = Math.ceil(filteredDespesas.length / itemsPerPage);
-  const paginatedDespesas = filteredDespesas.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(filteredContas.length / itemsPerPage);
+  const paginatedContas = filteredContas.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // Calcular totais
-  const totalDespesas = filteredDespesas.reduce((sum, d) => sum + Number(d.valor), 0);
-  const despesasPendentes = filteredDespesas.filter(d => d.status === 'pendente').reduce((sum, d) => sum + Number(d.valor), 0);
-  const despesasPagas = filteredDespesas.filter(d => d.status === 'confirmada').reduce((sum, d) => sum + Number(d.valor), 0);
-
-  // Calcular comissões especificamente
-  const comissoes = filteredDespesas.filter(d => d.categoria?.nome?.toLowerCase().includes('comiss'));
-  const totalComissoes = comissoes.reduce((sum, d) => sum + Number(d.valor), 0);
+  const totalContas = filteredContas.reduce((sum, d) => sum + Number(d.valor), 0);
+  const contasPendentes = filteredContas.filter(d => d.status === 'pendente').reduce((sum, d) => sum + Number(d.valor), 0);
+  const contasPagas = filteredContas.filter(d => d.status === 'confirmada').reduce((sum, d) => sum + Number(d.valor), 0);
 
   // Reset page quando filtros mudam
   const handleSearchChange = (value: string) => {
@@ -115,11 +123,6 @@ export default function ContasPagar() {
 
   const handleFilterChange = (filter: string) => {
     setStatusFilter(filter);
-    setCurrentPage(1);
-  };
-
-  const handleCategoriaChange = (categoria: string) => {
-    setCategoriaFilter(categoria);
     setCurrentPage(1);
   };
 
@@ -144,19 +147,20 @@ export default function ContasPagar() {
     return pages;
   };
 
-  return <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
+  return (
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
       {/* Header */}
       <div className="flex flex-row justify-between items-center gap-2">
         <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl truncate">Contas a Pagar</h1>
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
-          <TransacaoDialog tipo="despesa">
+          <ContaPagarDialog>
             <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm">
               <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Nova Despesa</span>
               <span className="sm:hidden">Nova</span>
             </Button>
-          </TransacaoDialog>
+          </ContaPagarDialog>
         </div>
       </div>
 
@@ -169,7 +173,7 @@ export default function ContasPagar() {
           </CardHeader>
           <CardContent className="p-3 sm:p-6 pt-0">
             <div className="text-lg sm:text-2xl font-bold text-red-600">
-              {formatCurrency(totalDespesas)}
+              {formatCurrency(totalContas)}
             </div>
           </CardContent>
         </Card>
@@ -181,7 +185,7 @@ export default function ContasPagar() {
           </CardHeader>
           <CardContent className="p-3 sm:p-6 pt-0">
             <div className="text-lg sm:text-2xl font-bold text-yellow-600">
-              {formatCurrency(despesasPendentes)}
+              {formatCurrency(contasPendentes)}
             </div>
           </CardContent>
         </Card>
@@ -193,24 +197,11 @@ export default function ContasPagar() {
           </CardHeader>
           <CardContent className="p-3 sm:p-6 pt-0">
             <div className="text-lg sm:text-2xl font-bold text-green-600">
-              {formatCurrency(despesasPagas)}
+              {formatCurrency(contasPagas)}
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Card de Comissões (separado) */}
-      {totalComissoes > 0 && <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Comissões Total</CardTitle>
-            <Wallet className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <div className="text-lg sm:text-2xl font-bold text-purple-600">
-              {formatCurrency(totalComissoes)}
-            </div>
-          </CardContent>
-        </Card>}
 
       {/* Filtros e Controles */}
       <Card>
@@ -220,7 +211,7 @@ export default function ContasPagar() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
-                  placeholder="Buscar por descrição ou categoria..." 
+                  placeholder="Buscar por nome da despesa..." 
                   className="pl-10 h-10 text-sm" 
                   value={searchTerm} 
                   onChange={e => handleSearchChange(e.target.value)} 
@@ -258,31 +249,6 @@ export default function ContasPagar() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-10 px-3 shrink-0">
-                    <Building2 className="h-4 w-4" />
-                    <span className="ml-2 hidden sm:inline">
-                      {categoriaFilter === "all" ? "Categoria" : 
-                       categorias?.find(c => c.id === categoriaFilter)?.nome || "Categoria"}
-                    </span>
-                    {categoriaFilter !== "all" && (
-                      <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-popover border z-50">
-                  <DropdownMenuItem onClick={() => handleCategoriaChange("all")}>
-                    Todas as categorias
-                  </DropdownMenuItem>
-                  {categorias?.filter(c => c.tipo === 'despesa').map(categoria => (
-                    <DropdownMenuItem key={categoria.id} onClick={() => handleCategoriaChange(categoria.id)}>
-                      {categoria.nome}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
               {!isMobile && (
                 <div className="flex items-center gap-2 ml-2">
                   <Button 
@@ -303,16 +269,15 @@ export default function ContasPagar() {
               )}
             </div>
             
-            {filteredDespesas.length > 0 && (
+            {filteredContas.length > 0 && (
               <div className="text-sm text-muted-foreground">
-                Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredDespesas.length)} de {filteredDespesas.length} despesa(s)
+                Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredContas.length)} de {filteredContas.length} conta(s)
               </div>
             )}
           </div>
         </CardHeader>
         
         <CardContent className="p-4 sm:p-6">
-
           {isLoading ? (
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -322,26 +287,26 @@ export default function ContasPagar() {
                 </div>
               ))}
             </div>
-          ) : paginatedDespesas.length === 0 ? (
+          ) : paginatedContas.length === 0 ? (
             <div className="text-center py-12">
               <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">
-                {searchTerm || statusFilter !== "all" || categoriaFilter !== "all" 
+                {searchTerm || statusFilter !== "all" 
                   ? "Nenhum resultado encontrado" 
-                  : "Nenhuma despesa encontrada"}
+                  : "Nenhuma conta encontrada"}
               </h3>
               <p className="text-muted-foreground mb-4 text-sm">
-                {searchTerm || statusFilter !== "all" || categoriaFilter !== "all"
-                  ? "Não encontramos despesas com os filtros aplicados."
-                  : "Comece adicionando sua primeira despesa."}
+                {searchTerm || statusFilter !== "all"
+                  ? "Não encontramos contas com os filtros aplicados."
+                  : "Comece adicionando sua primeira conta a pagar."}
               </p>
-              {!searchTerm && statusFilter === "all" && categoriaFilter === "all" && (
-                <TransacaoDialog tipo="despesa">
+              {!searchTerm && statusFilter === "all" && (
+                <ContaPagarDialog>
                   <Button className="gradient-premium border-0 text-background">
                     <Plus className="mr-2 h-4 w-4" />
-                    Adicionar Despesa
+                    Adicionar Conta
                   </Button>
-                </TransacaoDialog>
+                </ContaPagarDialog>
               )}
             </div>
           ) : (
@@ -349,63 +314,73 @@ export default function ContasPagar() {
               {viewMode === "cards" || isMobile ? (
                 // Card View (Mobile e Desktop quando cards selecionado)
                 <div className="space-y-3">
-                  {paginatedDespesas.map(despesa => (
-                    <Card key={despesa.id} className="p-4 hover:shadow-md transition-shadow">
+                  {paginatedContas.map(conta => (
+                    <Card key={conta.id} className="p-4 hover:shadow-md transition-shadow">
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-3">
                             <DollarSign className="h-4 w-4 text-red-600 shrink-0" />
                             <h3 className="font-semibold text-base truncate">
-                              {despesa.descricao || 'Despesa sem descrição'}
+                              {conta.descricao || 'Despesa sem descrição'}
                             </h3>
                           </div>
-                          <Badge className={cn("text-xs", getStatusColor(despesa.status || 'pendente'))}>
-                            {getStatusLabel(despesa.status || 'pendente')}
+                          <Badge className={cn("text-xs", getStatusColor(conta.status || 'pendente'))}>
+                            {getStatusLabel(conta.status || 'pendente')}
                           </Badge>
                         </div>
                         
                         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 shrink-0" />
-                            <span>{format(new Date(despesa.data_transacao), "dd/MM/yyyy", { locale: ptBR })}</span>
-                            {despesa.data_vencimento && (
+                            <span>{format(new Date(conta.data_transacao), "dd/MM/yyyy", { locale: ptBR })}</span>
+                            {conta.data_vencimento && (
                               <span className="text-xs">
-                                • Venc: {format(new Date(despesa.data_vencimento), "dd/MM/yyyy", { locale: ptBR })}
+                                • Venc: {format(new Date(conta.data_vencimento), "dd/MM/yyyy", { locale: ptBR })}
                               </span>
                             )}
                           </div>
                           <div className="flex items-center gap-2">
-                            <Wallet className="h-4 w-4 shrink-0" />
-                            <span>{despesa.categoria?.nome || 'Sem categoria'}</span>
+                            <CreditCard className="h-4 w-4 shrink-0" />
+                            <span>{getFormaPagamentoLabel(conta.forma_pagamento, conta.parcelas, conta.parcela_atual)}</span>
                           </div>
-                          {isComissao(despesa) && despesa.venda?.profiles?.name && (
+                          {conta.comprovante_url && (
                             <div className="flex items-center gap-2">
-                              <Building2 className="h-4 w-4 shrink-0" />
-                              <span>Venda por {despesa.venda.profiles.name}</span>
+                              <FileText className="h-4 w-4 shrink-0" />
+                              <span className="text-xs">Possui comprovante</span>
                             </div>
                           )}
                         </div>
                         
                         <div className="flex items-center justify-between">
                           <div className="font-bold text-red-600 text-lg">
-                            {formatCurrency(Number(despesa.valor))}
+                            {formatCurrency(Number(conta.valor))}
                           </div>
                           <div className="flex gap-1">
-                            {despesa.status === 'pendente' && (
+                            {conta.status === 'pendente' && (
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
-                                onClick={() => handleMarcarComoPaga(despesa)} 
-                                disabled={marcarComissaoPaga.isPending || updateTransacaoStatus.isPending}
+                                onClick={() => handleMarcarComoPaga(conta)} 
+                                disabled={marcarComoPaga.isPending}
                               >
                                 <Check className="h-4 w-4" />
                               </Button>
                             )}
-                            <Button variant="ghost" size="sm">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Edit className="h-4 w-4" />
+                            {conta.comprovante_url && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleDeleteConta(conta.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
@@ -421,46 +396,49 @@ export default function ContasPagar() {
                       <TableRow>
                         <TableHead>Status</TableHead>
                         <TableHead>Descrição</TableHead>
-                        <TableHead>Categoria</TableHead>
+                        <TableHead>Pagamento</TableHead>
                         <TableHead>Data</TableHead>
                         <TableHead>Valor</TableHead>
                         <TableHead className="w-[100px]">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {paginatedDespesas.map(despesa => (
-                        <TableRow key={despesa.id}>
+                      {paginatedContas.map(conta => (
+                        <TableRow key={conta.id}>
                           <TableCell>
-                            <Badge className={cn("text-xs", getStatusColor(despesa.status || 'pendente'))}>
-                              {getStatusLabel(despesa.status || 'pendente')}
+                            <Badge className={cn("text-xs", getStatusColor(conta.status || 'pendente'))}>
+                              {getStatusLabel(conta.status || 'pendente')}
                             </Badge>
                           </TableCell>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
                               <DollarSign className="h-4 w-4 text-red-600" />
                               <div>
-                                <div>{despesa.descricao || 'Despesa sem descrição'}</div>
-                                {isComissao(despesa) && despesa.venda?.profiles?.name && (
-                                  <div className="text-xs text-muted-foreground">
-                                    Venda por {despesa.venda.profiles.name}
+                                <div>{conta.descricao || 'Despesa sem descrição'}</div>
+                                {conta.comprovante_url && (
+                                  <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                    <FileText className="h-3 w-3" />
+                                    Possui comprovante
                                   </div>
                                 )}
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell>{despesa.categoria?.nome || 'Sem categoria'}</TableCell>
+                          <TableCell>
+                            {getFormaPagamentoLabel(conta.forma_pagamento, conta.parcelas, conta.parcela_atual)}
+                          </TableCell>
                           <TableCell>
                             <div>
-                              {format(new Date(despesa.data_transacao), "dd/MM/yyyy", { locale: ptBR })}
-                              {despesa.data_vencimento && (
+                              {format(new Date(conta.data_transacao), "dd/MM/yyyy", { locale: ptBR })}
+                              {conta.data_vencimento && (
                                 <div className="text-xs text-muted-foreground">
-                                  Venc: {format(new Date(despesa.data_vencimento), "dd/MM/yyyy", { locale: ptBR })}
+                                  Venc: {format(new Date(conta.data_vencimento), "dd/MM/yyyy", { locale: ptBR })}
                                 </div>
                               )}
                             </div>
                           </TableCell>
                           <TableCell className="font-bold text-red-600">
-                            {formatCurrency(Number(despesa.valor))}
+                            {formatCurrency(Number(conta.valor))}
                           </TableCell>
                           <TableCell>
                             <DropdownMenu>
@@ -470,22 +448,24 @@ export default function ContasPagar() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="bg-popover border z-50">
-                                {despesa.status === 'pendente' && (
+                                {conta.status === 'pendente' && (
                                   <DropdownMenuItem 
-                                    onClick={() => handleMarcarComoPaga(despesa)}
-                                    disabled={marcarComissaoPaga.isPending || updateTransacaoStatus.isPending}
+                                    onClick={() => handleMarcarComoPaga(conta)}
+                                    disabled={marcarComoPaga.isPending}
                                   >
                                     <Check className="h-4 w-4 mr-2" />
                                     Marcar como Paga
                                   </DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem>
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  Visualizar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Editar
+                                {conta.comprovante_url && (
+                                  <DropdownMenuItem onClick={() => handleDownloadComprovante(conta.comprovante_url!)}>
+                                    <Download className="h-4 w-4 mr-2" />
+                                    Baixar Comprovante
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem onClick={() => handleDeleteConta(conta.id)}>
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Excluir
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -539,5 +519,23 @@ export default function ContasPagar() {
         </CardContent>
       </Card>
 
-    </div>;
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir esta conta a pagar? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
 }

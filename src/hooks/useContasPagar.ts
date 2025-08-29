@@ -1,0 +1,250 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/components/ui/use-toast";
+import { format } from "date-fns";
+
+export interface ContaPagar {
+  id: string;
+  user_id: string;
+  descricao: string;
+  valor: number;
+  data_transacao: string;
+  data_vencimento?: string;
+  status: 'pendente' | 'confirmada' | 'cancelada';
+  forma_pagamento: 'a_vista' | 'parcelado';
+  parcelas: number;
+  parcela_atual: number;
+  comprovante_url?: string;
+  observacoes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateContaPagarData {
+  descricao: string;
+  valor: number;
+  data_transacao: string;
+  data_vencimento?: string;
+  forma_pagamento: 'a_vista' | 'parcelado';
+  parcelas?: number;
+  observacoes?: string;
+  comprovante_file?: File;
+}
+
+export function useContasPagar(selectedDate: Date) {
+  const { user } = useAuth();
+  
+  const startOfMonth = format(selectedDate, 'yyyy-MM-01');
+  const endOfMonth = format(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0), 'yyyy-MM-dd');
+
+  return useQuery({
+    queryKey: ['contas-pagar', user?.id, startOfMonth, endOfMonth],
+    queryFn: async () => {
+      if (!user?.id) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('transacoes_financeiras')
+        .select('*')
+        .eq('tipo', 'despesa')
+        .eq('user_id', user.id)
+        .gte('data_transacao', startOfMonth)
+        .lte('data_transacao', endOfMonth)
+        .order('data_transacao', { ascending: false });
+
+      if (error) throw error;
+      return data as ContaPagar[];
+    },
+    enabled: !!user?.id,
+  });
+}
+
+export function useCreateContaPagar() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: CreateContaPagarData) => {
+      if (!user?.id) throw new Error('User not authenticated');
+
+      let comprovante_url = null;
+
+      // Upload comprovante if provided
+      if (data.comprovante_file) {
+        const fileExt = data.comprovante_file.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('expense-receipts')
+          .upload(fileName, data.comprovante_file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('expense-receipts')
+          .getPublicUrl(fileName);
+        
+        comprovante_url = publicUrl;
+      }
+
+      // Create transactions based on payment method
+      const transactions: any[] = [];
+      
+      if (data.forma_pagamento === 'a_vista') {
+        transactions.push({
+          user_id: user.id,
+          tipo: 'despesa',
+          descricao: data.descricao,
+          valor: data.valor,
+          data_transacao: data.data_transacao,
+          data_vencimento: data.data_vencimento,
+          forma_pagamento: 'a_vista',
+          parcelas: 1,
+          parcela_atual: 1,
+          comprovante_url,
+          observacoes: data.observacoes,
+          status: 'pendente'
+        });
+      } else {
+        // Create multiple transactions for installments
+        const valorParcela = data.valor / (data.parcelas || 1);
+        const baseDate = new Date(data.data_transacao);
+        
+        for (let i = 1; i <= (data.parcelas || 1); i++) {
+          const dataTransacao = new Date(baseDate.getFullYear(), baseDate.getMonth() + (i - 1), baseDate.getDate());
+          const dataVencimento = data.data_vencimento 
+            ? new Date(new Date(data.data_vencimento).getFullYear(), new Date(data.data_vencimento).getMonth() + (i - 1), new Date(data.data_vencimento).getDate())
+            : null;
+
+          transactions.push({
+            user_id: user.id,
+            tipo: 'despesa',
+            descricao: `${data.descricao} (${i}/${data.parcelas})`,
+            valor: valorParcela,
+            data_transacao: format(dataTransacao, 'yyyy-MM-dd'),
+            data_vencimento: dataVencimento ? format(dataVencimento, 'yyyy-MM-dd') : null,
+            forma_pagamento: 'parcelado',
+            parcelas: data.parcelas || 1,
+            parcela_atual: i,
+            comprovante_url: i === 1 ? comprovante_url : null, // Only first installment gets the receipt
+            observacoes: data.observacoes,
+            status: 'pendente'
+          });
+        }
+      }
+
+      const { data: result, error } = await supabase
+        .from('transacoes_financeiras')
+        .insert(transactions)
+        .select();
+
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
+      toast({
+        title: "Sucesso!",
+        description: "Conta a pagar criada com sucesso.",
+      });
+    },
+    onError: (error) => {
+      console.error('Error creating conta a pagar:', error);
+      toast({
+        title: "Erro!",
+        description: "Erro ao criar conta a pagar.",
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useUpdateContaPagar() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...data }: Partial<ContaPagar> & { id: string }) => {
+      const { error } = await supabase
+        .from('transacoes_financeiras')
+        .update(data)
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
+      toast({
+        title: "Sucesso!",
+        description: "Conta a pagar atualizada com sucesso.",
+      });
+    },
+    onError: (error) => {
+      console.error('Error updating conta a pagar:', error);
+      toast({
+        title: "Erro!",
+        description: "Erro ao atualizar conta a pagar.",
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useDeleteContaPagar() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('transacoes_financeiras')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
+      toast({
+        title: "Sucesso!",
+        description: "Conta a pagar removida com sucesso.",
+      });
+    },
+    onError: (error) => {
+      console.error('Error deleting conta a pagar:', error);
+      toast({
+        title: "Erro!",
+        description: "Erro ao remover conta a pagar.",
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useMarcarComoPaga() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('transacoes_financeiras')
+        .update({ status: 'confirmada' })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
+      toast({
+        title: "Sucesso!",
+        description: "Conta marcada como paga.",
+      });
+    },
+    onError: (error) => {
+      console.error('Error marking as paid:', error);
+      toast({
+        title: "Erro!",
+        description: "Erro ao marcar como paga.",
+        variant: "destructive",
+      });
+    },
+  });
+}

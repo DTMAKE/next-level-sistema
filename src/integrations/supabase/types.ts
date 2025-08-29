@@ -883,8 +883,11 @@ export type Database = {
           data_transacao: string
           data_vencimento: string | null
           descricao: string | null
+          forma_pagamento: string | null
           id: string
           observacoes: string | null
+          parcela_atual: number | null
+          parcelas: number | null
           status: string | null
           tipo: string
           updated_at: string
@@ -900,8 +903,11 @@ export type Database = {
           data_transacao?: string
           data_vencimento?: string | null
           descricao?: string | null
+          forma_pagamento?: string | null
           id?: string
           observacoes?: string | null
+          parcela_atual?: number | null
+          parcelas?: number | null
           status?: string | null
           tipo: string
           updated_at?: string
@@ -917,8 +923,11 @@ export type Database = {
           data_transacao?: string
           data_vencimento?: string | null
           descricao?: string | null
+          forma_pagamento?: string | null
           id?: string
           observacoes?: string | null
+          parcela_atual?: number | null
+          parcelas?: number | null
           status?: string | null
           tipo?: string
           updated_at?: string
