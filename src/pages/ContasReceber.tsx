@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingUp, Search, Filter, Plus, Edit, Eye, Calendar, DollarSign } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { TrendingUp, Search, Filter, Plus, Edit, Eye, Calendar, DollarSign, Check, MoreVertical, Trash2, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { useTransacoesMes, useCategorias } from "@/hooks/useFinanceiro";
+import { useTransacoesMes, useCategorias, useUpdateTransacaoStatus, useDeleteTransacao } from "@/hooks/useFinanceiro";
 import { TransacaoDialog } from "@/components/Financeiro/TransacaoDialog";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
@@ -18,6 +20,8 @@ export default function ContasReceber() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categoriaFilter, setCategoriaFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [receitaToDelete, setReceitaToDelete] = useState<string | null>(null);
   const itemsPerPage = 10;
   const {
     data: transacoes,
@@ -26,6 +30,8 @@ export default function ContasReceber() {
   const {
     data: categorias
   } = useCategorias();
+  const updateTransacaoStatus = useUpdateTransacaoStatus();
+  const deleteTransacao = useDeleteTransacao();
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -54,6 +60,26 @@ export default function ContasReceber() {
         return 'Cancelada';
       default:
         return status;
+    }
+  };
+
+  const handleMarcarComoRecebida = (receita: any) => {
+    updateTransacaoStatus.mutate({ 
+      id: receita.id, 
+      status: 'confirmada' 
+    });
+  };
+
+  const handleDeleteReceita = (id: string) => {
+    setReceitaToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (receitaToDelete) {
+      deleteTransacao.mutate(receitaToDelete);
+      setDeleteDialogOpen(false);
+      setReceitaToDelete(null);
     }
   };
 
@@ -223,14 +249,43 @@ export default function ContasReceber() {
                   </div>
                   
                   <div className="flex gap-1 justify-end sm:justify-start">
-                    <Button variant="ghost" size="sm">
-                      <Eye className="h-4 w-4" />
-                      <span className="sr-only">Visualizar</span>
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Edit className="h-4 w-4" />
-                      <span className="sr-only">Editar</span>
-                    </Button>
+                    {receita.status === 'pendente' && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleMarcarComoRecebida(receita)}
+                        disabled={updateTransacaoStatus.isPending}
+                        title="Marcar como recebida"
+                      >
+                        <Check className="h-4 w-4" />
+                        <span className="sr-only">Marcar como recebida</span>
+                      </Button>
+                    )}
+                    {receita.comprovante_url && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => window.open(receita.comprovante_url, '_blank')}
+                        title="Ver comprovante"
+                      >
+                        <FileText className="h-4 w-4" />
+                        <span className="sr-only">Ver comprovante</span>
+                      </Button>
+                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="h-4 w-4" />
+                          <span className="sr-only">Mais opções</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleDeleteReceita(receita.id)}>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Excluir
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>)}
             </div>}
@@ -257,5 +312,26 @@ export default function ContasReceber() {
             </PaginationItem>
           </PaginationContent>
         </Pagination>}
+
+      {/* Dialog de confirmação para exclusão */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir esta receita? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>;
 }

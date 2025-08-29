@@ -555,3 +555,72 @@ export function useUpdateTransacaoStatus() {
     },
   });
 }
+
+// Hook para atualizar transação financeira
+export function useUpdateTransacao() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...data }: { id: string } & Partial<CreateTransacaoData>) => {
+      const { data: transacao, error } = await supabase
+        .from('transacoes_financeiras')
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return transacao;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transacoes-financeiras"] });
+      queryClient.invalidateQueries({ queryKey: ["resumo-financeiro"] });
+      toast({
+        title: "Sucesso",
+        description: "Transação atualizada com sucesso!",
+      });
+    },
+    onError: (error: any) => {
+      console.error("Erro ao atualizar transação:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar transação",
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+// Hook para deletar transação financeira
+export function useDeleteTransacao() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('transacoes_financeiras')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transacoes-financeiras"] });
+      queryClient.invalidateQueries({ queryKey: ["resumo-financeiro"] });
+      toast({
+        title: "Sucesso",
+        description: "Transação removida com sucesso!",
+      });
+    },
+    onError: (error: any) => {
+      console.error("Erro ao deletar transação:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao remover transação",
+        variant: "destructive",
+      });
+    },
+  });
+}
