@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MonthYearPickerProps {
   selected: Date;
@@ -12,6 +13,7 @@ interface MonthYearPickerProps {
 }
 
 export function MonthYearPicker({ selected, onSelect }: MonthYearPickerProps) {
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [viewYear, setViewYear] = useState(selected.getFullYear());
   const [viewMonth, setViewMonth] = useState(selected.getMonth());
@@ -53,12 +55,12 @@ export function MonthYearPicker({ selected, onSelect }: MonthYearPickerProps) {
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="h-10 px-3 shrink-0 text-sm">
           <CalendarIcon className="h-4 w-4" />
-          <span className="ml-2 hidden sm:inline">
-            {format(selected, "MMM/yy", { locale: ptBR })}
+          <span className="ml-2 hidden xs:inline sm:inline">
+            {format(selected, isMobile ? "MMM/yy" : "MMMM yyyy", { locale: ptBR })}
           </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-4" align="start">
+      <PopoverContent className="w-auto p-4 bg-popover border z-50" align="start">
         <div className="space-y-4">
           {/* Header com navegação */}
           <div className="flex items-center justify-between">
