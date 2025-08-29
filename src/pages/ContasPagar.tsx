@@ -104,54 +104,60 @@ export default function ContasPagar() {
   // Calcular comissões especificamente
   const comissoes = filteredDespesas.filter(d => d.categoria?.nome?.toLowerCase().includes('comiss'));
   const totalComissoes = comissoes.reduce((sum, d) => sum + Number(d.valor), 0);
-  return <div className="space-y-6 p-4 sm:p-6">
+  return <div className="space-y-3 sm:space-y-6 p-3 sm:p-6">
       {/* Header */}
-      <div className="flex flex-row justify-between items-center gap-4">
-        <h1 className="font-bold mx-0 py-0 text-3xl">Contas a Pagar</h1>
-        <div className="flex items-center gap-2 shrink-0">
+      <div className="space-y-3 sm:space-y-4">
+        <div className="text-2xl">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Contas a Pagar</h1>
+          
+        </div>
+
+        {/* Controles de data */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
+          
           <TransacaoDialog tipo="despesa">
-            <Button className="gradient-premium border-0 text-background h-10 px-4 text-sm">
-              <Plus className="mr-2 h-4 w-4" />
-              Nova Despesa
+            <Button className="w-full sm:w-auto">
+              <Plus className="h-4 w-4 mr-2" />
+              <span className="sm:inline">Nova Despesa</span>
             </Button>
           </TransacaoDialog>
         </div>
       </div>
 
       {/* Cards de Resumo */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6">
-            <CardTitle className="text-sm font-medium">Total a Pagar</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Total a Pagar</CardTitle>
+            <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <div className="text-2xl font-bold text-red-600">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-red-600">
               {formatCurrency(totalDespesas)}
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6">
-            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Pendentes</CardTitle>
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <div className="text-2xl font-bold text-yellow-600">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-yellow-600">
               {formatCurrency(despesasPendentes)}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6">
-            <CardTitle className="text-sm font-medium">Pagas</CardTitle>
-            <TrendingDown className="h-4 w-4 text-muted-foreground" />
+        <Card className="col-span-2 lg:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Pagas</CardTitle>
+            <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <div className="text-2xl font-bold text-green-600">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-green-600">
               {formatCurrency(despesasPagas)}
             </div>
           </CardContent>
@@ -159,89 +165,76 @@ export default function ContasPagar() {
       </div>
 
       {/* Card de Comissões (separado) */}
-      {totalComissoes > 0 && (
-        <Card className="sm:col-span-2 lg:col-span-3">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6">
-            <CardTitle className="text-sm font-medium">Comissões Total</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
+      {totalComissoes > 0 && <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Comissões Total</CardTitle>
+            <Wallet className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <div className="text-2xl font-bold text-purple-600">
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-purple-600">
               {formatCurrency(totalComissoes)}
             </div>
           </CardContent>
-        </Card>
-      )}
+        </Card>}
 
       {/* Filtros */}
       <Card>
-        <CardHeader className="p-4 sm:p-6">
-          <div className="flex flex-col gap-4">
-            <CardTitle className="text-lg">Filtros</CardTitle>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Buscar por descrição..." 
-                  value={searchTerm} 
-                  onChange={e => setSearchTerm(e.target.value)} 
-                  className="pl-10 h-10 text-sm" 
-                />
-              </div>
-              
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-[180px] h-10">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os status</SelectItem>
-                  <SelectItem value="pendente">Pendente</SelectItem>
-                  <SelectItem value="confirmada">Paga</SelectItem>
-                  <SelectItem value="cancelada">Cancelada</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={categoriaFilter} onValueChange={setCategoriaFilter}>
-                <SelectTrigger className="w-full sm:w-[180px] h-10">
-                  <SelectValue placeholder="Categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as categorias</SelectItem>
-                  {categorias?.filter(c => c.tipo === 'despesa').map(categoria => (
-                    <SelectItem key={categoria.id} value={categoria.id}>
-                      {categoria.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setSearchTerm("");
-                  setStatusFilter("all");
-                  setCategoriaFilter("all");
-                  setCurrentPage(1);
-                }} 
-                className="h-10 px-3 shrink-0"
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Limpar
-              </Button>
-            </div>
-            
-            {filteredDespesas.length > 0 && (
-              <div className="text-sm text-muted-foreground">
-                Mostrando {startIndex + 1} - {Math.min(startIndex + itemsPerPage, filteredDespesas.length)} de {filteredDespesas.length} despesas
-              </div>
-            )}
-          </div>
+        <CardHeader className="p-3 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Filtros</CardTitle>
         </CardHeader>
+        <CardContent className="p-3 sm:p-6 pt-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Buscar por descrição..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
+            </div>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os status</SelectItem>
+                <SelectItem value="pendente">Pendente</SelectItem>
+                <SelectItem value="confirmada">Paga</SelectItem>
+                <SelectItem value="cancelada">Cancelada</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={categoriaFilter} onValueChange={setCategoriaFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as categorias</SelectItem>
+                {categorias?.filter(c => c.tipo === 'despesa').map(categoria => <SelectItem key={categoria.id} value={categoria.id}>
+                    {categoria.nome}
+                  </SelectItem>)}
+              </SelectContent>
+            </Select>
+
+            <Button variant="outline" onClick={() => {
+            setSearchTerm("");
+            setStatusFilter("all");
+            setCategoriaFilter("all");
+            setCurrentPage(1);
+          }} className="col-span-1 sm:col-span-2 lg:col-span-1">
+              <Filter className="h-4 w-4 mr-2" />
+              Limpar
+            </Button>
+          </div>
+        </CardContent>
       </Card>
 
       {/* Lista de Despesas */}
       <Card>
-        <CardContent className="p-4 sm:p-6">
+        <CardHeader className="p-3 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Despesas do Período</CardTitle>
+          <CardDescription className="text-sm">
+            {filteredDespesas.length} despesa(s) encontrada(s)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-3 sm:p-6 pt-0">
           {isLoading ? <div className="space-y-4">
               {Array.from({
             length: 5
