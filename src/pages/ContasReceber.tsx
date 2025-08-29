@@ -4,31 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  TrendingUp, 
-  Search, 
-  Filter, 
-  Plus,
-  Edit,
-  Eye,
-  Calendar,
-  DollarSign
-} from "lucide-react";
+import { TrendingUp, Search, Filter, Plus, Edit, Eye, Calendar, DollarSign } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useTransacoesMes, useCategorias } from "@/hooks/useFinanceiro";
 import { TransacaoDialog } from "@/components/Financeiro/TransacaoDialog";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 export default function ContasReceber() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,17 +19,19 @@ export default function ContasReceber() {
   const [categoriaFilter, setCategoriaFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
-  const { data: transacoes, isLoading } = useTransacoesMes(selectedDate);
-  const { data: categorias } = useCategorias();
-
+  const {
+    data: transacoes,
+    isLoading
+  } = useTransacoesMes(selectedDate);
+  const {
+    data: categorias
+  } = useCategorias();
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pendente':
@@ -59,7 +44,6 @@ export default function ContasReceber() {
         return 'bg-gray-500/10 text-gray-700 dark:text-gray-400';
     }
   };
-
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'pendente':
@@ -78,13 +62,9 @@ export default function ContasReceber() {
 
   // Aplicar filtros
   const filteredReceitas = receitas.filter(receita => {
-    const matchesSearch = !searchTerm || 
-      receita.descricao?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      receita.categoria?.nome?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesSearch = !searchTerm || receita.descricao?.toLowerCase().includes(searchTerm.toLowerCase()) || receita.categoria?.nome?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || receita.status === statusFilter;
     const matchesCategoria = categoriaFilter === 'all' || receita.categoria_id === categoriaFilter;
-    
     return matchesSearch && matchesStatus && matchesCategoria;
   });
 
@@ -97,24 +77,17 @@ export default function ContasReceber() {
   const totalReceitas = filteredReceitas.reduce((sum, r) => sum + Number(r.valor), 0);
   const receitasPendentes = filteredReceitas.filter(r => r.status === 'pendente').reduce((sum, r) => sum + Number(r.valor), 0);
   const receitasRecebidas = filteredReceitas.filter(r => r.status === 'confirmada').reduce((sum, r) => sum + Number(r.valor), 0);
-
-  return (
-    <div className="space-y-3 sm:space-y-6 p-3 sm:p-6">
+  return <div className="space-y-3 sm:space-y-6 p-3 sm:p-6">
       {/* Header */}
       <div className="space-y-3 sm:space-y-4">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Contas a Receber</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Controle de receitas e contas a receber
-          </p>
+          
         </div>
 
         {/* Controles de data */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <MonthYearPicker 
-            selected={selectedDate}
-            onSelect={setSelectedDate}
-          />
+          <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
           
           <TransacaoDialog tipo="receita">
             <Button className="w-full sm:w-auto">
@@ -173,12 +146,7 @@ export default function ContasReceber() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por descrição..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+              <Input placeholder="Buscar por descrição..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
             </div>
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -199,20 +167,18 @@ export default function ContasReceber() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas as categorias</SelectItem>
-                {categorias?.filter(c => c.tipo === 'receita').map(categoria => (
-                  <SelectItem key={categoria.id} value={categoria.id}>
+                {categorias?.filter(c => c.tipo === 'receita').map(categoria => <SelectItem key={categoria.id} value={categoria.id}>
                     {categoria.nome}
-                  </SelectItem>
-                ))}
+                  </SelectItem>)}
               </SelectContent>
             </Select>
 
             <Button variant="outline" onClick={() => {
-              setSearchTerm("");
-              setStatusFilter("all");
-              setCategoriaFilter("all");
-              setCurrentPage(1);
-            }} className="col-span-1 sm:col-span-2 lg:col-span-1">
+            setSearchTerm("");
+            setStatusFilter("all");
+            setCategoriaFilter("all");
+            setCurrentPage(1);
+          }} className="col-span-1 sm:col-span-2 lg:col-span-1">
               <Filter className="h-4 w-4 mr-2" />
               Limpar
             </Button>
@@ -229,28 +195,24 @@ export default function ContasReceber() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-3 sm:p-6 pt-0">
-          {isLoading ? (
-            <div className="text-center text-muted-foreground">Carregando...</div>
-          ) : paginatedReceitas.length === 0 ? (
-            <div className="text-center text-muted-foreground">
+          {isLoading ? <div className="text-center text-muted-foreground">Carregando...</div> : paginatedReceitas.length === 0 ? <div className="text-center text-muted-foreground">
               Nenhuma receita encontrada
-            </div>
-          ) : (
-            <div className="space-y-3 sm:space-y-4">
-              {paginatedReceitas.map((receita) => (
-                <div key={receita.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg">
+            </div> : <div className="space-y-3 sm:space-y-4">
+              {paginatedReceitas.map(receita => <div key={receita.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 min-w-0 flex-1">
                     <div className="min-w-0 flex-1">
                       <div className="font-medium text-sm sm:text-base">
                         {receita.descricao || 'Receita sem descrição'}
                       </div>
                       <div className="text-xs sm:text-sm text-muted-foreground">
-                        {receita.categoria?.nome || 'Sem categoria'} • {format(new Date(receita.data_transacao), "dd/MM/yyyy", { locale: ptBR })}
-                        {receita.data_vencimento && (
-                          <span className="block sm:inline">
-                            {" • "}Vencimento: {format(new Date(receita.data_vencimento), "dd/MM/yyyy", { locale: ptBR })}
-                          </span>
-                        )}
+                        {receita.categoria?.nome || 'Sem categoria'} • {format(new Date(receita.data_transacao), "dd/MM/yyyy", {
+                    locale: ptBR
+                  })}
+                        {receita.data_vencimento && <span className="block sm:inline">
+                            {" • "}Vencimento: {format(new Date(receita.data_vencimento), "dd/MM/yyyy", {
+                      locale: ptBR
+                    })}
+                          </span>}
                       </div>
                     </div>
                     
@@ -275,45 +237,30 @@ export default function ContasReceber() {
                       <span className="sr-only">Editar</span>
                     </Button>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                </div>)}
+            </div>}
         </CardContent>
       </Card>
 
       {/* Paginação */}
-      {totalPages > 1 && (
-        <Pagination>
+      {totalPages > 1 && <Pagination>
           <PaginationContent>
             <PaginationItem>
-              <PaginationPrevious 
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-              />
+              <PaginationPrevious onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"} />
             </PaginationItem>
             
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  onClick={() => setCurrentPage(page)}
-                  isActive={currentPage === page}
-                  className="cursor-pointer"
-                >
+            {Array.from({
+          length: totalPages
+        }, (_, i) => i + 1).map(page => <PaginationItem key={page}>
+                <PaginationLink onClick={() => setCurrentPage(page)} isActive={currentPage === page} className="cursor-pointer">
                   {page}
                 </PaginationLink>
-              </PaginationItem>
-            ))}
+              </PaginationItem>)}
             
             <PaginationItem>
-              <PaginationNext 
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-              />
+              <PaginationNext onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"} />
             </PaginationItem>
           </PaginationContent>
-        </Pagination>
-      )}
-    </div>
-  );
+        </Pagination>}
+    </div>;
 }
