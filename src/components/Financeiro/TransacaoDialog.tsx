@@ -5,11 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 import { useCreateTransacao, useCategorias, CreateTransacaoData } from "@/hooks/useFinanceiro";
 
 interface TransacaoDialogProps {
@@ -70,9 +67,9 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto z-[100] max-w-[95vw] sm:max-w-[600px]">
+        <DialogHeader className="text-center pb-4">
+          <DialogTitle className="text-2xl text-foreground">
             Nova {tipoAtual === 'receita' ? 'Receita' : 'Despesa'}
           </DialogTitle>
         </DialogHeader>
@@ -82,14 +79,14 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
           {!tipo ? (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="tipo">Tipo</Label>
+                <Label htmlFor="tipo" className="text-base font-medium">Tipo</Label>
                 <Select
                   value={formData.tipo}
                   onValueChange={(value: 'receita' | 'despesa') => 
                     setFormData(prev => ({ ...prev, tipo: value, categoria_id: undefined }))
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-12 text-base">
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
@@ -100,13 +97,14 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="valor">Valor (R$)</Label>
+                <Label htmlFor="valor" className="text-base font-medium">Valor (R$)</Label>
                 <Input
                   id="valor"
                   type="number"
                   step="0.01"
                   min="0"
                   placeholder="0,00"
+                  className="h-12 text-base"
                   value={formData.valor || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, valor: Number(e.target.value) }))}
                   required
@@ -116,13 +114,14 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
           ) : (
             /* Quando há tipo fixo, valor ocupa toda a linha */
             <div className="space-y-2">
-              <Label htmlFor="valor">Valor (R$)</Label>
+              <Label htmlFor="valor" className="text-base font-medium">Valor (R$)</Label>
               <Input
                 id="valor"
                 type="number"
                 step="0.01"
                 min="0"
                 placeholder="0,00"
+                className="h-12 text-base"
                 value={formData.valor || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, valor: Number(e.target.value) }))}
                 required
@@ -131,12 +130,12 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="categoria">Categoria</Label>
+            <Label htmlFor="categoria" className="text-base font-medium">Categoria</Label>
             <Select
               value={formData.categoria_id}
               onValueChange={(value) => setFormData(prev => ({ ...prev, categoria_id: value }))}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-12 text-base">
                 <SelectValue placeholder="Selecione uma categoria" />
               </SelectTrigger>
               <SelectContent>
@@ -156,48 +155,45 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
           </div>
 
           <div className="space-y-2">
-            <Label>Data da Transação</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !date && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "dd/MM/yyyy") : "Selecione uma data"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={(newDate) => newDate && setDate(newDate)}
-                  initialFocus
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
+            <Label className="text-base font-medium">Data da Transação</Label>
+            <Input 
+              type="date" 
+              className="h-12 text-base"
+              value={format(date, 'yyyy-MM-dd')}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value) {
+                  setDate(new Date(value + 'T00:00:00'));
+                }
+              }}
+            />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="descricao">Descrição</Label>
+            <Label htmlFor="descricao" className="text-base font-medium">Descrição</Label>
             <Textarea
               id="descricao"
               placeholder="Descrição da transação..."
               value={formData.descricao || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, descricao: e.target.value }))}
-              rows={3}
+              className="min-h-[100px] text-base resize-none"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+          <div className="flex flex-col sm:flex-row gap-4 pt-6">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setOpen(false)}
+              className="flex-1 h-12 text-base"
+            >
               Cancelar
             </Button>
-            <Button type="submit" disabled={createTransacao.isPending}>
+            <Button 
+              type="submit" 
+              disabled={createTransacao.isPending}
+              className="flex-1 h-12 text-base gradient-premium border-0 text-background font-medium"
+            >
               {createTransacao.isPending ? 'Salvando...' : 'Salvar'}
             </Button>
           </div>
