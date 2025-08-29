@@ -147,7 +147,7 @@ export default function ContasPagar() {
   return <div className="space-y-6 p-4 sm:p-6">
       {/* Header */}
       <div className="flex flex-row justify-between items-center gap-4">
-        <h1 className="font-bold mx-0 py-0 text-3xl">Contas a Pagar</h1>
+        <h1 className="font-bold mx-0 py-0 text-xl sm:text-2xl lg:text-3xl whitespace-nowrap">Contas a Pagar</h1>
         <div className="flex items-center gap-2">
           <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
           <TransacaoDialog tipo="despesa">
