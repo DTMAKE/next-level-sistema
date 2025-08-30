@@ -116,19 +116,19 @@ export default function Financeiro() {
     }, {} as Record<string, number>) || {};
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
       {/* Header responsivo */}
-      <div className="space-y-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Financeiro</h1>
-          <p className="text-muted-foreground hidden sm:block">
+      <div className="space-y-3 sm:space-y-4">
+        <div className="text-center sm:text-left">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Financeiro</h1>
+          <p className="text-sm text-muted-foreground mt-1 sm:block">
             Controle financeiro mensal e análise de resultados
           </p>
         </div>
         
-        {/* Controles de data - mobile abaixo do título */}
-        <div className="flex items-center justify-center sm:justify-start gap-2">
-          <Button variant="outline" size="sm" onClick={handlePreviousMonth}>
+        {/* Controles de data - responsivo */}
+        <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2 flex-wrap">
+          <Button variant="outline" size="sm" onClick={handlePreviousMonth} className="text-xs sm:text-sm">
             ←
           </Button>
           
@@ -137,11 +137,11 @@ export default function Financeiro() {
             onSelect={setSelectedDate}
           />
           
-          <Button variant="outline" size="sm" onClick={handleNextMonth}>
+          <Button variant="outline" size="sm" onClick={handleNextMonth} className="text-xs sm:text-sm">
             →
           </Button>
           
-          <Button variant="outline" size="sm" onClick={handleCurrentMonth}>
+          <Button variant="outline" size="sm" onClick={handleCurrentMonth} className="text-xs sm:text-sm">
             Hoje
           </Button>
         </div>
@@ -149,21 +149,21 @@ export default function Financeiro() {
 
       {/* Cards de Resumo Mensal */}
       <TooltipProvider>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
           {/* Receita Total */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium leading-tight">Receita Total</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <Card className="min-h-[120px] sm:min-h-[140px]">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4 lg:p-6">
+              <CardTitle className="text-xs sm:text-sm lg:text-base font-medium leading-tight">Receita Total</CardTitle>
+              <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
             </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0">
+            <CardContent className="p-3 sm:p-4 lg:p-6 pt-0">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className={cn(
                     "font-bold text-green-600 leading-tight cursor-default",
                     shouldUseCompactFormat(resumo?.receita_total || 0)
-                      ? "text-base sm:text-xl"
-                      : "text-lg sm:text-2xl"
+                      ? "text-sm sm:text-lg lg:text-xl"
+                      : "text-base sm:text-xl lg:text-2xl"
                   )}>
                     {isLoadingResumo 
                       ? "..." 
@@ -181,19 +181,19 @@ export default function Financeiro() {
           </Card>
 
           {/* Despesas Totais */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium leading-tight">Despesas Totais</CardTitle>
-              <TrendingDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <Card className="min-h-[120px] sm:min-h-[140px]">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4 lg:p-6">
+              <CardTitle className="text-xs sm:text-sm lg:text-base font-medium leading-tight">Despesas Totais</CardTitle>
+              <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
             </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0">
+            <CardContent className="p-3 sm:p-4 lg:p-6 pt-0">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className={cn(
                     "font-bold text-red-600 leading-tight cursor-default",
                     shouldUseCompactFormat(resumo?.despesa_total || 0)
-                      ? "text-base sm:text-xl"
-                      : "text-lg sm:text-2xl"
+                      ? "text-sm sm:text-lg lg:text-xl"
+                      : "text-base sm:text-xl lg:text-2xl"
                   )}>
                     {isLoadingResumo 
                       ? "..." 
@@ -211,20 +211,20 @@ export default function Financeiro() {
           </Card>
 
           {/* Lucro Líquido */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium leading-tight">Lucro Líquido</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <Card className="min-h-[120px] sm:min-h-[140px]">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4 lg:p-6">
+              <CardTitle className="text-xs sm:text-sm lg:text-base font-medium leading-tight">Lucro Líquido</CardTitle>
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
             </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0">
+            <CardContent className="p-3 sm:p-4 lg:p-6 pt-0">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className={cn(
                     "font-bold leading-tight cursor-default",
                     (resumo?.lucro_liquido || 0) >= 0 ? "text-green-600" : "text-red-600",
                     shouldUseCompactFormat(resumo?.lucro_liquido || 0)
-                      ? "text-base sm:text-xl"
-                      : "text-lg sm:text-2xl"
+                      ? "text-sm sm:text-lg lg:text-xl"
+                      : "text-base sm:text-xl lg:text-2xl"
                   )}>
                     {isLoadingResumo 
                       ? "..." 
@@ -242,14 +242,14 @@ export default function Financeiro() {
           </Card>
 
           {/* Margem de Lucro */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium leading-tight">Margem de Lucro</CardTitle>
-              <Calculator className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <Card className="min-h-[120px] sm:min-h-[140px]">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4 lg:p-6">
+              <CardTitle className="text-xs sm:text-sm lg:text-base font-medium leading-tight">Margem de Lucro</CardTitle>
+              <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
             </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0">
+            <CardContent className="p-3 sm:p-4 lg:p-6 pt-0">
               <div className={cn(
-                "text-lg sm:text-2xl font-bold leading-tight",
+                "text-base sm:text-xl lg:text-2xl font-bold leading-tight",
                 (resumo?.margem_lucro || 0) >= 0 ? "text-green-600" : "text-red-600"
               )}>
                 {isLoadingResumo ? "..." : formatPercentage(resumo?.margem_lucro || 0)}
@@ -261,46 +261,46 @@ export default function Financeiro() {
 
       {/* Ações Rápidas */}
       <Card>
-        <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-base sm:text-lg">Ações Rápidas</CardTitle>
-          <CardDescription className="text-sm hidden sm:block">
+        <CardHeader className="p-3 sm:p-4 lg:p-6">
+          <CardTitle className="text-base sm:text-lg lg:text-xl">Ações Rápidas</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">
             Ferramentas financeiras mais utilizadas
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-4 sm:p-6 pt-0">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <CardContent className="p-3 sm:p-4 lg:p-6 pt-0">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
             <TransacaoDialog tipo="receita">
-              <Button variant="outline" className="h-16 sm:h-20 flex-col text-xs sm:text-sm">
-                <DollarSign className="h-4 w-4 sm:h-6 sm:w-6 mb-1 sm:mb-2 text-green-600" />
-                Lançar Receita
+              <Button variant="outline" className="h-14 sm:h-16 lg:h-20 flex-col text-xs sm:text-sm p-2">
+                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 mb-1 sm:mb-2 text-green-600 flex-shrink-0" />
+                <span className="text-center leading-tight">Lançar Receita</span>
               </Button>
             </TransacaoDialog>
             
             <TransacaoDialog tipo="despesa">
-              <Button variant="outline" className="h-16 sm:h-20 flex-col text-xs sm:text-sm">
-                <TrendingDown className="h-4 w-4 sm:h-6 sm:w-6 mb-1 sm:mb-2 text-red-600" />
-                Registrar Despesa
+              <Button variant="outline" className="h-14 sm:h-16 lg:h-20 flex-col text-xs sm:text-sm p-2">
+                <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 mb-1 sm:mb-2 text-red-600 flex-shrink-0" />
+                <span className="text-center leading-tight">Registrar Despesa</span>
               </Button>
             </TransacaoDialog>
             
             <CategoriaDialog>
-              <Button variant="outline" className="h-16 sm:h-20 flex-col text-xs sm:text-sm">
-                <Settings className="h-4 w-4 sm:h-6 sm:w-6 mb-1 sm:mb-2" />
-                Gerenciar Categorias
+              <Button variant="outline" className="h-14 sm:h-16 lg:h-20 flex-col text-xs sm:text-sm p-2">
+                <Settings className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 mb-1 sm:mb-2 flex-shrink-0" />
+                <span className="text-center leading-tight">Gerenciar Categorias</span>
               </Button>
             </CategoriaDialog>
             
             <Button 
               variant="outline" 
-              className="h-16 sm:h-20 flex-col text-xs sm:text-sm"
+              className="h-14 sm:h-16 lg:h-20 flex-col text-xs sm:text-sm p-2"
               onClick={() => sincronizarVendas.mutate()}
               disabled={sincronizarVendas.isPending}
             >
               <RefreshCw className={cn(
-                "h-4 w-4 sm:h-6 sm:w-6 mb-1 sm:mb-2",
+                "h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 mb-1 sm:mb-2 flex-shrink-0",
                 sincronizarVendas.isPending && "animate-spin"
               )} />
-              Sincronizar Vendas
+              <span className="text-center leading-tight">Sincronizar Vendas</span>
             </Button>
           </div>
         </CardContent>
@@ -308,13 +308,13 @@ export default function Financeiro() {
 
       {/* Despesas por Categoria */}
       <Card>
-        <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-base sm:text-lg">Despesas por Categoria</CardTitle>
-          <CardDescription className="text-sm">
+        <CardHeader className="p-3 sm:p-4 lg:p-6">
+          <CardTitle className="text-base sm:text-lg lg:text-xl">Despesas por Categoria</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">
             Controle de gastos no período selecionado
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-4 sm:p-6 pt-0">
+        <CardContent className="p-3 sm:p-4 lg:p-6 pt-0">
           {isLoadingTransacoes ? (
             <div className="text-center text-muted-foreground text-sm">Carregando...</div>
           ) : Object.keys(despesasPorCategoria).length === 0 ? (
@@ -322,14 +322,14 @@ export default function Financeiro() {
               Nenhuma despesa encontrada no período
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {Object.entries(despesasPorCategoria).map(([categoria, valor]) => (
-                <div key={categoria} className="flex items-center justify-between">
-                  <span className="text-sm truncate pr-2">{categoria}</span>
+                <div key={categoria} className="flex items-center justify-between gap-2 p-2 sm:p-3 rounded-lg border">
+                  <span className="text-xs sm:text-sm font-medium truncate flex-1">{categoria}</span>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="font-medium text-red-600 text-sm flex-shrink-0 cursor-default">
+                        <span className="font-medium text-red-600 text-xs sm:text-sm flex-shrink-0 cursor-default">
                           {shouldUseCompactFormat(Number(valor)) 
                             ? formatCompactCurrency(Number(valor))
                             : formatCurrency(Number(valor))
@@ -350,13 +350,13 @@ export default function Financeiro() {
 
       {/* Lista de Transações Recentes */}
       <Card>
-        <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-base sm:text-lg">Transações do Período</CardTitle>
-          <CardDescription className="text-sm">
+        <CardHeader className="p-3 sm:p-4 lg:p-6">
+          <CardTitle className="text-base sm:text-lg lg:text-xl">Transações do Período</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">
             Últimas movimentações financeiras
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-4 sm:p-6 pt-0">
+        <CardContent className="p-3 sm:p-4 lg:p-6 pt-0">
           {isLoadingTransacoes ? (
             <div className="text-center text-muted-foreground text-sm">Carregando...</div>
           ) : !transacoes || transacoes.length === 0 ? (
@@ -366,21 +366,21 @@ export default function Financeiro() {
           ) : (
             <div className="space-y-2 sm:space-y-3">
               {transacoes.slice(0, 10).map((transacao) => (
-                <div key={transacao.id} className="flex items-center justify-between p-2 sm:p-3 border rounded-lg">
+                <div key={transacao.id} className="flex items-center justify-between gap-2 sm:gap-3 p-2 sm:p-3 border rounded-lg">
                   <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                     <div className={cn(
                       "w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0",
                       transacao.tipo === 'receita' ? 'bg-green-500' : 'bg-red-500'
                     )} />
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium text-sm sm:text-base truncate">
+                      <div className="font-medium text-xs sm:text-sm lg:text-base truncate">
                         {transacao.descricao || `${transacao.tipo === 'receita' ? 'Receita' : 'Despesa'} sem descrição`}
                       </div>
-                      <div className="text-xs sm:text-sm text-muted-foreground">
+                      <div className="text-xs text-muted-foreground">
                         {transacao.categoria?.nome || 'Sem categoria'} • {format(new Date(transacao.data_transacao), "dd/MM/yyyy")}
                       </div>
                       {transacao.venda?.vendedor_nome && (
-                        <div className="text-xs text-muted-foreground/80">
+                        <div className="text-xs text-muted-foreground/80 hidden sm:block">
                           Venda feita por {transacao.venda.vendedor_nome}
                         </div>
                       )}
@@ -390,11 +390,11 @@ export default function Financeiro() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className={cn(
-                          "font-medium flex-shrink-0 cursor-default leading-tight",
+                          "font-medium flex-shrink-0 cursor-default leading-tight text-right",
                           transacao.tipo === 'receita' ? 'text-green-600' : 'text-red-600',
                           shouldUseCompactFormat(Number(transacao.valor || 0))
                             ? "text-xs sm:text-sm"
-                            : "text-sm sm:text-base"
+                            : "text-xs sm:text-sm lg:text-base"
                         )}>
                           {transacao.tipo === 'receita' ? '+' : '-'}
                           {shouldUseCompactFormat(Number(transacao.valor || 0))
