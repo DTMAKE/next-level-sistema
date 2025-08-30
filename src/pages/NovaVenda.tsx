@@ -60,10 +60,8 @@ export default function NovaVenda() {
         data_venda: formData.data_venda,
         forma_pagamento: formData.forma_pagamento,
         parcelas: formData.forma_pagamento === 'parcelado' ? formData.parcelas : 1,
+        servicos: servicos, // Incluir serviços
       });
-
-      // Aqui você pode implementar a lógica para salvar os serviços se necessário
-      // Por enquanto, os serviços ficam apenas na descrição da venda
 
       navigate("/vendas");
     } catch (error) {

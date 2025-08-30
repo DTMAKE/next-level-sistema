@@ -46,10 +46,24 @@ export interface CreateVendaData {
   data_venda: string;
   forma_pagamento?: string;
   parcelas?: number;
+  servicos?: Array<{
+    servico_id: string;
+    nome: string;
+    valor_unitario: number;
+    quantidade: number;
+    valor_total: number;
+  }>;
 }
 
-export interface UpdateVendaData extends CreateVendaData {
+export interface UpdateVendaData extends Omit<CreateVendaData, 'servicos'> {
   id: string;
+  servicos?: Array<{
+    servico_id: string;
+    nome: string;
+    valor_unitario: number;
+    quantidade: number;
+    valor_total: number;
+  }>;
 }
 
 export interface VendasResponse {
@@ -153,10 +167,12 @@ export function useCreateVenda() {
     mutationFn: async (vendaData: CreateVendaData) => {
       if (!user?.id) throw new Error('User not authenticated');
 
+      const { servicos, ...vendaInfo } = vendaData;
+
       const { data, error } = await supabase
         .from('vendas')
         .insert({
-          ...vendaData,
+          ...vendaInfo,
           user_id: user.id,
         })
         .select(`
@@ -166,6 +182,31 @@ export function useCreateVenda() {
         .single();
 
       if (error) throw error;
+
+      // Salvar serviços associados se existirem
+      if (servicos && servicos.length > 0) {
+        const vendaServicos = servicos
+          .filter(s => s.servico_id !== 'generic') // Filtrar serviços genéricos
+          .map(servico => ({
+            venda_id: data.id,
+            servico_id: servico.servico_id,
+            quantidade: servico.quantidade,
+            valor_unitario: servico.valor_unitario,
+            valor_total: servico.valor_total,
+          }));
+
+        if (vendaServicos.length > 0) {
+          const { error: servicosError } = await supabase
+            .from('venda_servicos')
+            .insert(vendaServicos);
+
+          if (servicosError) {
+            console.error('Erro ao salvar serviços:', servicosError);
+            throw servicosError;
+          }
+        }
+      }
+
       return data as Venda;
     },
     onSuccess: () => {
@@ -190,7 +231,7 @@ export function useUpdateVenda() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, ...vendaData }: UpdateVendaData) => {
+    mutationFn: async ({ id, servicos, ...vendaData }: UpdateVendaData) => {
       const { data, error } = await supabase
         .from('vendas')
         .update(vendaData)
@@ -202,10 +243,43 @@ export function useUpdateVenda() {
         .single();
 
       if (error) throw error;
+
+      // Atualizar serviços associados
+      if (servicos) {
+        // Primeiro, deletar serviços existentes
+        await supabase
+          .from('venda_servicos')
+          .delete()
+          .eq('venda_id', id);
+
+        // Depois, inserir novos serviços (se não forem genéricos)
+        const vendaServicos = servicos
+          .filter(s => s.servico_id !== 'generic') // Filtrar serviços genéricos
+          .map(servico => ({
+            venda_id: id,
+            servico_id: servico.servico_id,
+            quantidade: servico.quantidade,
+            valor_unitario: servico.valor_unitario,
+            valor_total: servico.valor_total,
+          }));
+
+        if (vendaServicos.length > 0) {
+          const { error: servicosError } = await supabase
+            .from('venda_servicos')
+            .insert(vendaServicos);
+
+          if (servicosError) {
+            console.error('Erro ao atualizar serviços:', servicosError);
+            throw servicosError;
+          }
+        }
+      }
+
       return data as Venda;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendas'] });
+      queryClient.invalidateQueries({ queryKey: ['venda'] });
       toast({
         title: "Venda atualizada",
         description: "Informações da venda atualizadas com sucesso.",

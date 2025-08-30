@@ -125,6 +125,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
         status: formData.status,
         descricao: formData.descricao.trim() || undefined,
         data_venda: formData.data_venda,
+        servicos: servicos, // Incluir serviços
       };
 
       if (venda) {
