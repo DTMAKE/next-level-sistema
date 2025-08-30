@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCreateVenda, useUpdateVenda, type Venda } from "@/hooks/useVendas";
 import { useClientes } from "@/hooks/useClientes";
+import { getBrazilianDateString } from "@/utils/dateUtils";
 
 interface VendaDialogProps {
   open: boolean;
@@ -20,7 +21,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
     valor: "",
     status: "proposta" as "proposta" | "negociacao" | "fechada" | "perdida",
     descricao: "",
-    data_venda: new Date().toISOString().split('T')[0],
+    data_venda: getBrazilianDateString(),
   });
 
   const createVenda = useCreateVenda();
@@ -35,7 +36,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
         valor: venda.valor?.toString() || "",
         status: venda.status || "proposta",
         descricao: venda.descricao || "",
-        data_venda: venda.data_venda || new Date().toISOString().split('T')[0],
+        data_venda: venda.data_venda || getBrazilianDateString(),
       });
     } else if (!venda && open) {
       setFormData({
@@ -43,7 +44,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
         valor: "",
         status: "proposta",
         descricao: "",
-        data_venda: new Date().toISOString().split('T')[0],
+        data_venda: getBrazilianDateString(),
       });
     }
   }, [venda, open]);
@@ -60,7 +61,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
         valor: "",
         status: "proposta",
         descricao: "",
-        data_venda: new Date().toISOString().split('T')[0],
+        data_venda: getBrazilianDateString(),
       });
     }
     onOpenChange(isOpen);

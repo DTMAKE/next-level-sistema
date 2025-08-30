@@ -120,6 +120,7 @@ export function useMetaAtual() {
             .from('vendas')
             .select('valor')
             .eq('user_id', user.id)
+            .eq('status', 'fechada')
             .gte('data_venda', inicio.toISOString().split('T')[0])
             .lte('data_venda', fim.toISOString().split('T')[0]),
           supabase
@@ -178,6 +179,7 @@ export function useMetaAtual() {
             .from('vendas')
             .select('valor')
             .eq('user_id', user.id)
+            .eq('status', 'fechada')
             .gte('data_venda', inicio.toISOString().split('T')[0])
             .lte('data_venda', fim.toISOString().split('T')[0]),
           supabase
