@@ -3,8 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
-import { DollarSign, TrendingUp, TrendingDown, Calculator, CalendarIcon, Plus, Settings, RefreshCw, Search } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, Calculator, CalendarIcon, Plus, Settings, RefreshCw } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -16,7 +15,6 @@ import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { FinanceiroSkeleton } from "@/components/Financeiro/FinanceiroSkeleton";
 export default function Financeiro() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [searchTerm, setSearchTerm] = useState("");
   const {
     data: resumo,
     isLoading: isLoadingResumo,
@@ -258,31 +256,16 @@ export default function Financeiro() {
       {/* Lista de Transações Recentes */}
       <Card>
         <CardHeader className="p-2 sm:p-3 md:p-4">
-          <CardTitle className="text-sm sm:text-base md:text-lg">Receitas do Período</CardTitle>
+          <CardTitle className="text-sm sm:text-base md:text-lg">Transações do Período</CardTitle>
           <CardDescription className="text-xs sm:text-sm">
             Últimas movimentações financeiras
           </CardDescription>
-          
-          {/* Buscar por nome - igual ao contas-pagar */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Buscar por nome da receita..." 
-              className="pl-10 h-10 text-sm" 
-              value={searchTerm} 
-              onChange={e => setSearchTerm(e.target.value)} 
-            />
-          </div>
         </CardHeader>
         <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
           {isLoadingTransacoes ? <div className="text-center text-muted-foreground text-xs sm:text-sm">Carregando...</div> : !transacoes || transacoes.length === 0 ? <div className="text-center text-muted-foreground text-xs sm:text-sm">
               Nenhuma transação encontrada no período
             </div> : <div className="space-y-1 sm:space-y-2">
-              {transacoes
-                .filter(transacao => !searchTerm || 
-                  (transacao.descricao && transacao.descricao.toLowerCase().includes(searchTerm.toLowerCase()))
-                )
-                .slice(0, 10).map(transacao => <div key={transacao.id} className="flex items-center justify-between gap-2 p-2 sm:p-3 border rounded-lg">
+              {transacoes.slice(0, 10).map(transacao => <div key={transacao.id} className="flex items-center justify-between gap-2 p-2 sm:p-3 border rounded-lg">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <div className={cn("w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0", transacao.tipo === 'receita' ? 'bg-green-500' : 'bg-red-500')} />
                     <div className="min-w-0 flex-1">
