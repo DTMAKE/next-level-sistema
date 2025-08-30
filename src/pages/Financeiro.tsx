@@ -3,37 +3,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { 
-  DollarSign, 
-  TrendingUp, 
-  TrendingDown, 
-  Calculator, 
-  CalendarIcon,
-  Plus,
-  Settings,
-  RefreshCw
-} from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, Calculator, CalendarIcon, Plus, Settings, RefreshCw } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { 
-  useResumoFinanceiro, 
-  useTransacoesMes, 
-  useCategorias,
-  useSincronizarVendas 
-} from "@/hooks/useFinanceiro";
+import { useResumoFinanceiro, useTransacoesMes, useCategorias, useSincronizarVendas } from "@/hooks/useFinanceiro";
 import { TransacaoDialog } from "@/components/Financeiro/TransacaoDialog";
 import { CategoriaDialog } from "@/components/Financeiro/CategoriaDialog";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { FinanceiroSkeleton } from "@/components/Financeiro/FinanceiroSkeleton";
-
 export default function Financeiro() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-
-  const { data: resumo, isLoading: isLoadingResumo, error: errorResumo } = useResumoFinanceiro(selectedDate);
-  const { data: transacoes, isLoading: isLoadingTransacoes, error: errorTransacoes } = useTransacoesMes(selectedDate);
-  const { data: categorias, error: errorCategorias } = useCategorias();
+  const {
+    data: resumo,
+    isLoading: isLoadingResumo,
+    error: errorResumo
+  } = useResumoFinanceiro(selectedDate);
+  const {
+    data: transacoes,
+    isLoading: isLoadingTransacoes,
+    error: errorTransacoes
+  } = useTransacoesMes(selectedDate);
+  const {
+    data: categorias,
+    error: errorCategorias
+  } = useCategorias();
   const sincronizarVendas = useSincronizarVendas();
 
   // Debug do componente Financeiro
@@ -52,26 +47,21 @@ export default function Financeiro() {
   if (isLoadingResumo || isLoadingTransacoes) {
     return <FinanceiroSkeleton />;
   }
-
   const handlePreviousMonth = () => {
     setSelectedDate(prev => subMonths(prev, 1));
   };
-
   const handleNextMonth = () => {
     setSelectedDate(prev => addMonths(prev, 1));
   };
-
   const handleCurrentMonth = () => {
     setSelectedDate(new Date());
   };
-
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   };
-
   const formatCompactCurrency = (value: number) => {
     const absValue = Math.abs(value);
     if (absValue >= 1000000) {
@@ -82,68 +72,47 @@ export default function Financeiro() {
     }
     return formatCurrency(value);
   };
-
   const formatFullCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   };
-
   const formatPercentage = (value: number) => {
     return `${value.toFixed(1)}%`;
   };
-
   const shouldUseCompactFormat = (value: number) => {
     return Math.abs(value) >= 100000; // Use compact format for values >= 100K
   };
 
   // Agrupar transações por categoria
-  const receitasPorCategoria = transacoes
-    ?.filter(t => t.tipo === 'receita')
-    .reduce((acc, transacao) => {
-      const categoria = transacao.categoria?.nome || 'Sem categoria';
-      acc[categoria] = (acc[categoria] || 0) + Number(transacao.valor || 0);
-      return acc;
-    }, {} as Record<string, number>) || {};
-
-  const despesasPorCategoria = transacoes
-    ?.filter(t => t.tipo === 'despesa')
-    .reduce((acc, transacao) => {
-      const categoria = transacao.categoria?.nome || 'Sem categoria';
-      acc[categoria] = (acc[categoria] || 0) + Number(transacao.valor || 0);
-      return acc;
-    }, {} as Record<string, number>) || {};
-
-  return (
-    <div className="space-y-3 sm:space-y-4 md:space-y-6 p-2 sm:p-4 md:p-6">
+  const receitasPorCategoria = transacoes?.filter(t => t.tipo === 'receita').reduce((acc, transacao) => {
+    const categoria = transacao.categoria?.nome || 'Sem categoria';
+    acc[categoria] = (acc[categoria] || 0) + Number(transacao.valor || 0);
+    return acc;
+  }, {} as Record<string, number>) || {};
+  const despesasPorCategoria = transacoes?.filter(t => t.tipo === 'despesa').reduce((acc, transacao) => {
+    const categoria = transacao.categoria?.nome || 'Sem categoria';
+    acc[categoria] = (acc[categoria] || 0) + Number(transacao.valor || 0);
+    return acc;
+  }, {} as Record<string, number>) || {};
+  return <div className="space-y-3 sm:space-y-4 md:space-y-6 p-2 sm:p-4 md:p-6">
       {/* Header responsivo */}
       <div className="space-y-2 sm:space-y-3 md:space-y-4">
         <div className="text-center sm:text-left">
           <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground">Financeiro</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1 px-2 sm:px-0">
-            Controle financeiro mensal e análise de resultados
-          </p>
+          
         </div>
         
         {/* Controles de data - responsivo */}
         <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2 flex-wrap">
-          <Button variant="outline" size="sm" onClick={handlePreviousMonth} className="text-xs sm:text-sm px-2 sm:px-3">
-            ←
-          </Button>
           
-          <MonthYearPicker 
-            selected={selectedDate}
-            onSelect={setSelectedDate}
-          />
           
-          <Button variant="outline" size="sm" onClick={handleNextMonth} className="text-xs sm:text-sm px-2 sm:px-3">
-            →
-          </Button>
+          <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
           
-          <Button variant="outline" size="sm" onClick={handleCurrentMonth} className="text-xs sm:text-sm px-2 sm:px-3">
-            Hoje
-          </Button>
+          
+          
+          
         </div>
       </div>
 
@@ -159,18 +128,8 @@ export default function Financeiro() {
             <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className={cn(
-                    "font-bold text-green-600 leading-tight cursor-default",
-                    shouldUseCompactFormat(resumo?.receita_total || 0)
-                      ? "text-sm sm:text-base md:text-lg lg:text-xl"
-                      : "text-sm sm:text-lg md:text-xl lg:text-2xl"
-                  )}>
-                    {isLoadingResumo 
-                      ? "..." 
-                      : shouldUseCompactFormat(resumo?.receita_total || 0)
-                        ? formatCompactCurrency(resumo?.receita_total || 0)
-                        : formatCurrency(resumo?.receita_total || 0)
-                    }
+                  <div className={cn("font-bold text-green-600 leading-tight cursor-default", shouldUseCompactFormat(resumo?.receita_total || 0) ? "text-sm sm:text-base md:text-lg lg:text-xl" : "text-sm sm:text-lg md:text-xl lg:text-2xl")}>
+                    {isLoadingResumo ? "..." : shouldUseCompactFormat(resumo?.receita_total || 0) ? formatCompactCurrency(resumo?.receita_total || 0) : formatCurrency(resumo?.receita_total || 0)}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -189,18 +148,8 @@ export default function Financeiro() {
             <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className={cn(
-                    "font-bold text-red-600 leading-tight cursor-default",
-                    shouldUseCompactFormat(resumo?.despesa_total || 0)
-                      ? "text-sm sm:text-base md:text-lg lg:text-xl"
-                      : "text-sm sm:text-lg md:text-xl lg:text-2xl"
-                  )}>
-                    {isLoadingResumo 
-                      ? "..." 
-                      : shouldUseCompactFormat(resumo?.despesa_total || 0)
-                        ? formatCompactCurrency(resumo?.despesa_total || 0)
-                        : formatCurrency(resumo?.despesa_total || 0)
-                    }
+                  <div className={cn("font-bold text-red-600 leading-tight cursor-default", shouldUseCompactFormat(resumo?.despesa_total || 0) ? "text-sm sm:text-base md:text-lg lg:text-xl" : "text-sm sm:text-lg md:text-xl lg:text-2xl")}>
+                    {isLoadingResumo ? "..." : shouldUseCompactFormat(resumo?.despesa_total || 0) ? formatCompactCurrency(resumo?.despesa_total || 0) : formatCurrency(resumo?.despesa_total || 0)}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -219,19 +168,8 @@ export default function Financeiro() {
             <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className={cn(
-                    "font-bold leading-tight cursor-default",
-                    (resumo?.lucro_liquido || 0) >= 0 ? "text-green-600" : "text-red-600",
-                    shouldUseCompactFormat(resumo?.lucro_liquido || 0)
-                      ? "text-sm sm:text-base md:text-lg lg:text-xl"
-                      : "text-sm sm:text-lg md:text-xl lg:text-2xl"
-                  )}>
-                    {isLoadingResumo 
-                      ? "..." 
-                      : shouldUseCompactFormat(resumo?.lucro_liquido || 0)
-                        ? formatCompactCurrency(resumo?.lucro_liquido || 0)
-                        : formatCurrency(resumo?.lucro_liquido || 0)
-                    }
+                  <div className={cn("font-bold leading-tight cursor-default", (resumo?.lucro_liquido || 0) >= 0 ? "text-green-600" : "text-red-600", shouldUseCompactFormat(resumo?.lucro_liquido || 0) ? "text-sm sm:text-base md:text-lg lg:text-xl" : "text-sm sm:text-lg md:text-xl lg:text-2xl")}>
+                    {isLoadingResumo ? "..." : shouldUseCompactFormat(resumo?.lucro_liquido || 0) ? formatCompactCurrency(resumo?.lucro_liquido || 0) : formatCurrency(resumo?.lucro_liquido || 0)}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -248,10 +186,7 @@ export default function Financeiro() {
               <Calculator className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0" />
             </CardHeader>
             <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
-              <div className={cn(
-                "text-sm sm:text-lg md:text-xl lg:text-2xl font-bold leading-tight",
-                (resumo?.margem_lucro || 0) >= 0 ? "text-green-600" : "text-red-600"
-              )}>
+              <div className={cn("text-sm sm:text-lg md:text-xl lg:text-2xl font-bold leading-tight", (resumo?.margem_lucro || 0) >= 0 ? "text-green-600" : "text-red-600")}>
                 {isLoadingResumo ? "..." : formatPercentage(resumo?.margem_lucro || 0)}
               </div>
             </CardContent>
@@ -290,16 +225,8 @@ export default function Financeiro() {
               </Button>
             </CategoriaDialog>
             
-            <Button 
-              variant="outline" 
-              className="h-12 sm:h-14 md:h-16 flex-col text-xs p-1 sm:p-2"
-              onClick={() => sincronizarVendas.mutate()}
-              disabled={sincronizarVendas.isPending}
-            >
-              <RefreshCw className={cn(
-                "h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 mb-1 flex-shrink-0",
-                sincronizarVendas.isPending && "animate-spin"
-              )} />
+            <Button variant="outline" className="h-12 sm:h-14 md:h-16 flex-col text-xs p-1 sm:p-2" onClick={() => sincronizarVendas.mutate()} disabled={sincronizarVendas.isPending}>
+              <RefreshCw className={cn("h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 mb-1 flex-shrink-0", sincronizarVendas.isPending && "animate-spin")} />
               <span className="text-center leading-tight">Sincronizar Vendas</span>
             </Button>
           </div>
@@ -315,25 +242,16 @@ export default function Financeiro() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
-          {isLoadingTransacoes ? (
-            <div className="text-center text-muted-foreground text-xs sm:text-sm">Carregando...</div>
-          ) : Object.keys(despesasPorCategoria).length === 0 ? (
-            <div className="text-center text-muted-foreground text-xs sm:text-sm">
+          {isLoadingTransacoes ? <div className="text-center text-muted-foreground text-xs sm:text-sm">Carregando...</div> : Object.keys(despesasPorCategoria).length === 0 ? <div className="text-center text-muted-foreground text-xs sm:text-sm">
               Nenhuma despesa encontrada no período
-            </div>
-          ) : (
-            <div className="space-y-1 sm:space-y-2">
-              {Object.entries(despesasPorCategoria).map(([categoria, valor]) => (
-                <div key={categoria} className="flex items-center justify-between gap-2 p-2 sm:p-3 rounded-lg border">
+            </div> : <div className="space-y-1 sm:space-y-2">
+              {Object.entries(despesasPorCategoria).map(([categoria, valor]) => <div key={categoria} className="flex items-center justify-between gap-2 p-2 sm:p-3 rounded-lg border">
                   <span className="text-xs sm:text-sm font-medium truncate flex-1">{categoria}</span>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="font-medium text-red-600 text-xs sm:text-sm flex-shrink-0 cursor-default">
-                          {shouldUseCompactFormat(Number(valor)) 
-                            ? formatCompactCurrency(Number(valor))
-                            : formatCurrency(Number(valor))
-                          }
+                          {shouldUseCompactFormat(Number(valor)) ? formatCompactCurrency(Number(valor)) : formatCurrency(Number(valor))}
                         </span>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -341,10 +259,8 @@ export default function Financeiro() {
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                </div>
-              ))}
-            </div>
-          )}
+                </div>)}
+            </div>}
         </CardContent>
       </Card>
 
@@ -357,21 +273,12 @@ export default function Financeiro() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
-          {isLoadingTransacoes ? (
-            <div className="text-center text-muted-foreground text-xs sm:text-sm">Carregando...</div>
-          ) : !transacoes || transacoes.length === 0 ? (
-            <div className="text-center text-muted-foreground text-xs sm:text-sm">
+          {isLoadingTransacoes ? <div className="text-center text-muted-foreground text-xs sm:text-sm">Carregando...</div> : !transacoes || transacoes.length === 0 ? <div className="text-center text-muted-foreground text-xs sm:text-sm">
               Nenhuma transação encontrada no período
-            </div>
-          ) : (
-            <div className="space-y-1 sm:space-y-2">
-              {transacoes.slice(0, 10).map((transacao) => (
-                <div key={transacao.id} className="flex items-center justify-between gap-2 p-2 sm:p-3 border rounded-lg">
+            </div> : <div className="space-y-1 sm:space-y-2">
+              {transacoes.slice(0, 10).map(transacao => <div key={transacao.id} className="flex items-center justify-between gap-2 p-2 sm:p-3 border rounded-lg">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <div className={cn(
-                      "w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0",
-                      transacao.tipo === 'receita' ? 'bg-green-500' : 'bg-red-500'
-                    )} />
+                    <div className={cn("w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0", transacao.tipo === 'receita' ? 'bg-green-500' : 'bg-red-500')} />
                     <div className="min-w-0 flex-1">
                       <div className="font-medium text-xs sm:text-sm truncate">
                         {transacao.descricao || `${transacao.tipo === 'receita' ? 'Receita' : 'Despesa'} sem descrição`}
@@ -379,25 +286,17 @@ export default function Financeiro() {
                       <div className="text-xs text-muted-foreground">
                         {transacao.categoria?.nome || 'Sem categoria'} • {format(new Date(transacao.data_transacao), "dd/MM/yyyy")}
                       </div>
-                      {transacao.venda?.vendedor_nome && (
-                        <div className="text-xs text-muted-foreground/80 hidden sm:block">
+                      {transacao.venda?.vendedor_nome && <div className="text-xs text-muted-foreground/80 hidden sm:block">
                           Venda feita por {transacao.venda.vendedor_nome}
-                        </div>
-                      )}
+                        </div>}
                     </div>
                   </div>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className={cn(
-                          "font-medium flex-shrink-0 cursor-default leading-tight text-right text-xs sm:text-sm",
-                          transacao.tipo === 'receita' ? 'text-green-600' : 'text-red-600'
-                        )}>
+                        <div className={cn("font-medium flex-shrink-0 cursor-default leading-tight text-right text-xs sm:text-sm", transacao.tipo === 'receita' ? 'text-green-600' : 'text-red-600')}>
                           {transacao.tipo === 'receita' ? '+' : '-'}
-                          {shouldUseCompactFormat(Number(transacao.valor || 0))
-                            ? formatCompactCurrency(Number(transacao.valor || 0)).replace('R$ ', '')
-                            : formatCurrency(Number(transacao.valor || 0))
-                          }
+                          {shouldUseCompactFormat(Number(transacao.valor || 0)) ? formatCompactCurrency(Number(transacao.valor || 0)).replace('R$ ', '') : formatCurrency(Number(transacao.valor || 0))}
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -408,12 +307,9 @@ export default function Financeiro() {
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                </div>
-              ))}
-            </div>
-          )}
+                </div>)}
+            </div>}
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 }
