@@ -10,20 +10,19 @@ import { ArrowLeft, DollarSign, Save, User, CreditCard } from "lucide-react";
 import { ServicosSelector } from "@/components/Vendas/ServicosSelector";
 import { ClientesSelector } from "@/components/Vendas/ClientesSelector";
 import { VendedorSelector } from "@/components/Vendas/VendedorSelector";
-import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { useCreateVenda } from "@/hooks/useVendas";
 
 
 export default function NovaVenda() {
   const navigate = useNavigate();
   const createVenda = useCreateVenda();
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   
   const [formData, setFormData] = useState({
     cliente_id: "",
     vendedor_id: "",
     status: "proposta" as "proposta" | "negociacao" | "fechada" | "perdida",
     descricao: "",
+    data_venda: new Date().toISOString().split('T')[0],
     forma_pagamento: "a_vista" as "a_vista" | "cartao" | "pix" | "boleto" | "parcelado",
     parcelas: 1,
   });
@@ -58,7 +57,7 @@ export default function NovaVenda() {
         valor: valorTotal,
         status: formData.status,
         descricao: formData.descricao.trim() || undefined,
-        data_venda: selectedDate.toISOString().split('T')[0],
+        data_venda: formData.data_venda,
         forma_pagamento: formData.forma_pagamento,
         parcelas: formData.forma_pagamento === 'parcelado' ? formData.parcelas : 1,
       });
@@ -79,27 +78,24 @@ export default function NovaVenda() {
     <div className="min-h-screen bg-gradient-elegant">
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Header */}
-        <div className="flex flex-row justify-between items-center gap-2 mb-4 sm:mb-8">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => navigate("/vendas")}
-              className="hover:shadow-premium transition-shadow"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl truncate">Nova Venda</h1>
-          </div>
-          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-            <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
-          </div>
+        <div className="flex items-center gap-4 mb-4 sm:mb-8">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate("/vendas")}
+            className="hover:shadow-premium transition-shadow"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
         </div>
 
         {/* Form */}
         <div className="max-w-6xl mx-auto">
           <Card className="shadow-premium border-0 bg-card/50 backdrop-blur-sm overflow-hidden">
             <CardHeader className="text-center pb-4 sm:pb-6 px-4 sm:px-6">
+              <CardTitle className="text-xl sm:text-2xl md:text-3xl text-foreground">
+                Nova Venda
+              </CardTitle>
               <p className="text-sm sm:text-base text-muted-foreground">
                 Preencha os dados abaixo para cadastrar a venda
               </p>
@@ -221,6 +217,19 @@ export default function NovaVenda() {
                         </Select>
                       </div>
 
+                      {/* Data da Venda */}
+                      <div className="space-y-2">
+                        <Label htmlFor="data_venda" className="text-base font-medium">
+                          Data da Venda
+                        </Label>
+                        <Input
+                          id="data_venda"
+                          type="date"
+                          value={formData.data_venda}
+                          onChange={(e) => handleInputChange("data_venda", e.target.value)}
+                          className="h-12 text-base"
+                        />
+                      </div>
                     </div>
                   </Card>
                 </div>
