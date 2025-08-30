@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { TrendingUp, Search, Filter, Plus, Edit, Eye, Calendar, DollarSign, Check, MoreVertical, Trash2, FileText } from "lucide-react";
+import { TrendingUp, Search, Filter, Plus, Edit, Eye, Calendar, DollarSign, Check, MoreVertical, Trash2, FileText, ShoppingCart, UserCheck } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,7 @@ export default function ContasReceber() {
   } = useCategorias();
   const updateTransacaoStatus = useUpdateTransacaoStatus();
   const deleteTransacao = useDeleteTransacao();
+  const { toast } = useToast();
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -71,8 +73,18 @@ export default function ContasReceber() {
     });
   };
 
-  const handleDeleteReceita = (id: string) => {
-    setReceitaToDelete(id);
+  const handleDeleteReceita = (receita: any) => {
+    // Verificar se a receita tem fonte (venda vinculada)
+    if (receita.venda_id) {
+      toast({
+        title: "Não é possível excluir",
+        description: "Esta receita está vinculada a uma venda e não pode ser excluída.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setReceitaToDelete(receita.id);
     setDeleteDialogOpen(true);
   };
 
@@ -228,24 +240,42 @@ export default function ContasReceber() {
               {paginatedReceitas.map(receita => <div key={receita.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 min-w-0 flex-1">
                       <div className="min-w-0 flex-1">
-                        <div className="font-medium text-sm sm:text-base">
-                          {receita.descricao || 'Receita sem descrição'}
-                        </div>
-                        <div className="text-xs sm:text-sm text-muted-foreground">
-                          {receita.categoria?.nome || 'Sem categoria'} • {format(new Date(receita.data_transacao), "dd/MM/yyyy", {
-                      locale: ptBR
-                    })}
-                          {receita.venda?.cliente?.nome && <span className="block sm:inline">
-                              {" • "}Cliente: {receita.venda.cliente.nome}
-                            </span>}
-                          {receita.venda?.vendedor_nome && <span className="block sm:inline">
-                              {" • "}Vendedor: {receita.venda.vendedor_nome}
-                            </span>}
-                          {receita.data_vencimento && <span className="block sm:inline">
-                              {" • "}Vencimento: {format(new Date(receita.data_vencimento), "dd/MM/yyyy", {
-                        locale: ptBR
-                      })}
-                            </span>}
+                        <div className="flex items-start gap-2">
+                          <div className="flex-1">
+                            <div className="font-medium text-sm sm:text-base">
+                              {receita.descricao || 'Receita sem descrição'}
+                            </div>
+                            <div className="text-xs sm:text-sm text-muted-foreground">
+                              {receita.categoria?.nome || 'Sem categoria'} • {format(new Date(receita.data_transacao), "dd/MM/yyyy", {
+                            locale: ptBR
+                          })}
+                              {receita.venda?.cliente?.nome && <span className="block sm:inline">
+                                  {" • "}Cliente: {receita.venda.cliente.nome}
+                                </span>}
+                              {receita.venda?.vendedor_nome && <span className="block sm:inline">
+                                  {" • "}Vendedor: {receita.venda.vendedor_nome}
+                                </span>}
+                              {receita.data_vencimento && <span className="block sm:inline">
+                                  {" • "}Vencimento: {format(new Date(receita.data_vencimento), "dd/MM/yyyy", {
+                            locale: ptBR
+                          })}
+                                </span>}
+                            </div>
+                          </div>
+                          {/* Indicador de fonte */}
+                          <div className="flex-shrink-0">
+                            {receita.venda_id ? (
+                              <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-950 rounded-full">
+                                <ShoppingCart className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                <span className="text-xs text-blue-600 dark:text-blue-400">Venda</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 px-2 py-1 bg-green-50 dark:bg-green-950 rounded-full">
+                                <UserCheck className="h-3 w-3 text-green-600 dark:text-green-400" />
+                                <span className="text-xs text-green-600 dark:text-green-400">Manual</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     
@@ -292,9 +322,13 @@ export default function ContasReceber() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleDeleteReceita(receita.id)}>
+                        <DropdownMenuItem 
+                          onClick={() => handleDeleteReceita(receita)}
+                          disabled={!!receita.venda_id}
+                          className={receita.venda_id ? "opacity-50" : ""}
+                        >
                           <Trash2 className="h-4 w-4 mr-2" />
-                          Excluir
+                          {receita.venda_id ? "Não é possível excluir (vinculada à venda)" : "Excluir"}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

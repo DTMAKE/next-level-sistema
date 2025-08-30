@@ -671,6 +671,22 @@ export function useDeleteTransacao() {
     mutationFn: async (id: string) => {
       console.log('🗑️ Iniciando exclusão da transação:', id);
       
+      // Verificar se a transação existe e se pode ser excluída
+      const { data: transacao, error: fetchError } = await supabase
+        .from("transacoes_financeiras")
+        .select("id, venda_id, tipo")
+        .eq("id", id)
+        .single();
+
+      if (fetchError) {
+        console.error('❌ Erro ao buscar transação:', fetchError);
+        throw fetchError;
+      }
+      
+      if (transacao.venda_id && transacao.tipo === 'receita') {
+        throw new Error("Não é possível excluir receitas vinculadas a vendas");
+      }
+      
       const { error } = await supabase
         .from('transacoes_financeiras')
         .delete()
