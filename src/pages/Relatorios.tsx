@@ -104,7 +104,7 @@ export default function Relatorios() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6 lg:p-8">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Relatórios</h1>
