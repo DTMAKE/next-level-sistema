@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCreateVenda, useUpdateVenda, type Venda } from "@/hooks/useVendas";
 import { useClientes } from "@/hooks/useClientes";
 import { getBrazilianDateString } from "@/utils/dateUtils";
+import { ServicosSelector } from "@/components/Vendas/ServicosSelector";
 
 interface VendaDialogProps {
   open: boolean;
@@ -24,6 +25,14 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
     data_venda: getBrazilianDateString(),
   });
 
+  const [servicos, setServicos] = useState<Array<{
+    servico_id: string;
+    nome: string;
+    valor_unitario: number;
+    quantidade: number;
+    valor_total: number;
+  }>>([]);
+
   const createVenda = useCreateVenda();
   const updateVenda = useUpdateVenda();
   const { data: clientesResponse } = useClientes();
@@ -38,6 +47,20 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
         descricao: venda.descricao || "",
         data_venda: venda.data_venda || getBrazilianDateString(),
       });
+      
+      // Preencher serviços existentes se houver
+      if (venda.venda_servicos && venda.venda_servicos.length > 0) {
+        const servicosExistentes = venda.venda_servicos.map(vs => ({
+          servico_id: vs.servico.id,
+          nome: vs.servico.nome,
+          valor_unitario: vs.valor_unitario,
+          quantidade: vs.quantidade,
+          valor_total: vs.valor_total,
+        }));
+        setServicos(servicosExistentes);
+      } else {
+        setServicos([]);
+      }
     } else if (!venda && open) {
       setFormData({
         cliente_id: "",
@@ -46,6 +69,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
         descricao: "",
         data_venda: getBrazilianDateString(),
       });
+      setServicos([]);
     }
   }, [venda, open]);
 
@@ -63,6 +87,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
         descricao: "",
         data_venda: getBrazilianDateString(),
       });
+      setServicos([]);
     }
     onOpenChange(isOpen);
   };
@@ -70,12 +95,15 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.cliente_id.trim() || !formData.valor.trim()) return;
+    // Calcular valor total dos serviços
+    const valorTotal = servicos.reduce((total, servico) => total + servico.valor_total, 0);
+    
+    if (!formData.cliente_id.trim() || valorTotal <= 0) return;
 
     try {
       const vendaData = {
         cliente_id: formData.cliente_id,
-        valor: parseFloat(formData.valor),
+        valor: valorTotal,
         status: formData.status,
         descricao: formData.descricao.trim() || undefined,
         data_venda: formData.data_venda,
@@ -92,11 +120,12 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
     }
   };
 
-  const isFormValid = formData.cliente_id.trim() && formData.valor.trim();
+  const valorTotalCalculado = servicos.reduce((total, servico) => total + servico.valor_total, 0);
+  const isFormValid = formData.cliente_id.trim() && valorTotalCalculado > 0;
 
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {venda ? "Editar Venda" : "Nova Venda"}
@@ -121,22 +150,13 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {/* Valor */}
-            <div className="space-y-2">
-              <Label htmlFor="valor">Valor *</Label>
-              <Input
-                id="valor"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.valor}
-                onChange={(e) => handleInputChange("valor", e.target.value)}
-                placeholder="0,00"
-                required
-              />
-            </div>
+          {/* Serviços */}
+          <ServicosSelector 
+            servicosSelecionados={servicos}
+            onServicosChange={setServicos}
+          />
 
+          <div className="grid grid-cols-2 gap-4">
             {/* Status */}
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
@@ -151,6 +171,18 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
                   <SelectItem value="perdida">Perdida</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Valor Total (readonly) */}
+            <div className="space-y-2">
+              <Label htmlFor="valor_total">Valor Total *</Label>
+              <Input
+                id="valor_total"
+                type="text"
+                value={`R$ ${valorTotalCalculado.toFixed(2).replace('.', ',')}`}
+                readOnly
+                className="bg-muted"
+              />
             </div>
           </div>
 
