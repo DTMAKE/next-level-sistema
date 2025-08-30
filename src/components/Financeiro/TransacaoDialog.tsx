@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus } from "lucide-react";
+import { Plus, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { useCreateTransacao, useCategorias, CreateTransacaoData } from "@/hooks/useFinanceiro";
+import { useToast } from "@/hooks/use-toast";
 
 interface TransacaoDialogProps {
   children?: React.ReactNode;
@@ -21,17 +22,47 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
     data_transacao: format(new Date(), 'yyyy-MM-dd'),
   });
   const [date, setDate] = useState<Date>(new Date());
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const createTransacao = useCreateTransacao();
   const { data: categorias } = useCategorias();
+  const { toast } = useToast();
 
   // Determina o tipo atual - usa o prop fixo se fornecido, senão usa o do formData
   const tipoAtual = tipo || formData.tipo;
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    // Validar valor
+    const valorNum = Number(formData.valor);
+    if (!formData.valor || isNaN(valorNum) || valorNum <= 0) {
+      newErrors.valor = "Valor deve ser um número maior que zero";
+    }
+
+    // Validar categoria (obrigatória para receitas manuais)
+    if (!formData.categoria_id) {
+      newErrors.categoria = "Categoria é obrigatória";
+    }
+
+    // Validar tipo
+    if (!tipoAtual) {
+      newErrors.tipo = "Tipo é obrigatório";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.valor || !tipoAtual) {
+    if (!validateForm()) {
+      toast({
+        title: "Erro de validação",
+        description: "Por favor, corrija os campos obrigatórios",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -40,7 +71,7 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
         tipo: tipoAtual,
         categoria_id: formData.categoria_id,
         valor: Number(formData.valor),
-        descricao: formData.descricao,
+        descricao: formData.descricao || '',
         data_transacao: format(date, 'yyyy-MM-dd'),
       });
       
@@ -50,8 +81,9 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
         data_transacao: format(new Date(), 'yyyy-MM-dd'),
       });
       setDate(new Date());
+      setErrors({});
     } catch (error) {
-      // Error already handled by mutation hooks
+      console.error('Erro ao criar transação:', error);
     }
   };
 
@@ -79,14 +111,17 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
           {!tipo ? (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="tipo" className="text-base font-medium">Tipo</Label>
+                <Label htmlFor="tipo" className="text-base font-medium flex items-center gap-1">
+                  Tipo
+                  <span className="text-red-500">*</span>
+                </Label>
                 <Select
                   value={formData.tipo}
                   onValueChange={(value: 'receita' | 'despesa') => 
                     setFormData(prev => ({ ...prev, tipo: value, categoria_id: undefined }))
                   }
                 >
-                  <SelectTrigger className="h-12 text-base">
+                  <SelectTrigger className={`h-12 text-base ${errors.tipo ? 'border-red-500' : ''}`}>
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
@@ -94,48 +129,92 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
                     <SelectItem value="despesa">Despesa</SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.tipo && (
+                  <div className="flex items-center gap-1 text-red-500 text-sm">
+                    <AlertCircle className="h-4 w-4" />
+                    {errors.tipo}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="valor" className="text-base font-medium">Valor (R$)</Label>
+                <Label htmlFor="valor" className="text-base font-medium flex items-center gap-1">
+                  Valor (R$)
+                  <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="valor"
                   type="number"
                   step="0.01"
                   min="0"
                   placeholder="0,00"
-                  className="h-12 text-base"
+                  className={`h-12 text-base ${errors.valor ? 'border-red-500' : ''}`}
                   value={formData.valor || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, valor: Number(e.target.value) }))}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData(prev => ({ ...prev, valor: value ? parseFloat(value) : undefined }));
+                    if (errors.valor) {
+                      setErrors(prev => ({ ...prev, valor: '' }));
+                    }
+                  }}
                   required
                 />
+                {errors.valor && (
+                  <div className="flex items-center gap-1 text-red-500 text-sm">
+                    <AlertCircle className="h-4 w-4" />
+                    {errors.valor}
+                  </div>
+                )}
               </div>
             </div>
           ) : (
             /* Quando há tipo fixo, valor ocupa toda a linha */
             <div className="space-y-2">
-              <Label htmlFor="valor" className="text-base font-medium">Valor (R$)</Label>
+              <Label htmlFor="valor" className="text-base font-medium flex items-center gap-1">
+                Valor (R$)
+                <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="valor"
                 type="number"
                 step="0.01"
                 min="0"
                 placeholder="0,00"
-                className="h-12 text-base"
+                className={`h-12 text-base ${errors.valor ? 'border-red-500' : ''}`}
                 value={formData.valor || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, valor: Number(e.target.value) }))}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData(prev => ({ ...prev, valor: value ? parseFloat(value) : undefined }));
+                  if (errors.valor) {
+                    setErrors(prev => ({ ...prev, valor: '' }));
+                  }
+                }}
                 required
               />
+              {errors.valor && (
+                <div className="flex items-center gap-1 text-red-500 text-sm">
+                  <AlertCircle className="h-4 w-4" />
+                  {errors.valor}
+                </div>
+              )}
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="categoria" className="text-base font-medium">Categoria</Label>
+            <Label htmlFor="categoria" className="text-base font-medium flex items-center gap-1">
+              Categoria
+              <span className="text-red-500">*</span>
+            </Label>
             <Select
               value={formData.categoria_id}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, categoria_id: value }))}
+              onValueChange={(value) => {
+                setFormData(prev => ({ ...prev, categoria_id: value }));
+                if (errors.categoria) {
+                  setErrors(prev => ({ ...prev, categoria: '' }));
+                }
+              }}
             >
-              <SelectTrigger className="h-12 text-base">
+              <SelectTrigger className={`h-12 text-base ${errors.categoria ? 'border-red-500' : ''}`}>
                 <SelectValue placeholder="Selecione uma categoria" />
               </SelectTrigger>
               <SelectContent>
@@ -152,6 +231,12 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
                 ))}
               </SelectContent>
             </Select>
+            {errors.categoria && (
+              <div className="flex items-center gap-1 text-red-500 text-sm">
+                <AlertCircle className="h-4 w-4" />
+                {errors.categoria}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
