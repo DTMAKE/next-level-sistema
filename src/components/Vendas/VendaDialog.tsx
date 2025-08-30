@@ -61,7 +61,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
           quantidade: vs.quantidade,
           valor_total: vs.valor_total,
         }));
-        console.log('Serviços carregados:', servicosExistentes);
+        console.log('Serviços individuais carregados:', servicosExistentes);
         setServicos(servicosExistentes);
       } else {
         console.log('Nenhum serviço encontrado, carregando valor como serviço único');
@@ -74,6 +74,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
             quantidade: 1,
             valor_total: venda.valor,
           }];
+          console.log('Criando serviço genérico:', servicoGenerico);
           setServicos(servicoGenerico);
         } else {
           setServicos([]);
