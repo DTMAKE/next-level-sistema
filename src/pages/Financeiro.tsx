@@ -99,20 +99,9 @@ export default function Financeiro() {
   return <div className="space-y-3 sm:space-y-4 md:space-y-6 p-2 sm:p-4 md:p-6">
       {/* Header responsivo */}
       <div className="space-y-2 sm:space-y-3 md:space-y-4">
-        <div className="text-center sm:text-left">
+        <div className="flex items-center justify-between">
           <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground">Financeiro</h1>
-          
-        </div>
-        
-        {/* Controles de data - responsivo */}
-        <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2 flex-wrap">
-          
-          
           <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
-          
-          
-          
-          
         </div>
       </div>
 
