@@ -10,6 +10,7 @@ import { TrendingUp, Search, Filter, Plus, Edit, Eye, Calendar, DollarSign, Chec
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { formatDateToBrazilian } from "@/utils/dateUtils";
 import { cn } from "@/lib/utils";
 import { useTransacoesMes, useCategorias, useUpdateTransacaoStatus, useDeleteTransacao } from "@/hooks/useFinanceiro";
 import { TransacaoDialog } from "@/components/Financeiro/TransacaoDialog";
@@ -246,9 +247,7 @@ export default function ContasReceber() {
                               {receita.descricao || 'Receita sem descrição'}
                             </div>
                             <div className="text-xs sm:text-sm text-muted-foreground">
-                              {receita.categoria?.nome || 'Sem categoria'} • {format(new Date(receita.data_transacao), "dd/MM/yyyy", {
-                            locale: ptBR
-                          })}
+                              {receita.categoria?.nome || 'Sem categoria'} • {formatDateToBrazilian(receita.data_transacao)}
                               {receita.venda?.cliente?.nome && <span className="block sm:inline">
                                   {" • "}Cliente: {receita.venda.cliente.nome}
                                 </span>}
@@ -256,30 +255,27 @@ export default function ContasReceber() {
                                   {" • "}Vendedor: {receita.venda.vendedor_nome}
                                 </span>}
                               {receita.data_vencimento && <span className="block sm:inline">
-                                  {" • "}Vencimento: {format(new Date(receita.data_vencimento), "dd/MM/yyyy", {
-                            locale: ptBR
-                          })}
+                                  {" • "}Vencimento: {formatDateToBrazilian(receita.data_vencimento)}
                                 </span>}
                             </div>
-                          </div>
-                          {/* Indicador de fonte */}
-                          <div className="flex-shrink-0">
-                            {receita.venda_id ? (
-                              <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-950 rounded-full">
-                                <ShoppingCart className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                                <span className="text-xs text-blue-600 dark:text-blue-400">Venda</span>
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-1 px-2 py-1 bg-green-50 dark:bg-green-950 rounded-full">
-                                <UserCheck className="h-3 w-3 text-green-600 dark:text-green-400" />
-                                <span className="text-xs text-green-600 dark:text-green-400">Manual</span>
-                              </div>
-                            )}
                           </div>
                         </div>
                       </div>
                     
                     <div className="flex items-center justify-between sm:justify-end gap-2">
+                      {/* Indicador de fonte */}
+                      {receita.venda_id ? (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-950 rounded-full">
+                          <ShoppingCart className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                          <span className="text-xs text-blue-600 dark:text-blue-400">Venda</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-green-50 dark:bg-green-950 rounded-full">
+                          <UserCheck className="h-3 w-3 text-green-600 dark:text-green-400" />
+                          <span className="text-xs text-green-600 dark:text-green-400">Manual</span>
+                        </div>
+                      )}
+                      
                       <Badge className={cn("text-xs", getStatusColor(receita.status || 'confirmada'))}>
                         {getStatusLabel(receita.status || 'confirmada')}
                       </Badge>
