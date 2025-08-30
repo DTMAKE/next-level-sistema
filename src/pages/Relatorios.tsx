@@ -104,11 +104,11 @@ export default function Relatorios() {
   };
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6 lg:p-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Relatórios</h1>
-          <p className="text-muted-foreground hidden sm:block">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">Relatórios</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Dashboard completo de analytics e performance
           </p>
         </div>
