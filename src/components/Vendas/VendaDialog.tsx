@@ -39,7 +39,11 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
   const clientes = clientesResponse?.data || [];
 
   useEffect(() => {
+    console.log('VendaDialog useEffect - venda:', venda, 'open:', open);
     if (venda && open) {
+      console.log('Carregando venda para edição:', venda);
+      console.log('Serviços da venda:', venda.venda_servicos);
+      
       setFormData({
         cliente_id: venda.cliente_id || "",
         valor: venda.valor?.toString() || "",
@@ -57,9 +61,23 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
           quantidade: vs.quantidade,
           valor_total: vs.valor_total,
         }));
+        console.log('Serviços carregados:', servicosExistentes);
         setServicos(servicosExistentes);
       } else {
-        setServicos([]);
+        console.log('Nenhum serviço encontrado, carregando valor como serviço único');
+        // Se não há serviços específicos, criar um serviço genérico com o valor total
+        if (venda.valor && venda.valor > 0) {
+          const servicoGenerico = [{
+            servico_id: 'generic',
+            nome: 'Serviço',
+            valor_unitario: venda.valor,
+            quantidade: 1,
+            valor_total: venda.valor,
+          }];
+          setServicos(servicoGenerico);
+        } else {
+          setServicos([]);
+        }
       }
     } else if (!venda && open) {
       setFormData({
