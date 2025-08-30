@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
-import { useCreateTransacao, useCategorias, CreateTransacaoData } from "@/hooks/useFinanceiro";
+import { useCreateTransacao, useCategorias, useCreateCategoria, CreateTransacaoData } from "@/hooks/useFinanceiro";
 import { useToast } from "@/hooks/use-toast";
 
 interface TransacaoDialogProps {
@@ -23,8 +23,10 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
   });
   const [date, setDate] = useState<Date>(new Date());
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [categoriaNome, setCategoriaNome] = useState("");
 
   const createTransacao = useCreateTransacao();
+  const createCategoria = useCreateCategoria();
   const { data: categorias } = useCategorias();
   const { toast } = useToast();
 
@@ -40,8 +42,8 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
       newErrors.valor = "Valor deve ser um número maior que zero";
     }
 
-    // Validar categoria (obrigatória para receitas manuais)
-    if (!formData.categoria_id) {
+    // Validar categoria (obrigatória)
+    if (!categoriaNome.trim()) {
       newErrors.categoria = "Categoria é obrigatória";
     }
 
@@ -52,6 +54,26 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const findOrCreateCategoria = async (nomeCategoria: string, tipoCategoria: 'receita' | 'despesa') => {
+    // Procurar categoria existente
+    const categoriaExistente = categorias?.find(
+      cat => cat.nome.toLowerCase() === nomeCategoria.toLowerCase() && cat.tipo === tipoCategoria
+    );
+
+    if (categoriaExistente) {
+      return categoriaExistente.id;
+    }
+
+    // Criar nova categoria se não existir
+    const novaCategoria = await createCategoria.mutateAsync({
+      nome: nomeCategoria,
+      tipo: tipoCategoria,
+      cor: tipoCategoria === 'receita' ? '#10B981' : '#EF4444'
+    });
+
+    return novaCategoria.id;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,9 +89,12 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
     }
 
     try {
+      // Buscar ou criar categoria
+      const categoriaId = await findOrCreateCategoria(categoriaNome.trim(), tipoAtual);
+
       await createTransacao.mutateAsync({
         tipo: tipoAtual,
-        categoria_id: formData.categoria_id,
+        categoria_id: categoriaId,
         valor: Number(formData.valor),
         descricao: formData.descricao || '',
         data_transacao: format(date, 'yyyy-MM-dd'),
@@ -82,12 +107,11 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
       });
       setDate(new Date());
       setErrors({});
+      setCategoriaNome("");
     } catch (error) {
       console.error('Erro ao criar transação:', error);
     }
   };
-
-  const categoriasFiltradas = categorias?.filter(cat => cat.tipo === tipoAtual);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -99,7 +123,7 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto z-[100] max-w-[95vw] sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto z-[100] max-w-[95vw] sm:max-w-[600px] bg-background border">
         <DialogHeader className="text-center pb-4">
           <DialogTitle className="text-2xl text-foreground">
             Nova {tipoAtual === 'receita' ? 'Receita' : 'Despesa'}
@@ -205,38 +229,29 @@ export function TransacaoDialog({ children, tipo }: TransacaoDialogProps) {
               Categoria
               <span className="text-red-500">*</span>
             </Label>
-            <Select
-              value={formData.categoria_id}
-              onValueChange={(value) => {
-                setFormData(prev => ({ ...prev, categoria_id: value }));
+            <Input
+              id="categoria"
+              type="text"
+              placeholder="Digite o nome da categoria..."
+              className={`h-12 text-base ${errors.categoria ? 'border-red-500' : ''}`}
+              value={categoriaNome}
+              onChange={(e) => {
+                setCategoriaNome(e.target.value);
                 if (errors.categoria) {
                   setErrors(prev => ({ ...prev, categoria: '' }));
                 }
               }}
-            >
-              <SelectTrigger className={`h-12 text-base ${errors.categoria ? 'border-red-500' : ''}`}>
-                <SelectValue placeholder="Selecione uma categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                {categoriasFiltradas?.map((categoria) => (
-                  <SelectItem key={categoria.id} value={categoria.id}>
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: categoria.cor }}
-                      />
-                      {categoria.nome}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              required
+            />
             {errors.categoria && (
               <div className="flex items-center gap-1 text-red-500 text-sm">
                 <AlertCircle className="h-4 w-4" />
                 {errors.categoria}
               </div>
             )}
+            <div className="text-xs text-muted-foreground">
+              Se a categoria não existir, será criada automaticamente
+            </div>
           </div>
 
           <div className="space-y-2">
