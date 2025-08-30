@@ -152,11 +152,6 @@ export function ServicosSelector({ servicosSelecionados, onServicosChange }: Ser
                               <Badge variant="outline" className="text-xs sm:text-sm px-2 py-1">
                                 {formatCurrency(servico.valor)}
                               </Badge>
-                              {servico.categoria && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {servico.categoria}
-                                </Badge>
-                              )}
                             </div>
                           </div>
                           <Button
@@ -192,29 +187,51 @@ export function ServicosSelector({ servicosSelecionados, onServicosChange }: Ser
               <div className="space-y-3">
                 <div className="font-medium text-sm">{servico.nome}</div>
                 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">Qtd:</span>
-                      <Input
-                        type="number"
-                        value={servico.quantidade}
-                        onChange={(e) => atualizarQuantidade(servico.servico_id, parseInt(e.target.value) || 1)}
-                        className="w-16 h-8 text-center"
-                        min="1"
-                      />
-                    </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    {/* Service name is already displayed above */}
                   </div>
                   
-                  <div className="flex items-center gap-3">
-                    <span className="font-medium">
-                      {formatCurrency(servico.valor_total)}
-                    </span>
+                  <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor={`qty-${servico.servico_id}`} className="text-sm whitespace-nowrap">
+                        Qtd:
+                      </Label>
+                      <Input
+                        id={`qty-${servico.servico_id}`}
+                        type="number"
+                        min="1"
+                        value={servico.quantidade}
+                        onChange={(e) => atualizarQuantidade(servico.servico_id, parseInt(e.target.value) || 1)}
+                        className="w-16 h-9 text-center"
+                      />
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor={`price-${servico.servico_id}`} className="text-sm whitespace-nowrap">
+                        Valor:
+                      </Label>
+                      <Input
+                        id={`price-${servico.servico_id}`}
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={servico.valor_unitario}
+                        onChange={(e) => atualizarValorUnitario(servico.servico_id, e.target.value)}
+                        className="w-32 h-9 text-right"
+                        placeholder="0,00"
+                      />
+                    </div>
+                    
+                    <div className="min-w-[100px] text-right">
+                      <p className="font-bold text-base">{formatCurrency(servico.valor_total)}</p>
+                    </div>
+                    
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       onClick={() => removerServico(servico.servico_id)}
-                      className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                      className="h-9 w-9 p-0 hover:bg-destructive hover:text-destructive-foreground flex-shrink-0"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
