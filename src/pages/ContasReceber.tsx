@@ -14,6 +14,7 @@ import { useTransacoesMes, useCategorias, useUpdateTransacaoStatus, useDeleteTra
 import { TransacaoDialog } from "@/components/Financeiro/TransacaoDialog";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { ContasReceberSkeleton } from "@/components/Financeiro/FinanceiroSkeleton";
 export default function ContasReceber() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
@@ -103,6 +104,11 @@ export default function ContasReceber() {
   const totalReceitas = filteredReceitas.reduce((sum, r) => sum + Number(r.valor), 0);
   const receitasPendentes = filteredReceitas.filter(r => r.status === 'pendente').reduce((sum, r) => sum + Number(r.valor), 0);
   const receitasRecebidas = filteredReceitas.filter(r => r.status === 'confirmada').reduce((sum, r) => sum + Number(r.valor), 0);
+  
+  // Mostrar skeleton se estiver carregando
+  if (isLoading) {
+    return <ContasReceberSkeleton />;
+  }
   return <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
       {/* Header */}
       <div className="flex flex-row justify-between items-center gap-2">
@@ -229,8 +235,11 @@ export default function ContasReceber() {
                           {receita.categoria?.nome || 'Sem categoria'} • {format(new Date(receita.data_transacao), "dd/MM/yyyy", {
                       locale: ptBR
                     })}
-                          {receita.venda?.cliente && <span className="block sm:inline">
+                          {receita.venda?.cliente?.nome && <span className="block sm:inline">
                               {" • "}Cliente: {receita.venda.cliente.nome}
+                            </span>}
+                          {receita.venda?.vendedor_nome && <span className="block sm:inline">
+                              {" • "}Vendedor: {receita.venda.vendedor_nome}
                             </span>}
                           {receita.data_vencimento && <span className="block sm:inline">
                               {" • "}Vencimento: {format(new Date(receita.data_vencimento), "dd/MM/yyyy", {

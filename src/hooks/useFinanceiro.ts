@@ -31,17 +31,22 @@ export interface TransacaoFinanceira {
   observacoes?: string;
   created_at: string;
   updated_at: string;
-  categoria?: CategoriaFinanceira;
+  categoria?: {
+    id: string;
+    nome: string;
+    cor: string;
+    tipo: string;
+  } | null;
   venda?: {
     id: string;
-    cliente_id: string;
+    data_venda: string;
+    valor: number;
+    status: string;
     user_id: string;
+    vendedor_nome?: string;
     cliente?: {
-      nome: string;
-    };
-    profiles?: {
       id: string;
-      name: string;
+      nome: string;
     };
   } | null;
 }
@@ -116,47 +121,87 @@ export function useTransacoesMes(data: Date) {
   return useQuery({
     queryKey: ["transacoes-financeiras", inicioMes, fimMes, user?.id, user?.role],
     queryFn: async () => {
-      console.log('🔍 useTransacoesMes - Parâmetros:', { user: user?.name, role: user?.role, inicioMes, fimMes });
-
-      let query = supabase
-        .from("transacoes_financeiras")
-        .select(`
-          *,
-          categoria:categorias_financeiras(*),
-          venda:vendas(
-            id,
-            cliente_id,
-            user_id,
-            cliente:clientes(nome)
-          )
-        `)
-        .gte("data_transacao", inicioMes)
-        .lte("data_transacao", fimMes);
-
-      // Filter by user_id unless user is admin
-      if (user && user.role !== 'admin') {
-        console.log('💡 Aplicando filtro por user_id (não é admin)');
-        query = query.eq("user_id", user.id);
-      } else {
-        console.log('👑 Usuário é admin - sem filtro de user_id');
-      }
-
-      const { data: transacoes, error } = await query.order("data_transacao", { ascending: false });
-
-      console.log('📊 Resultado useTransacoesMes:', { 
-        erro: !!error, 
-        quantidade: transacoes?.length || 0,
-        primeiros3: transacoes?.slice(0, 3).map(t => ({ id: t.id, descricao: t.descricao, valor: t.valor }))
+      console.log('🔍 useTransacoesMes - Iniciando query:', { 
+        user: user?.name, 
+        role: user?.role, 
+        inicioMes, 
+        fimMes 
       });
 
-      if (error) {
-        console.error('❌ Erro na query de transações:', error);
+      try {
+        let query = supabase
+          .from('transacoes_financeiras')
+          .select(`
+            *,
+            categoria:categorias_financeiras(id, nome, cor, tipo),
+            venda:vendas(
+              id,
+              data_venda,
+              valor,
+              status,
+              user_id,
+              cliente:clientes(id, nome)
+            )
+          `)
+          .gte('data_transacao', inicioMes)
+          .lte('data_transacao', fimMes);
+
+        // Apply role-based filtering
+        if (user?.role === 'admin') {
+          console.log('👑 Admin: visualizando todas as transações');
+        } else {
+          console.log('👤 Vendedor: visualizando apenas suas transações');
+          query = query.eq('user_id', user?.id);
+        }
+
+        const { data: transacoes, error } = await query.order("data_transacao", { ascending: false });
+
+        if (error) {
+          console.error('❌ Erro na query de transações:', error);
+          throw error;
+        }
+
+        console.log('✅ Transações carregadas:', { 
+          quantidade: transacoes?.length || 0,
+          tipos: transacoes?.reduce((acc: any, t: any) => {
+            acc[t.tipo] = (acc[t.tipo] || 0) + 1;
+            return acc;
+          }, {})
+        });
+
+        // Buscar informações dos vendedores para as vendas
+        if (transacoes && transacoes.length > 0) {
+          const vendasComUser = transacoes.filter(t => t.venda?.user_id);
+          
+          if (vendasComUser.length > 0) {
+            const userIds = [...new Set(vendasComUser.map(t => t.venda.user_id))];
+            const { data: profiles } = await supabase
+              .from('profiles')
+              .select('user_id, name')
+              .in('user_id', userIds);
+
+            // Adicionar informações do vendedor às transações
+            transacoes.forEach((transacao: any) => {
+              if (transacao.venda?.user_id) {
+                const profile = profiles?.find(p => p.user_id === transacao.venda.user_id);
+                if (profile) {
+                  transacao.venda.vendedor_nome = profile.name;
+                }
+              }
+            });
+          }
+        }
+
+        return transacoes as any[];
+      } catch (error) {
+        console.error('💥 Erro inesperado em useTransacoesMes:', error);
         throw error;
       }
-      return transacoes as TransacaoFinanceira[];
     },
     enabled: !!user,
-    staleTime: 0, // Always refetch to ensure fresh data
+    staleTime: 0, // Sempre buscar dados frescos
+    refetchOnWindowFocus: true, // Atualizar quando a janela ganhar foco
+    refetchOnMount: true, // Sempre atualizar ao montar
   });
 }
 
@@ -544,14 +589,30 @@ export function useUpdateTransacaoStatus() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transacoes-financeiras"] });
-      queryClient.invalidateQueries({ queryKey: ["resumo-financeiro"] });
+      console.log('✅ Status da transação atualizado com sucesso');
+      
+      // Invalidar queries de forma mais específica
+      queryClient.invalidateQueries({ 
+        queryKey: ["transacoes-financeiras"],
+        exact: false 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ["resumo-financeiro"],
+        exact: false 
+      });
       queryClient.invalidateQueries({ queryKey: ["comissoes-vendedor"] });
       queryClient.invalidateQueries({ queryKey: ["comissoes-mes-atual"] });
       queryClient.invalidateQueries({ queryKey: ["comissoes-mes"] });
+      
+      // Forçar refetch imediato
+      queryClient.refetchQueries({ 
+        queryKey: ["transacoes-financeiras"],
+        type: 'active' 
+      });
+      
       toast({
-        title: "Sucesso",
-        description: "Status da transação atualizado!",
+        title: "Sucesso!",
+        description: "Status da transação atualizado com sucesso!",
       });
     },
     onError: (error: any) => {
@@ -608,7 +669,7 @@ export function useDeleteTransacao() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      console.log('🗑️ Deletando transação:', id);
+      console.log('🗑️ Iniciando exclusão da transação:', id);
       
       const { error } = await supabase
         .from('transacoes_financeiras')
@@ -620,26 +681,38 @@ export function useDeleteTransacao() {
         throw error;
       }
       
-      console.log('✅ Transação deletada com sucesso');
+      console.log('✅ Transação deletada com sucesso:', id);
       return id;
     },
     onSuccess: (deletedId) => {
-      console.log('🔄 Invalidando queries após exclusão:', deletedId);
+      console.log('🔄 Invalidando cache após exclusão:', deletedId);
       
-      // Invalidar todas as queries relacionadas
-      queryClient.invalidateQueries({ queryKey: ["transacoes-financeiras"] });
-      queryClient.invalidateQueries({ queryKey: ["resumo-financeiro"] });
+      // Invalidar todas as queries relacionadas de forma mais específica
+      queryClient.invalidateQueries({ 
+        queryKey: ["transacoes-financeiras"],
+        exact: false 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ["resumo-financeiro"],
+        exact: false 
+      });
+      
+      // Forçar refetch imediato
+      queryClient.refetchQueries({ 
+        queryKey: ["transacoes-financeiras"],
+        type: 'active' 
+      });
       
       toast({
-        title: "Sucesso",
-        description: "Transação removida com sucesso!",
+        title: "Sucesso!",
+        description: "Transação removida com sucesso.",
       });
     },
     onError: (error: any) => {
       console.error('💥 Erro na exclusão:', error);
       toast({
         title: "Erro",
-        description: "Erro ao remover transação: " + error.message,
+        description: `Erro ao remover transação: ${error.message}`,
         variant: "destructive",
       });
     },

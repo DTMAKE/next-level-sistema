@@ -26,6 +26,7 @@ import {
 import { TransacaoDialog } from "@/components/Financeiro/TransacaoDialog";
 import { CategoriaDialog } from "@/components/Financeiro/CategoriaDialog";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
+import { FinanceiroSkeleton } from "@/components/Financeiro/FinanceiroSkeleton";
 
 export default function Financeiro() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -46,6 +47,11 @@ export default function Financeiro() {
   console.log('- transacoes error:', errorTransacoes);
   console.log('- categorias:', categorias);
   console.log('- categorias error:', errorCategorias);
+
+  // Mostrar skeleton se estiver carregando
+  if (isLoadingResumo || isLoadingTransacoes) {
+    return <FinanceiroSkeleton />;
+  }
 
   const handlePreviousMonth = () => {
     setSelectedDate(prev => subMonths(prev, 1));
@@ -373,9 +379,9 @@ export default function Financeiro() {
                       <div className="text-xs sm:text-sm text-muted-foreground">
                         {transacao.categoria?.nome || 'Sem categoria'} • {format(new Date(transacao.data_transacao), "dd/MM/yyyy")}
                       </div>
-                      {transacao.venda?.profiles && (
+                      {transacao.venda?.vendedor_nome && (
                         <div className="text-xs text-muted-foreground/80">
-                          Venda feita por {transacao.venda.profiles.name}
+                          Venda feita por {transacao.venda.vendedor_nome}
                         </div>
                       )}
                     </div>
