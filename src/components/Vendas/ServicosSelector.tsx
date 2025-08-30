@@ -71,27 +71,13 @@ export function ServicosSelector({ servicosSelecionados, onServicosChange }: Ser
     onServicosChange(novosServicos);
   };
 
-  const atualizarQuantidade = (servicoId: string, novaQuantidade: number) => {
-    if (novaQuantidade <= 0) {
-      removerServico(servicoId);
-      return;
-    }
-
-    const novosServicos = servicosSelecionados.map(s => 
-      s.servico_id === servicoId 
-        ? { ...s, quantidade: novaQuantidade, valor_total: novaQuantidade * s.valor_unitario }
-        : s
-    );
-    onServicosChange(novosServicos);
-  };
-
-  const atualizarValorUnitario = (servicoId: string, novoValor: string) => {
+  const atualizarValorTotal = (servicoId: string, novoValor: string) => {
     const valorNumerico = parseFloat(novoValor.replace(/[^\d,.-]/g, '').replace(',', '.')) || 0;
     if (valorNumerico < 0) return;
 
     const novosServicos = servicosSelecionados.map(s => 
       s.servico_id === servicoId 
-        ? { ...s, valor_unitario: valorNumerico, valor_total: s.quantidade * valorNumerico }
+        ? { ...s, valor_total: valorNumerico, valor_unitario: valorNumerico, quantidade: 1 }
         : s
     );
     onServicosChange(novosServicos);
@@ -187,55 +173,31 @@ export function ServicosSelector({ servicosSelecionados, onServicosChange }: Ser
               <div className="space-y-3">
                 <div className="font-medium text-sm">{servico.nome}</div>
                 
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                  <div className="flex-1 min-w-0">
-                    {/* Service name is already displayed above */}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 flex-1">
+                    <Label htmlFor={`value-${servico.servico_id}`} className="text-sm whitespace-nowrap">
+                      Valor:
+                    </Label>
+                    <Input
+                      id={`value-${servico.servico_id}`}
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={servico.valor_total}
+                      onChange={(e) => atualizarValorTotal(servico.servico_id, e.target.value)}
+                      className="max-w-32 h-9 text-right"
+                      placeholder="0,00"
+                    />
                   </div>
                   
-                  <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor={`qty-${servico.servico_id}`} className="text-sm whitespace-nowrap">
-                        Qtd:
-                      </Label>
-                      <Input
-                        id={`qty-${servico.servico_id}`}
-                        type="number"
-                        min="1"
-                        value={servico.quantidade}
-                        onChange={(e) => atualizarQuantidade(servico.servico_id, parseInt(e.target.value) || 1)}
-                        className="w-16 h-9 text-center"
-                      />
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor={`price-${servico.servico_id}`} className="text-sm whitespace-nowrap">
-                        Valor:
-                      </Label>
-                      <Input
-                        id={`price-${servico.servico_id}`}
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={servico.valor_unitario}
-                        onChange={(e) => atualizarValorUnitario(servico.servico_id, e.target.value)}
-                        className="w-32 h-9 text-right"
-                        placeholder="0,00"
-                      />
-                    </div>
-                    
-                    <div className="min-w-[100px] text-right">
-                      <p className="font-bold text-base">{formatCurrency(servico.valor_total)}</p>
-                    </div>
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removerServico(servico.servico_id)}
-                      className="h-9 w-9 p-0 hover:bg-destructive hover:text-destructive-foreground flex-shrink-0"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removerServico(servico.servico_id)}
+                    className="h-9 w-9 p-0 hover:bg-destructive hover:text-destructive-foreground flex-shrink-0"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </Card>
