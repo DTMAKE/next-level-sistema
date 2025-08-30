@@ -24,3 +24,19 @@ export function getBrazilianDateString(): string {
 export function getBrazilianDate(): Date {
   return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
 }
+
+/**
+ * Formats a date string (YYYY-MM-DD) to Brazilian format (DD/MM/YYYY)
+ * Handles timezone issues by parsing the date correctly
+ * @param dateString Date in YYYY-MM-DD format
+ * @returns Formatted date string in DD/MM/YYYY format
+ */
+export function formatDateToBrazilian(dateString: string): string {
+  if (!dateString) return '';
+  
+  // Parse the date string as local date to avoid timezone issues
+  const [year, month, day] = dateString.split('-').map(Number);
+  const date = new Date(year, month - 1, day); // month is 0-indexed
+  
+  return date.toLocaleDateString('pt-BR');
+}

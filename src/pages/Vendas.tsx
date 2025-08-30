@@ -10,6 +10,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Plus, Search, Grid, List, Calendar, DollarSign, TrendingUp, Wallet, Building2, Edit, Trash2, MoreVertical, RefreshCw } from "lucide-react";
 import { addMonths, subMonths } from "date-fns";
+import { formatDateToBrazilian } from "@/utils/dateUtils";
 import { useVendas, useDeleteVenda, type Venda } from "@/hooks/useVendas";
 import { useComissoesMes } from "@/hooks/useComissoesVendedor";
 import { useVendasMes } from "@/hooks/useVendasMes";
@@ -357,7 +358,7 @@ export default function Vendas() {
                           </div>
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <Calendar className="h-4 w-4" />
-                            <span>{new Date(venda.data_venda).toLocaleDateString('pt-BR')}</span>
+                            <span>{formatDateToBrazilian(venda.data_venda)}</span>
                           </div>
                         </div>
 
@@ -407,7 +408,7 @@ export default function Vendas() {
                               {user?.role === 'vendedor' && <ComissaoIndicator venda={venda} />}
                             </div>
                           </TableCell>
-                          <TableCell>{new Date(venda.data_venda).toLocaleDateString('pt-BR')}</TableCell>
+                          <TableCell>{formatDateToBrazilian(venda.data_venda)}</TableCell>
                           <TableCell>
                             <div onClick={e => e.stopPropagation()}>
                               <QuickStatusChanger venda={venda} size="sm" />

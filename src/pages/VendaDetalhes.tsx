@@ -8,6 +8,7 @@ import { useVenda } from "@/hooks/useVendas";
 import { VendaDialog } from "@/components/Vendas/VendaDialog";
 import { DeleteVendaDialog } from "@/components/Vendas/DeleteVendaDialog";
 import { QuickStatusChanger } from "@/components/Vendas/QuickStatusChanger";
+import { formatDateToBrazilian } from "@/utils/dateUtils";
 import { useState } from "react";
 
 const getStatusColor = (status: string) => {
@@ -215,7 +216,7 @@ export default function VendaDetalhes() {
                       <span className="font-medium text-sm sm:text-base">Data da Venda</span>
                     </div>
                     <p className="text-base sm:text-xl pl-6 sm:pl-9">
-                      {new Date(venda.data_venda).toLocaleDateString('pt-BR')}
+                      {formatDateToBrazilian(venda.data_venda)}
                     </p>
                   </div>
 
