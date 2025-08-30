@@ -165,26 +165,16 @@ export default function Vendas() {
   }
   return <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
       <div className="space-y-4">
-        <div className="flex flex-row justify-between items-center gap-4 sm:gap-6">
-          <h1 className="sm:text-3xl font-bold text-3xl">Vendas</h1>
-          <Button className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0" onClick={handleNewVenda}>
-            <Plus className="mr-2 h-4 w-4" />
-            Nova Venda
-          </Button>
-        </div>
-        
-        {/* Monthly navigation */}
-        <div className="flex items-center justify-center sm:justify-start gap-2">
-          
-          
-          <MonthYearPicker selected={selectedDate} onSelect={handleDateChange} />
-          
-          
-          
-          
-          
-          {/* Commission sync button */}
-          {user?.role === 'admin'}
+        <div className="flex flex-row justify-between items-center gap-2">
+          <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl truncate">Vendas</h1>
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            <MonthYearPicker selected={selectedDate} onSelect={handleDateChange} />
+            <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm" onClick={handleNewVenda}>
+              <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Nova Venda</span>
+              <span className="sm:hidden">Nova</span>
+            </Button>
+          </div>
         </div>
       </div>
 
