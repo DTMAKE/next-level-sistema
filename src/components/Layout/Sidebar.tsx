@@ -30,6 +30,7 @@ import {
   TrendingUp,
   TrendingDown,
   UserCheck,
+  LogOut,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -133,10 +134,19 @@ const adminItems = [
 export function AppSidebar() {
   const { state, toggleSidebar } = useSidebar();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { theme } = useTheme();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
+  };
 
   const filteredModulosItems = modulosItems.filter(item => 
     item.roles.includes(user?.role || 'vendedor')
@@ -289,8 +299,8 @@ export function AppSidebar() {
         )}
 
         {/* User Info Section */}
-        <div className={`mt-auto border-t group relative ${collapsed ? "p-3" : "p-4"}`}>
-          <div className={`flex items-center transition-all duration-200 ${collapsed ? "justify-center" : "gap-3"}`}>
+        <div className={`mt-auto border-t ${collapsed ? "p-3" : "p-4"}`}>
+          <div className={`flex items-center transition-all duration-200 group relative ${collapsed ? "justify-center mb-3" : "gap-3 mb-3"}`}>
             <Avatar className={`${collapsed ? "h-8 w-8" : "h-7 w-7"}`}>
               <AvatarImage src={user?.avatar_url} />
               <AvatarFallback className="bg-primary text-primary-foreground">
@@ -316,6 +326,27 @@ export function AppSidebar() {
               </div>
             )}
           </div>
+          
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className={`flex items-center text-sm transition-all duration-200 rounded-md hover:bg-destructive/10 hover:text-destructive text-muted-foreground group relative ${
+              collapsed 
+                ? "w-full h-10 justify-center" 
+                : "px-3 py-2 gap-3 w-full"
+            }`}
+            title="Sair"
+          >
+            <LogOut className={`shrink-0 ${collapsed ? "h-5 w-5" : "h-4 w-4"}`} />
+            {!collapsed && (
+              <span className="truncate">Sair</span>
+            )}
+            {collapsed && (
+              <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded-md shadow-md border opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 whitespace-nowrap">
+                Sair
+              </div>
+            )}
+          </button>
         </div>
       </SidebarContent>
     </Sidebar>
