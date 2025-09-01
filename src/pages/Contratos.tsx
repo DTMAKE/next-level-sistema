@@ -207,16 +207,16 @@ export default function Contratos() {
                       onClick={() => navigate(`/contratos/${contrato.id}`)}
                     >
                       <div className="flex flex-col gap-3">
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-4 w-4 text-accent shrink-0" />
-                          <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <FileText className="h-4 w-4 text-accent shrink-0" />
                             <h3 className="font-semibold text-base truncate">
-                              {contrato.numero_contrato || `Contrato #${contrato.id.slice(-8)}`}
+                              {contrato.numero_contrato || 'Contrato'}
                             </h3>
-                            <Badge className={getStatusColor(contrato.status)}>
-                              {getStatusLabel(contrato.status)}
-                            </Badge>
                           </div>
+                          <Badge className={getStatusColor(contrato.status)}>
+                            {getStatusLabel(contrato.status)}
+                          </Badge>
                         </div>
                         
                         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
@@ -272,6 +272,7 @@ export default function Contratos() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead>Status</TableHead>
                         <TableHead>Contrato</TableHead>
                         <TableHead>Cliente</TableHead>
                         <TableHead>Período</TableHead>
@@ -286,15 +287,15 @@ export default function Contratos() {
                           className="cursor-pointer hover:bg-muted/50"
                           onClick={() => navigate(`/contratos/${contrato.id}`)}
                         >
+                          <TableCell>
+                            <Badge className={getStatusColor(contrato.status)} variant="secondary">
+                              {getStatusLabel(contrato.status)}
+                            </Badge>
+                          </TableCell>
                           <TableCell className="font-medium">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
                               <FileText className="h-4 w-4 text-accent" />
-                              <div className="flex flex-col gap-1">
-                                <span>{contrato.numero_contrato || `Contrato #${contrato.id.slice(-8)}`}</span>
-                                <Badge className={getStatusColor(contrato.status)} variant="secondary">
-                                  {getStatusLabel(contrato.status)}
-                                </Badge>
-                              </div>
+                              {contrato.numero_contrato || 'Contrato'}
                             </div>
                           </TableCell>
                           <TableCell>{contrato.cliente?.nome || 'Cliente não encontrado'}</TableCell>
