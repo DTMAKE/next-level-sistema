@@ -96,7 +96,7 @@ export function StatusSelectorContasPagar({ conta, disabled = false, size = "md"
       <Badge variant="secondary" className={cn(styles.badge, sizeClasses[size], "justify-center")}>
         <div className={cn("w-2 h-2 rounded-full mr-1.5 flex-shrink-0", styles.dot)} />
         <span className="truncate text-xs sm:text-sm">
-          {currentStatus}
+          {size === "sm" && currentStatus === "Pendente" ? "Pend." : currentStatus}
         </span>
       </Badge>
     );
@@ -125,7 +125,7 @@ export function StatusSelectorContasPagar({ conta, disabled = false, size = "md"
           >
             <div className={cn("w-2 h-2 rounded-full flex-shrink-0", styles.dot)} />
             <span className="truncate text-xs sm:text-sm">
-              {currentStatus}
+              {size === "sm" && currentStatus === "Pendente" ? "Pend." : currentStatus}
             </span>
             <ChevronDown className="w-3 h-3 flex-shrink-0" />
           </Badge>
