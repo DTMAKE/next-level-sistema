@@ -17,6 +17,7 @@ import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useContasReceber, useDeleteContaReceber, useMarcarComoRecebida } from "@/hooks/useContasReceber";
 import { ContaReceberDialog } from "@/components/ContasReceber/ContaReceberDialog";
+import { StatusSelectorContasReceber } from "@/components/ContasReceber/StatusSelectorContasReceber";
 
 export default function ContasReceber() {
   const { user } = useAuth();
@@ -324,9 +325,7 @@ export default function ContasReceber() {
                               {conta.descricao || 'Receita sem descrição'}
                             </h3>
                           </div>
-                          <Badge className={cn("text-xs", getStatusColor(conta.status || 'pendente'))}>
-                            {getStatusLabel(conta.status || 'pendente')}
-                          </Badge>
+                          <StatusSelectorContasReceber conta={conta} size="sm" />
                         </div>
                         
                         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
@@ -401,9 +400,7 @@ export default function ContasReceber() {
                       {paginatedContas.map((conta) => (
                         <TableRow key={conta.id}>
                           <TableCell>
-                            <Badge className={cn("text-xs", getStatusColor(conta.status || 'pendente'))}>
-                              {getStatusLabel(conta.status || 'pendente')}
-                            </Badge>
+                            <StatusSelectorContasReceber conta={conta} size="sm" />
                           </TableCell>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">

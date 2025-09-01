@@ -17,6 +17,7 @@ import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useContasPagar, useDeleteContaPagar, useMarcarComoPaga, useUpdateContaPagar } from "@/hooks/useContasPagar";
 import { ContaPagarDialog } from "@/components/ContasPagar/ContaPagarDialog";
+import { StatusSelectorContasPagar } from "@/components/ContasPagar/StatusSelectorContasPagar";
 
 export default function ContasPagar() {
   const { user } = useAuth();
@@ -329,32 +330,7 @@ export default function ContasPagar() {
                               {conta.descricao || 'Despesa sem descrição'}
                             </h3>
                           </div>
-                           <DropdownMenu>
-                             <DropdownMenuTrigger asChild>
-                               <Badge 
-                                 className={cn(
-                                   "text-xs cursor-pointer hover:opacity-100",
-                                   getStatusColor(conta.status || 'pendente')
-                                 )}
-                               >
-                                 {getStatusLabel(conta.status || 'pendente')}
-                               </Badge>
-                             </DropdownMenuTrigger>
-                             <DropdownMenuContent align="end" className="bg-popover border z-50">
-                               <DropdownMenuItem onClick={() => handleStatusChange(conta.id, 'pendente')}>
-                                 <div className="w-2 h-2 rounded-full bg-yellow-600 mr-2" />
-                                 Pendente
-                               </DropdownMenuItem>
-                               <DropdownMenuItem onClick={() => handleStatusChange(conta.id, 'confirmada')}>
-                                 <div className="w-2 h-2 rounded-full bg-green-600 mr-2" />
-                                 Paga
-                               </DropdownMenuItem>
-                               <DropdownMenuItem onClick={() => handleStatusChange(conta.id, 'cancelada')}>
-                                 <div className="w-2 h-2 rounded-full bg-red-600 mr-2" />
-                                 Cancelada
-                               </DropdownMenuItem>
-                             </DropdownMenuContent>
-                           </DropdownMenu>
+                           <StatusSelectorContasPagar conta={conta} size="sm" />
                         </div>
                         
                         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
@@ -434,32 +410,7 @@ export default function ContasPagar() {
                       {paginatedContas.map(conta => (
                         <TableRow key={conta.id}>
                            <TableCell>
-                             <DropdownMenu>
-                               <DropdownMenuTrigger asChild>
-                                 <Badge 
-                                   className={cn(
-                                     "text-xs cursor-pointer hover:opacity-100",
-                                     getStatusColor(conta.status || 'pendente')
-                                   )}
-                                 >
-                                   {getStatusLabel(conta.status || 'pendente')}
-                                 </Badge>
-                               </DropdownMenuTrigger>
-                               <DropdownMenuContent align="start" className="bg-popover border z-50">
-                                 <DropdownMenuItem onClick={() => handleStatusChange(conta.id, 'pendente')}>
-                                   <div className="w-2 h-2 rounded-full bg-yellow-600 mr-2" />
-                                   Pendente
-                                 </DropdownMenuItem>
-                                 <DropdownMenuItem onClick={() => handleStatusChange(conta.id, 'confirmada')}>
-                                   <div className="w-2 h-2 rounded-full bg-green-600 mr-2" />
-                                   Paga
-                                 </DropdownMenuItem>
-                                 <DropdownMenuItem onClick={() => handleStatusChange(conta.id, 'cancelada')}>
-                                   <div className="w-2 h-2 rounded-full bg-red-600 mr-2" />
-                                   Cancelada
-                                 </DropdownMenuItem>
-                               </DropdownMenuContent>
-                             </DropdownMenu>
+                            <StatusSelectorContasPagar conta={conta} size="sm" />
                            </TableCell>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
