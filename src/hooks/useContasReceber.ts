@@ -251,18 +251,20 @@ export function useDeleteContaReceber() {
     mutationFn: async (id: string) => {
       if (!user?.id) throw new Error('User not authenticated');
       
-      // Verificar se a transação pertence ao usuário ou se é admin
-      const { data: transacao, error: fetchError } = await supabase
-        .from('transacoes_financeiras')
-        .select('id, user_id, descricao')
-        .eq('id', id)
-        .single();
-      
-      if (fetchError) throw fetchError;
-      
-      // Verificar permissões
-      if (user.role !== 'admin' && transacao?.user_id !== user.id) {
-        throw new Error('Você não tem permissão para excluir esta transação');
+      // Admin pode deletar qualquer transação, usuário comum só as suas próprias
+      if (user.role !== 'admin') {
+        // Verificar se a transação pertence ao usuário
+        const { data: transacao, error: fetchError } = await supabase
+          .from('transacoes_financeiras')
+          .select('user_id')
+          .eq('id', id)
+          .single();
+        
+        if (fetchError) throw fetchError;
+        
+        if (transacao?.user_id !== user.id) {
+          throw new Error('Você não tem permissão para excluir esta transação');
+        }
       }
       
       const { error } = await supabase
