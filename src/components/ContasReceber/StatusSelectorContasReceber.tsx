@@ -45,7 +45,7 @@ export function StatusSelectorContasReceber({ conta, disabled = false, size = "m
       
       setIsOpen(false);
       toast({
-        title: "Status atualizado",
+        title: "Status atualizado com sucesso!",
         description: `Status alterado para ${newStatus}`,
       });
     } catch (error) {

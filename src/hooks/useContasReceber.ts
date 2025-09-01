@@ -205,10 +205,6 @@ export function useUpdateContaReceber() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
-      toast({
-        title: "Sucesso!",
-        description: "Conta atualizada com sucesso.",
-      });
     },
     onError: (error: any) => {
       console.error('Error updating conta a receber:', error);
