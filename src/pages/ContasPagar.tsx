@@ -173,7 +173,7 @@ export default function ContasPagar() {
           </CardHeader>
           <CardContent className="p-3 sm:p-6 pt-0">
             <div className="text-lg sm:text-2xl font-bold text-red-600">
-              {formatCurrency(totalContas)}
+              {formatCurrency(contasPendentes)}
             </div>
           </CardContent>
         </Card>
