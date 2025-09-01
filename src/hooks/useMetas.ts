@@ -296,21 +296,58 @@ export function useCreateMeta() {
 }
 
 export function useUpdateMeta() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, data, vendedorId }: { id: string; data: Partial<CreateMetaData>; vendedorId?: string }) => {
-      // Update in metas_faturamento (agency goals)
-      const { data: meta, error } = await supabase
-        .from('metas_faturamento')
-        .update(data)
-        .eq('id', id)
-        .select()
-        .single();
+    mutationFn: async ({ id, data, vendedorId, isVendedorMeta }: { 
+      id: string; 
+      data: Partial<CreateMetaData>; 
+      vendedorId?: string;
+      isVendedorMeta?: boolean;
+    }) => {
+      // Check if this is a salesperson meta by checking if user is not admin or if explicitly marked as vendedor meta
+      const isUpdatingVendedorMeta = isVendedorMeta || (user?.role !== 'admin');
+      
+      if (isUpdatingVendedorMeta) {
+        // Update in metas_vendedores (individual salesperson goals)
+        const updateData: any = {};
+        
+        if (data.meta_faturamento !== undefined) {
+          updateData.meta_vendas = data.meta_faturamento;
+        }
+        if (data.meta_novos_clientes !== undefined) {
+          updateData.meta_clientes = data.meta_novos_clientes;
+        }
+        if (data.bonus_meta !== undefined) {
+          updateData.bonus_meta = data.bonus_meta;
+        }
+        if (data.mes_ano !== undefined) {
+          updateData.mes_ano = data.mes_ano;
+        }
+        
+        const { data: meta, error } = await supabase
+          .from('metas_vendedores')
+          .update(updateData)
+          .eq('id', id)
+          .select()
+          .single();
 
-      if (error) throw error;
-      return meta;
+        if (error) throw error;
+        return meta;
+      } else {
+        // Update in metas_faturamento (agency goals)
+        const { data: meta, error } = await supabase
+          .from('metas_faturamento')
+          .update(data)
+          .eq('id', id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return meta;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['metas'] });

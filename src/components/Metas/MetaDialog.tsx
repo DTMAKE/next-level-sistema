@@ -41,7 +41,15 @@ export function MetaDialog({ meta, mode = 'create', trigger, vendedorId }: MetaD
     
     try {
       if (mode === 'edit' && meta) {
-        await updateMeta.mutateAsync({ id: meta.id, data: formData, vendedorId: selectedVendedor === 'agency' ? undefined : selectedVendedor });
+        // Determine if this is a vendedor meta based on the user role or meta origin
+        const isVendedorMeta = user?.role !== 'admin' || vendedorId !== undefined;
+        
+        await updateMeta.mutateAsync({ 
+          id: meta.id, 
+          data: formData, 
+          vendedorId: selectedVendedor === 'agency' ? undefined : selectedVendedor,
+          isVendedorMeta
+        });
       } else {
         await createMeta.mutateAsync({ ...formData, vendedorId: selectedVendedor === 'agency' ? undefined : selectedVendedor });
       }
