@@ -172,14 +172,34 @@ export default function ContasReceber() {
     <div className="space-y-6 p-4 sm:p-6">
       <div className="flex flex-row justify-between items-center gap-4">
         <h1 className="font-bold mx-0 py-0 text-3xl">Contas a Receber</h1>
-        <ContaReceberDialog>
-          <Button 
-            className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0"
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => processRecurrences(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1).toISOString().split('T')[0])}
+            disabled={isProcessing}
+            className="gap-2"
           >
-            <Plus className="mr-2 h-4 w-4" />
-            Nova Conta
+            {isProcessing ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted border-t-foreground" />
+                Sincronizando...
+              </>
+            ) : (
+              <>
+                <CreditCard className="h-4 w-4" />
+                Sincronizar Contratos
+              </>
+            )}
           </Button>
-        </ContaReceberDialog>
+          <ContaReceberDialog>
+            <Button 
+              className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Conta
+            </Button>
+          </ContaReceberDialog>
+        </div>
       </div>
 
       <Card>
