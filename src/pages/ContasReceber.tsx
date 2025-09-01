@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useContasReceber, useDeleteContaReceber, useMarcarComoRecebida } from "@/hooks/useContasReceber";
 import { ContaReceberDialog } from "@/components/ContasReceber/ContaReceberDialog";
+import { useContractRecurrences } from "@/hooks/useContractRecurrences";
 
 export default function ContasReceber() {
   const { user } = useAuth();
@@ -32,10 +33,28 @@ export default function ContasReceber() {
   
   const itemsPerPage = 10;
   
-  const { data: contas, isLoading } = useContasReceber(selectedDate);
+  const { data: contas, isLoading, refetch } = useContasReceber(selectedDate);
+  const { processRecurrences, isProcessing } = useContractRecurrences();
   
   const deleteContaReceber = useDeleteContaReceber();
   const marcarComoRecebida = useMarcarComoRecebida();
+
+  // Process contract recurrences when date changes
+  useEffect(() => {
+    const processRecurrencesForMonth = async () => {
+      const targetMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+      const today = new Date();
+      
+      // Only process if we're looking at current month or future months
+      if (targetMonth >= new Date(today.getFullYear(), today.getMonth(), 1)) {
+        await processRecurrences(targetMonth.toISOString().split('T')[0]);
+        // Refetch data after processing
+        setTimeout(() => refetch(), 1000);
+      }
+    };
+
+    processRecurrencesForMonth();
+  }, [selectedDate, processRecurrences, refetch]);
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
