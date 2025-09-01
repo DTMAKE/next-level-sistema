@@ -3,8 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, FileText, Calendar, DollarSign, User, Download, ExternalLink } from "lucide-react";
+import { ArrowLeft, FileText, Calendar, DollarSign, User, Download, ExternalLink, Repeat, Clock } from "lucide-react";
 import { useContrato } from "@/hooks/useContratos";
+import { ContratoRecorrenteBadge } from "@/components/Contratos/ContratoRecorrenteBadge";
+import { ContasFuturasSection } from "@/components/Contratos/ContasFuturasSection";
 
 export default function ContratoDetalhes() {
   const { id } = useParams<{ id: string }>();
@@ -139,16 +141,26 @@ export default function ContratoDetalhes() {
             <CardHeader>
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="space-y-2">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-wrap">
                     <FileText className="h-6 w-6 text-accent" />
                     <CardTitle className="text-2xl">{contrato.numero_contrato || `Contrato #${contrato.id.slice(-8)}`}</CardTitle>
                     <Badge className={getStatusColor(contrato.status)}>
                       {getStatusLabel(contrato.status)}
                     </Badge>
+                    <ContratoRecorrenteBadge 
+                      tipoContrato={contrato.tipo_contrato || 'unico'}
+                      valor={contrato.tipo_contrato === 'recorrente' ? contrato.valor : undefined}
+                    />
                   </div>
-                  <p className="text-muted-foreground">
-                    Criado em {new Date(contrato.created_at).toLocaleDateString('pt-BR')}
-                  </p>
+                  <div className="flex items-center gap-4 text-muted-foreground">
+                    <span>Criado em {new Date(contrato.created_at).toLocaleDateString('pt-BR')}</span>
+                    {contrato.tipo_contrato === 'recorrente' && contrato.dia_vencimento && (
+                      <Badge variant="outline" className="text-xs">
+                        <Clock className="h-3 w-3 mr-1" />
+                        Vence todo dia {contrato.dia_vencimento}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 
                 {contrato.pdf_url && (
@@ -199,10 +211,15 @@ export default function ContratoDetalhes() {
               {/* Contract Information */}
               <Card className="p-4">
                 <CardTitle className="text-lg mb-4 flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
+                  {contrato.tipo_contrato === 'recorrente' ? (
+                    <Repeat className="h-5 w-5 text-primary" />
+                  ) : (
+                    <FileText className="h-5 w-5" />
+                  )}
                   Detalhes do Contrato
                 </CardTitle>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Data de Início</label>
                     <div className="flex items-center gap-2 mt-1">
@@ -210,6 +227,7 @@ export default function ContratoDetalhes() {
                       <p className="text-lg">{new Date(contrato.data_inicio).toLocaleDateString('pt-BR')}</p>
                     </div>
                   </div>
+                  
                   {contrato.data_fim && (
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Data de Fim</label>
@@ -219,8 +237,11 @@ export default function ContratoDetalhes() {
                       </div>
                     </div>
                   )}
+                  
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Valor Total</label>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      {contrato.tipo_contrato === 'recorrente' ? 'Valor Mensal' : 'Valor Total'}
+                    </label>
                     <div className="flex items-center gap-2 mt-1">
                       <DollarSign className="h-4 w-4" />
                       <p className="text-lg font-semibold">
@@ -230,9 +251,48 @@ export default function ContratoDetalhes() {
                         }).format(contrato.valor)}
                       </p>
                     </div>
+                    {contrato.tipo_contrato === 'recorrente' && (
+                      <p className="text-xs text-muted-foreground mt-1">Cobrado mensalmente</p>
+                    )}
                   </div>
+                  
+                  {contrato.tipo_contrato === 'recorrente' && contrato.data_fim && (
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Total Estimado</label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <DollarSign className="h-4 w-4" />
+                        <p className="text-lg font-semibold text-primary">
+                          {(() => {
+                            const startDate = new Date(contrato.data_inicio);
+                            const endDate = new Date(contrato.data_fim);
+                            const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()) + 1;
+                            return new Intl.NumberFormat('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL'
+                            }).format(contrato.valor * months);
+                          })()}
+                        </p>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {(() => {
+                          const startDate = new Date(contrato.data_inicio);
+                          const endDate = new Date(contrato.data_fim);
+                          const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()) + 1;
+                          return `${months} ${months === 1 ? 'mês' : 'meses'}`;
+                        })()}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </Card>
+
+              {/* Future Accounts Section for Recurring Contracts */}
+              <ContasFuturasSection
+                contratoId={contrato.id}
+                tipoContrato={contrato.tipo_contrato || 'unico'}
+                status={contrato.status}
+                valorMensal={contrato.valor}
+              />
 
               {/* Services */}
               {contrato.servicos && contrato.servicos.length > 0 && (

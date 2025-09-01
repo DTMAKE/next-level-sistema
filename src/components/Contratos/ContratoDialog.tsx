@@ -11,6 +11,7 @@ import { useGenerateFutureAccounts } from "@/hooks/useGenerateFutureAccounts";
 import { ServicosSelector } from "./ServicosSelector";
 import { ClientesSelector } from "./ClientesSelector";
 import { PdfUploader } from "./PdfUploader";
+import { ContratoValorPreview } from "./ContratoValorPreview";
 import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
@@ -148,10 +149,49 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
                   <SelectItem value="recorrente">Recorrente (Mensal)</SelectItem>
                 </SelectContent>
               </Select>
-              {formData.tipo_contrato === 'recorrente' && (
-                <p className="text-sm text-muted-foreground">
-                  O valor será cobrado mensalmente até o fim do contrato
-                </p>
+              
+              {/* Explicações claras sobre o valor */}
+              <div className="p-3 rounded-lg bg-muted/30 border">
+                {formData.tipo_contrato === 'recorrente' ? (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-primary">Contrato Recorrente</p>
+                    <p className="text-sm text-muted-foreground">
+                      • O valor inserido será cobrado <strong>mensalmente</strong><br/>
+                      • Serão geradas contas a receber automáticas todos os meses<br/>
+                      • Comissões serão calculadas mensalmente para vendedores
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-primary">Contrato Único</p>
+                    <p className="text-sm text-muted-foreground">
+                      • O valor inserido será o valor <strong>total</strong> do contrato<br/>
+                      • Será gerada apenas uma conta a receber<br/>
+                      • Comissão será calculada uma única vez
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Validação e sugestão */}
+              {formData.data_inicio && formData.data_fim && formData.tipo_contrato === 'unico' && (
+                (() => {
+                  const startDate = new Date(formData.data_inicio);
+                  const endDate = new Date(formData.data_fim);
+                  const diffMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
+                  
+                  if (diffMonths > 2) {
+                    return (
+                      <div className="p-3 rounded-lg bg-yellow-50 border border-yellow-200">
+                        <p className="text-sm text-yellow-800">
+                          ⚠️ <strong>Sugestão:</strong> Este contrato tem duração de {diffMonths} meses. 
+                          Considere usar "Recorrente (Mensal)" para gerar cobranças automáticas mensais.
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()
               )}
             </div>
 
@@ -223,6 +263,16 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
               servicosSelecionados={servicosSelecionados}
               onServicosChange={setServicosSelecionados}
             />
+
+            {/* Preview dos valores */}
+            {servicosSelecionados.length > 0 && (
+              <ContratoValorPreview
+                tipoContrato={formData.tipo_contrato}
+                valorTotal={servicosSelecionados.reduce((total, servico) => total + servico.valor_total, 0)}
+                dataInicio={formData.data_inicio}
+                dataFim={formData.data_fim}
+              />
+            )}
 
             <PdfUploader
               pdfUrl={pdfUrl}
