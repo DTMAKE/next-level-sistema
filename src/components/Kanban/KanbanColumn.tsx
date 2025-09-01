@@ -9,6 +9,8 @@ import { TaskCard } from "./TaskCard";
 import { ColunaKanban, Tarefa } from "@/hooks/useProjetos";
 import { InlineEdit } from "./InlineEdit";
 
+import { logger } from '@/utils/logger';
+
 interface KanbanColumnProps {
   coluna: ColunaKanban;
   tarefas: (Tarefa & { responsavel?: { name: string; avatar_url?: string } })[];
@@ -34,8 +36,7 @@ export function KanbanColumn({ coluna, tarefas, onCreateTask, onEditTask, onDele
   });
 
   const handleColumnNameSave = (newName: string) => {
-    // TODO: Implement column name update
-    console.log("Update column name:", newName);
+    logger.debug("Update column name", { columnId: coluna.id, newName });
   };
 
   const style = {

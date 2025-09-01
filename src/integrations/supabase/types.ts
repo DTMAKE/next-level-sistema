@@ -1091,8 +1091,8 @@ export type Database = {
         Args: { password: string }
         Returns: boolean
       }
-      verify_admin_password: {
-        Args: { input_password: string }
+      verify_admin_role: {
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
     }

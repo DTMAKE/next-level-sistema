@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { format, startOfMonth, endOfMonth } from "date-fns";
+import { logger } from '@/utils/logger';
 
 // Interfaces
 export interface CategoriaFinanceira {
@@ -81,10 +82,10 @@ export function useCategorias() {
   return useQuery({
     queryKey: ["categorias-financeiras", user?.id],
     queryFn: async () => {
-      console.log('🏷️ useCategorias - Executando query com os parâmetros:');
-      console.log('- User:', user);
-      console.log('- User ID:', user?.id);
-      console.log('- User Role:', user?.role);
+      logger.debug('useCategorias - Executando query', { 
+        userId: user?.id, 
+        userRole: user?.role 
+      });
 
       let query = supabase
         .from("categorias_financeiras")
@@ -93,17 +94,17 @@ export function useCategorias() {
 
       // Filter by user_id unless user is admin
       if (user && user.role !== 'admin') {
-        console.log('🔒 Aplicando filtro de user_id para categorias (não é admin)');
+        logger.debug('Aplicando filtro de user_id para categorias');
         query = query.eq("user_id", user.id);
       } else {
-        console.log('🔓 Admin mode para categorias - sem filtro de user_id');
+        logger.debug('Admin mode para categorias');
       }
 
       const { data, error } = await query.order("nome");
 
-      console.log('📂 Categorias encontradas:', data?.length || 0, data);
+      logger.debug('Categorias encontradas', { count: data?.length || 0 });
       if (error) {
-        console.error('❌ Erro ao buscar categorias:', error);
+        logger.error('Erro ao buscar categorias', error);
         throw error;
       }
       return data as CategoriaFinanceira[];
@@ -121,7 +122,7 @@ export function useTransacoesMes(data: Date) {
   return useQuery({
     queryKey: ["transacoes-financeiras", inicioMes, fimMes, user?.id, user?.role],
     queryFn: async () => {
-      console.log('🔍 useTransacoesMes - Iniciando query:', { 
+      logger.debug('useTransacoesMes - Iniciando query', { 
         user: user?.name, 
         role: user?.role, 
         inicioMes, 
@@ -148,25 +149,21 @@ export function useTransacoesMes(data: Date) {
 
         // Apply role-based filtering
         if (user?.role === 'admin') {
-          console.log('👑 Admin: visualizando todas as transações');
+          logger.debug('Admin: visualizando todas as transações');
         } else {
-          console.log('👤 Vendedor: visualizando apenas suas transações');
+          logger.debug('Vendedor: visualizando apenas suas transações');
           query = query.eq('user_id', user?.id);
         }
 
         const { data: transacoes, error } = await query.order("data_transacao", { ascending: false });
 
         if (error) {
-          console.error('❌ Erro na query de transações:', error);
+          logger.error('Erro na query de transações', error);
           throw error;
         }
 
-        console.log('✅ Transações carregadas:', { 
-          quantidade: transacoes?.length || 0,
-          tipos: transacoes?.reduce((acc: any, t: any) => {
-            acc[t.tipo] = (acc[t.tipo] || 0) + 1;
-            return acc;
-          }, {})
+        logger.debug('Transações carregadas', { 
+          quantidade: transacoes?.length || 0
         });
 
         // Buscar informações dos vendedores para as vendas
@@ -194,7 +191,7 @@ export function useTransacoesMes(data: Date) {
 
         return transacoes as any[];
       } catch (error) {
-        console.error('💥 Erro inesperado em useTransacoesMes:', error);
+        logger.error('Erro inesperado em useTransacoesMes', error);
         throw error;
       }
     },

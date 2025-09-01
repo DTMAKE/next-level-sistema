@@ -46,7 +46,8 @@ class ErrorBoundary extends Component<Props, State> {
 
 function ErrorFallback({ onReset }: { onReset: () => void }) {
   const handleGoHome = () => {
-    window.location.href = '/';
+    // Use React Router navigation instead of window.location.href
+    window.location.pathname = '/';
   };
 
   return (

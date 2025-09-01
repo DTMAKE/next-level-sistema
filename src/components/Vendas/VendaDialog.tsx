@@ -10,6 +10,8 @@ import { useClientes } from "@/hooks/useClientes";
 import { getBrazilianDateString } from "@/utils/dateUtils";
 import { ServicosSelector } from "@/components/Vendas/ServicosSelector";
 
+import { logger } from '@/utils/logger';
+
 interface VendaDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -39,10 +41,9 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
   const clientes = clientesResponse?.data || [];
 
   useEffect(() => {
-    console.log('VendaDialog useEffect - venda:', venda, 'open:', open);
+    logger.debug('VendaDialog useEffect', { vendaId: venda?.id, isOpen: open });
     if (venda && open) {
-      console.log('Carregando venda para edição:', venda);
-      console.log('Serviços da venda:', venda.venda_servicos);
+      logger.debug('Carregando venda para edição', { vendaId: venda.id });
       
       setFormData({
         cliente_id: venda.cliente_id || "",
@@ -61,10 +62,10 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
           quantidade: vs.quantidade,
           valor_total: vs.valor_total,
         }));
-        console.log('Serviços individuais carregados:', servicosExistentes);
+        logger.debug('Serviços individuais carregados', { count: servicosExistentes.length });
         setServicos(servicosExistentes);
       } else {
-        console.log('Nenhum serviço encontrado, carregando valor como serviço único');
+        logger.debug('Nenhum serviço encontrado, criando serviço genérico');
         // Se não há serviços específicos, criar um serviço genérico com o valor total
         if (venda.valor && venda.valor > 0) {
           const servicoGenerico = [{
@@ -74,7 +75,6 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
             quantidade: 1,
             valor_total: venda.valor,
           }];
-          console.log('Criando serviço genérico:', servicoGenerico);
           setServicos(servicoGenerico);
         } else {
           setServicos([]);

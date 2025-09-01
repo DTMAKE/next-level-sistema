@@ -13,6 +13,7 @@ import { TransacaoDialog } from "@/components/Financeiro/TransacaoDialog";
 import { CategoriaDialog } from "@/components/Financeiro/CategoriaDialog";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { FinanceiroSkeleton } from "@/components/Financeiro/FinanceiroSkeleton";
+import { logger } from '@/utils/logger';
 export default function Financeiro() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const {
@@ -31,17 +32,18 @@ export default function Financeiro() {
   } = useCategorias();
   const sincronizarVendas = useSincronizarVendas();
 
-  // Debug do componente Financeiro
-  console.log('💼 Financeiro Component - Estado atual:');
-  console.log('- selectedDate:', selectedDate);
-  console.log('- resumo:', resumo);
-  console.log('- resumo loading:', isLoadingResumo);
-  console.log('- resumo error:', errorResumo);
-  console.log('- transacoes:', transacoes);
-  console.log('- transacoes loading:', isLoadingTransacoes);
-  console.log('- transacoes error:', errorTransacoes);
-  console.log('- categorias:', categorias);
-  console.log('- categorias error:', errorCategorias);
+  // Debug do componente Financeiro - apenas em desenvolvimento
+  logger.debug('Financeiro Component - Estado atual', {
+    selectedDate,
+    resumo,
+    isLoadingResumo,
+    errorResumo: !!errorResumo,
+    transacoes: transacoes?.length || 0,
+    isLoadingTransacoes,
+    errorTransacoes: !!errorTransacoes,
+    categorias: categorias?.length || 0,
+    errorCategorias: !!errorCategorias
+  });
 
   // Mostrar skeleton se estiver carregando
   if (isLoadingResumo || isLoadingTransacoes) {

@@ -14,7 +14,7 @@ class Logger {
     const entry: LogEntry = {
       level,
       message,
-      data,
+      data: this.filterSensitiveData(data),
       timestamp: new Date().toISOString(),
     };
 
@@ -25,7 +25,7 @@ class Logger {
         console.log(
           `%c[${entry.timestamp}] ${level.toUpperCase()}: ${message}`,
           `color: ${color}`,
-          data || ''
+          entry.data || ''
         );
       } catch {
         // Fail silently in case console is not available
@@ -34,6 +34,27 @@ class Logger {
 
     // In production, send to external monitoring service
     // Example: this.sendToMonitoring(entry);
+  }
+
+  private filterSensitiveData(data: any): any {
+    if (!data || typeof data !== 'object') return data;
+    
+    const sensitiveKeys = ['password', 'token', 'access_token', 'refresh_token', 'email'];
+    const filtered = Array.isArray(data) ? [...data] : { ...data };
+    
+    if (Array.isArray(filtered)) {
+      return filtered.map(item => this.filterSensitiveData(item));
+    }
+    
+    for (const key in filtered) {
+      if (sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))) {
+        filtered[key] = '[FILTERED]';
+      } else if (typeof filtered[key] === 'object' && filtered[key] !== null) {
+        filtered[key] = this.filterSensitiveData(filtered[key]);
+      }
+    }
+    
+    return filtered;
   }
 
   private getColorForLevel(level: LogLevel): string {

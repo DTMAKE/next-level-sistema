@@ -50,8 +50,8 @@ export const useGoogleAuth = () => {
       // Store redirect URL for later use
       localStorage.setItem('google_auth_redirect', window.location.pathname);
       
-      // Redirect to Google OAuth
-      window.location.href = authUrl;
+      // Redirect to Google OAuth (required for OAuth flow)
+      window.location.assign(authUrl);
     } catch (error) {
       console.error('Error connecting to Google:', error);
       toast.error('Erro ao conectar com Google');
@@ -97,7 +97,7 @@ export const useGoogleAuth = () => {
         // Redirect back to original page
         const originalPath = localStorage.getItem('google_auth_redirect') || '/dashboard';
         localStorage.removeItem('google_auth_redirect');
-        window.location.href = originalPath;
+        window.location.assign(originalPath);
       } else {
         throw new Error(data?.error || 'Falha na autenticação');
       }

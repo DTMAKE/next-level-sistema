@@ -137,9 +137,14 @@ export function useRemoverUsuario() {
         throw new Error('Você não pode remover sua própria conta');
       }
 
-      // Verificar senha
-      if (senha !== 'cacazinho') {
-        throw new Error('Senha incorreta');
+      // Verificar se o usuário atual é admin
+      if (!currentUser || currentUser.role !== 'admin') {
+        throw new Error('Apenas administradores podem remover usuários');
+      }
+      
+      // Verificar senha de confirmação (deve ser implementada adequadamente)
+      if (!senha || senha.length < 6) {
+        throw new Error('Senha de confirmação obrigatória');
       }
 
       // Remover perfil do usuário
