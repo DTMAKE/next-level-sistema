@@ -3,6 +3,38 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
+export interface ParcelaContrato {
+  id: string;
+  contrato_id: string;
+  numero_parcela: number;
+  valor_parcela: number;
+  data_vencimento: string;
+  status_parcela: 'pendente' | 'paga' | 'atrasada' | 'cancelada';
+  data_pagamento?: string;
+  valor_pago?: number;
+  observacoes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ComissaoVendedor {
+  id: string;
+  parcela_id: string;
+  vendedor_id: string;
+  valor_comissao: number;
+  percentual_comissao: number;
+  status_comissao: 'pendente' | 'paga' | 'cancelada';
+  data_pagamento?: string;
+  observacoes?: string;
+  created_at: string;
+  updated_at: string;
+  vendedor?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
 export interface Contrato {
   id: string;
   numero_contrato?: string;
@@ -42,6 +74,10 @@ export interface Contrato {
       descricao?: string;
     };
   }>;
+  // Dados das parcelas via join
+  parcelas?: ParcelaContrato[];
+  // Dados das comissões via join
+  comissoes?: ComissaoVendedor[];
 }
 
 export interface CreateContratoData {
@@ -72,7 +108,24 @@ export function useContratos(searchTerm?: string) {
         .from('contratos')
         .select(`
           *,
-          cliente:clientes(id, nome, email, telefone)
+          cliente:clientes(id, nome, email, telefone),
+          parcelas:parcelas_contrato(
+            id,
+            numero_parcela,
+            valor_parcela,
+            data_vencimento,
+            status_parcela,
+            data_pagamento,
+            valor_pago
+          ),
+          comissoes:comissoes_vendedor(
+            id,
+            valor_comissao,
+            percentual_comissao,
+            status_comissao,
+            data_pagamento,
+            vendedor:profiles(id, name, email)
+          )
         `);
 
       // Only filter by user_id if user is not admin
@@ -115,6 +168,25 @@ export function useContrato(contratoId: string) {
             valor_unitario,
             valor_total,
             servico:servicos(id, nome, descricao)
+          ),
+          parcelas:parcelas_contrato(
+            id,
+            numero_parcela,
+            valor_parcela,
+            data_vencimento,
+            status_parcela,
+            data_pagamento,
+            valor_pago,
+            observacoes
+          ),
+          comissoes:comissoes_vendedor(
+            id,
+            valor_comissao,
+            percentual_comissao,
+            status_comissao,
+            data_pagamento,
+            observacoes,
+            vendedor:profiles(id, name, email)
           )
         `)
         .eq('id', contratoId);
@@ -169,7 +241,20 @@ export function useCreateContrato() {
         })
         .select(`
           *,
-          cliente:clientes(id, nome, email, telefone)
+          cliente:clientes(id, nome, email, telefone),
+          parcelas:parcelas_contrato(
+            id,
+            numero_parcela,
+            valor_parcela,
+            data_vencimento,
+            status_parcela
+          ),
+          comissoes:comissoes_vendedor(
+            id,
+            valor_comissao,
+            percentual_comissao,
+            status_comissao
+          )
         `)
         .single();
 
@@ -178,9 +263,11 @@ export function useCreateContrato() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
+      queryClient.invalidateQueries({ queryKey: ['parcelas'] });
+      queryClient.invalidateQueries({ queryKey: ['comissoes'] });
       toast({
         title: "Contrato criado",
-        description: "Contrato adicionado com sucesso.",
+        description: "Contrato adicionado com sucesso. As parcelas foram geradas automaticamente.",
       });
     },
     onError: (error: Error) => {
@@ -205,7 +292,20 @@ export function useUpdateContrato() {
         .eq('id', id)
         .select(`
           *,
-          cliente:clientes(id, nome, email, telefone)
+          cliente:clientes(id, nome, email, telefone),
+          parcelas:parcelas_contrato(
+            id,
+            numero_parcela,
+            valor_parcela,
+            data_vencimento,
+            status_parcela
+          ),
+          comissoes:comissoes_vendedor(
+            id,
+            valor_comissao,
+            percentual_comissao,
+            status_comissao
+          )
         `)
         .single();
 
@@ -214,6 +314,8 @@ export function useUpdateContrato() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
+      queryClient.invalidateQueries({ queryKey: ['parcelas'] });
+      queryClient.invalidateQueries({ queryKey: ['comissoes'] });
       toast({
         title: "Contrato atualizado",
         description: "Informações do contrato atualizadas com sucesso.",
@@ -244,6 +346,8 @@ export function useDeleteContrato() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
+      queryClient.invalidateQueries({ queryKey: ['parcelas'] });
+      queryClient.invalidateQueries({ queryKey: ['comissoes'] });
       toast({
         title: "Contrato removido",
         description: "Contrato removido com sucesso.",
@@ -256,5 +360,75 @@ export function useDeleteContrato() {
         variant: "destructive",
       });
     },
+  });
+}
+
+// Hook para buscar parcelas de um contrato específico
+export function useParcelasContrato(contratoId: string) {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['parcelas', contratoId, user?.id],
+    queryFn: async () => {
+      if (!user?.id) throw new Error('User not authenticated');
+      if (!contratoId) throw new Error('Contrato ID is required');
+      
+      const { data, error } = await supabase
+        .from('parcelas_contrato')
+        .select(`
+          *,
+          contrato:contratos(
+            id,
+            numero_contrato,
+            cliente:clientes(nome)
+          )
+        `)
+        .eq('contrato_id', contratoId)
+        .order('numero_parcela', { ascending: true });
+      
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!user?.id && !!contratoId,
+  });
+}
+
+// Hook para buscar comissões de um vendedor
+export function useComissoesVendedor(vendedorId?: string) {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['comissoes', vendedorId, user?.id],
+    queryFn: async () => {
+      if (!user?.id) throw new Error('User not authenticated');
+      
+      let query = supabase
+        .from('comissoes_vendedor')
+        .select(`
+          *,
+          parcela:parcelas_contrato(
+            id,
+            data_vencimento,
+            contrato:contratos(
+              id,
+              numero_contrato,
+              cliente:clientes(nome)
+            )
+          ),
+          vendedor:profiles(name, email)
+        `);
+
+      if (vendedorId) {
+        query = query.eq('vendedor_id', vendedorId);
+      }
+      
+      query = query.order('created_at', { ascending: false });
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!user?.id,
   });
 }

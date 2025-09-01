@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { TrendingUp, Search, Filter, Plus, Calendar, DollarSign, Check, Grid, List, Trash2, FileText, CreditCard, Download, ShoppingCart, UserCheck, Building2 } from "lucide-react";
+import { TrendingUp, Search, Filter, Plus, Calendar, DollarSign, Check, Grid, List, Trash2, FileText, CreditCard, Download, ShoppingCart, UserCheck, Building2, FileText as FileTextIcon } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useContasReceber, useDeleteContaReceber, useMarcarComoRecebida } from "@/hooks/useContasReceber";
+import { useParcelasContrato, useMarcarParcelaComoPaga } from "@/hooks/useParcelasComissoes";
 import { ContaReceberDialog } from "@/components/ContasReceber/ContaReceberDialog";
 import { StatusSelectorContasReceber } from "@/components/ContasReceber/StatusSelectorContasReceber";
 
@@ -33,8 +34,13 @@ export default function ContasReceber() {
   const itemsPerPage = 10;
   
   const { data: contas, isLoading } = useContasReceber(selectedDate);
+  
+  // Buscar parcelas de contratos
+  const { data: parcelasContratos } = useParcelasContrato();
+  
   const deleteContaReceber = useDeleteContaReceber();
   const marcarComoRecebida = useMarcarComoRecebida();
+  const marcarParcelaComoPaga = useMarcarParcelaComoPaga();
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -42,6 +48,45 @@ export default function ContasReceber() {
       currency: 'BRL'
     }).format(value);
   };
+
+  // Combinar contas a receber com parcelas de contratos
+  const allContasReceber = useMemo(() => {
+    const contasArray = contas || [];
+    const parcelasArray = parcelasContratos || [];
+    
+    // Filtrar parcelas para o mês selecionado
+    const selectedYear = selectedDate.getFullYear();
+    const selectedMonth = selectedDate.getMonth();
+    
+    const parcelasDoMes = parcelasArray.filter(parcela => {
+      const parcelaDate = new Date(parcela.data_vencimento);
+      return parcelaDate.getFullYear() === selectedYear && 
+             parcelaDate.getMonth() === selectedMonth &&
+             parcela.status_parcela === 'pendente';
+    });
+
+    // Converter parcelas para formato de conta a receber
+    const parcelasComoContas = parcelasDoMes.map(parcela => ({
+      id: `parcela_${parcela.id}`,
+      descricao: `Parcela ${parcela.numero_parcela} - ${parcela.contrato?.numero_contrato || 'Contrato'} - ${parcela.contrato?.cliente?.nome || 'Cliente'}`,
+      valor: parcela.valor_parcela,
+      data_vencimento: parcela.data_vencimento,
+      status: parcela.status_parcela === 'pendente' ? 'pendente' : 'confirmada',
+      forma_pagamento: 'parcelado',
+      parcelas: 1,
+      parcela_atual: 1,
+      comprovante_url: null,
+      observacoes: `Parcela automática do contrato`,
+      created_at: parcela.created_at,
+      updated_at: parcela.updated_at,
+      is_parcela_contrato: true,
+      parcela_original: parcela
+    }));
+
+    // Combinar e ordenar por data de vencimento
+    const todasContas = [...contasArray, ...parcelasComoContas];
+    return todasContas.sort((a, b) => new Date(a.data_vencimento).getTime() - new Date(b.data_vencimento).getTime());
+  }, [contas, parcelasContratos, selectedDate]);
   
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -78,8 +123,17 @@ export default function ContasReceber() {
     return descricao?.toLowerCase().includes('contrato');
   };
 
+  const isParcelaContrato = (conta: any) => {
+    return conta.is_parcela_contrato;
+  };
+
   const handleMarcarComoRecebida = (conta: any) => {
-    marcarComoRecebida.mutate(conta.id);
+    if (isParcelaContrato(conta)) {
+      // Atualizar status da parcela no banco
+      marcarParcelaComoPaga.mutate(conta.parcela_original.id);
+    } else {
+      marcarComoRecebida.mutate(conta.id);
+    }
   };
 
   const handleDeleteConta = (id: string) => {
@@ -89,6 +143,10 @@ export default function ContasReceber() {
 
   const confirmDelete = () => {
     if (contaToDelete) {
+      // Não permitir deletar parcelas de contratos
+      if (contaToDelete.startsWith('parcela_')) {
+        return;
+      }
       deleteContaReceber.mutate(contaToDelete);
       setDeleteDialogOpen(false);
       setContaToDelete(null);
@@ -99,39 +157,39 @@ export default function ContasReceber() {
     window.open(url, '_blank');
   };
 
-  // Aplicar filtros e memoização para performance
+  // Filtrar contas baseado no status
   const filteredContas = useMemo(() => {
-    if (!contas) return [];
-    
-    return contas.filter(conta => {
-      const matchesSearch = !searchTerm || 
-        conta.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || conta.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    }).sort((a, b) => new Date(b.data_transacao).getTime() - new Date(a.data_transacao).getTime());
-  }, [contas, searchTerm, statusFilter]);
+    if (statusFilter === 'all') return allContasReceber;
+    return allContasReceber.filter(conta => conta.status === statusFilter);
+  }, [allContasReceber, statusFilter]);
+
+  // Filtrar por termo de busca
+  const searchedContas = useMemo(() => {
+    if (!searchTerm.trim()) return filteredContas;
+    return filteredContas.filter(conta =>
+      conta.descricao?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      conta.observacoes?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [filteredContas, searchTerm]);
 
   // Paginação
-  const totalPages = Math.ceil(filteredContas.length / itemsPerPage);
-  const paginatedContas = filteredContas.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(searchedContas.length / itemsPerPage);
+  const paginatedContas = searchedContas.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // Calcular totais
-  const totalContas = filteredContas.reduce((sum, d) => sum + Number(d.valor), 0);
-  const contasPendentes = filteredContas.filter(d => d.status === 'pendente').reduce((sum, d) => sum + Number(d.valor), 0);
-  const contasRecebidas = filteredContas.filter(d => d.status === 'confirmada').reduce((sum, d) => sum + Number(d.valor), 0);
+  const handleStatusChange = (newStatus: string) => {
+    setStatusFilter(newStatus);
+    setCurrentPage(1);
+  };
 
-  // Reset page quando filtros mudam
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
   };
 
-  const handleFilterChange = (filter: string) => {
-    setStatusFilter(filter);
-    setCurrentPage(1);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
-  // Geração de números da paginação
   const generatePaginationNumbers = () => {
     const pages = [];
     const maxVisiblePages = isMobile ? 3 : 5;
@@ -145,7 +203,7 @@ export default function ContasReceber() {
     if (currentPage > totalPages - halfVisible) {
       startPage = Math.max(1, totalPages - maxVisiblePages + 1);
     }
-
+    
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
@@ -153,119 +211,52 @@ export default function ContasReceber() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
-      {/* Header */}
-      <div className="flex flex-row justify-between items-center gap-2">
-        <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl truncate">Contas a Receber</h1>
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
-          <ContaReceberDialog>
-            <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm">
-              <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Nova Receita</span>
-              <span className="sm:hidden">Nova</span>
-            </Button>
-          </ContaReceberDialog>
-        </div>
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-row justify-between items-center gap-4">
+        <h1 className="font-bold mx-0 py-0 text-3xl">Contas a Receber</h1>
+        <Button 
+          className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0"
+          onClick={() => {/* Abrir modal de nova conta */}}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Nova Conta
+        </Button>
       </div>
 
-      {/* Cards de Resumo */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Total a Receber</CardTitle>
-            <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <div className="text-lg sm:text-2xl font-bold text-green-600">
-              {formatCurrency(totalContas)}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Pendentes</CardTitle>
-            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <div className="text-lg sm:text-2xl font-bold text-yellow-600">
-              {formatCurrency(contasPendentes)}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="col-span-2 lg:col-span-1">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-            <CardTitle className="text-xs sm:text-sm font-medium">Recebidas</CardTitle>
-            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6 pt-0">
-            <div className="text-lg sm:text-2xl font-bold text-green-600">
-              {formatCurrency(contasRecebidas)}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filtros e Controles */}
       <Card>
         <CardHeader className="p-4 sm:p-6">
           <div className="flex flex-col gap-4">
-            <div className="flex flex-row gap-2 items-center">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-center">
+              <MonthYearPicker
+                selectedDate={selectedDate}
+                onDateChange={setSelectedDate}
+                className="w-full sm:w-auto"
+              />
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Buscar por nome da receita..." 
-                  className="pl-10 h-10 text-sm" 
-                  value={searchTerm} 
-                  onChange={e => handleSearchChange(e.target.value)} 
+                <Input
+                  placeholder="Buscar contas..."
+                  className="pl-10 h-10 text-sm"
+                  value={searchTerm}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                 />
               </div>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-10 px-3 shrink-0">
-                    <Filter className="h-4 w-4" />
-                    <span className="ml-2 hidden sm:inline">
-                      {statusFilter === "all" ? "Status" : getStatusLabel(statusFilter)}
-                    </span>
-                    {statusFilter !== "all" && (
-                      <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-popover border z-50">
-                  <DropdownMenuItem onClick={() => handleFilterChange("all")}>
-                    Todos os status
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleFilterChange("pendente")}>
-                    <div className="w-2 h-2 rounded-full bg-yellow-600 mr-2" />
-                    Pendente
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleFilterChange("confirmada")}>
-                    <div className="w-2 h-2 rounded-full bg-green-600 mr-2" />
-                    Recebida
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleFilterChange("cancelada")}>
-                    <div className="w-2 h-2 rounded-full bg-red-600 mr-2" />
-                    Cancelada
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
+              <StatusSelectorContasReceber
+                currentStatus={statusFilter}
+                onStatusChange={handleStatusChange}
+              />
               {!isMobile && (
-                <div className="flex items-center gap-2 ml-2">
-                  <Button 
-                    variant={viewMode === "cards" ? "default" : "outline"} 
-                    size="sm" 
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={viewMode === "cards" ? "default" : "outline"}
+                    size="sm"
                     onClick={() => setViewMode("cards")}
                   >
                     <Grid className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant={viewMode === "table" ? "default" : "outline"} 
-                    size="sm" 
+                  <Button
+                    variant={viewMode === "table" ? "outline" : "default"}
+                    size="sm"
                     onClick={() => setViewMode("table")}
                   >
                     <List className="h-4 w-4" />
@@ -274,9 +265,9 @@ export default function ContasReceber() {
               )}
             </div>
             
-            {filteredContas.length > 0 && (
+            {searchedContas.length > 0 && (
               <div className="text-sm text-muted-foreground">
-                Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredContas.length)} de {filteredContas.length} conta(s)
+                Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, searchedContas.length)} de {searchedContas.length} contas
               </div>
             )}
           </div>
@@ -292,105 +283,100 @@ export default function ContasReceber() {
                 </div>
               ))}
             </div>
-          ) : paginatedContas.length === 0 ? (
+          ) : searchedContas.length === 0 ? (
             <div className="text-center py-12">
-              <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">
-                {searchTerm || statusFilter !== "all" 
-                  ? "Nenhum resultado encontrado" 
-                  : "Nenhuma conta encontrada"}
-              </h3>
+              <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Nenhuma conta encontrada</h3>
               <p className="text-muted-foreground mb-4 text-sm">
-                {searchTerm || statusFilter !== "all"
-                  ? "Não encontramos contas com os filtros aplicados."
-                  : "Comece adicionando sua primeira conta a receber."}
+                {searchTerm 
+                  ? "Não encontramos contas com os termos buscados." 
+                  : `Não há contas a receber para ${format(selectedDate, 'MMMM yyyy', { locale: ptBR })}.`
+                }
               </p>
-              {!searchTerm && statusFilter === "all" && (
-                <ContaReceberDialog>
-                  <Button className="gradient-premium border-0 text-background">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Adicionar Conta
-                  </Button>
-                </ContaReceberDialog>
-              )}
             </div>
           ) : (
             <>
               {viewMode === "cards" || isMobile ? (
                 // Card View
                 <div className="space-y-3">
-                  {paginatedContas.map(conta => (
-                    <Card key={conta.id} className="p-4 hover:shadow-md transition-shadow">
+                  {paginatedContas.map((conta) => (
+                    <Card 
+                      key={conta.id} 
+                      className={cn(
+                        "p-4 hover:shadow-md transition-shadow",
+                        isParcelaContrato(conta) && "border-l-4 border-l-blue-500 bg-blue-50/50"
+                      )}
+                    >
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            {isContratoTransaction(conta.descricao || '') ? (
-                              <Building2 className="h-4 w-4 text-blue-600 shrink-0" />
+                            {isParcelaContrato(conta) ? (
+                              <FileTextIcon className="h-4 w-4 text-blue-600 shrink-0" />
                             ) : (
-                              <TrendingUp className="h-4 w-4 text-green-600 shrink-0" />
+                              <TrendingUp className="h-4 w-4 text-accent shrink-0" />
                             )}
                             <h3 className="font-semibold text-base truncate">
-                              {conta.descricao || 'Receita sem descrição'}
+                              {conta.descricao}
                             </h3>
                           </div>
-                          <StatusSelectorContasReceber conta={conta} size="sm" />
+                          <div className="flex gap-2">
+                            <Badge className={getStatusColor(conta.status)}>
+                              {getStatusLabel(conta.status)}
+                            </Badge>
+                            {isParcelaContrato(conta) && (
+                              <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+                                Parcela
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                         
                         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 shrink-0" />
-                            <span>{format(new Date(conta.data_transacao), "dd/MM/yyyy", { locale: ptBR })}</span>
+                            <span>
+                              Vencimento: {format(new Date(conta.data_vencimento), 'dd/MM/yyyy', { locale: ptBR })}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <CreditCard className="h-4 w-4 shrink-0" />
-                            <span>{getFormaPagamentoLabel(conta.forma_pagamento || 'a_vista', conta.parcelas || 1, conta.parcela_atual || 1)}</span>
+                            <DollarSign className="h-4 w-4 shrink-0" />
+                            <span className="font-semibold text-foreground">
+                              {formatCurrency(conta.valor)}
+                            </span>
                           </div>
-                          {conta.venda_id && conta.vendas?.clientes && (
+                          {conta.observacoes && (
                             <div className="flex items-center gap-2">
-                              <ShoppingCart className="h-3 w-3 text-blue-600" />
-                              <span className="text-xs">Cliente: {conta.vendas.clientes.nome}</span>
-                            </div>
-                          )}
-                          {isContratoTransaction(conta.descricao || '') && (
-                            <div className="flex items-center gap-2">
-                              <Building2 className="h-3 w-3 text-blue-600" />
-                              <span className="text-xs text-blue-600 font-medium">Receita de Contrato</span>
+                              <span className="text-xs text-muted-foreground">
+                                {conta.observacoes}
+                              </span>
                             </div>
                           )}
                         </div>
                         
-                        <div className="flex items-center justify-between">
-                          <div className="font-bold text-green-600 text-lg">
-                            {formatCurrency(Number(conta.valor))}
-                          </div>
-                          <div className="flex gap-1">
-                            {conta.status === 'pendente' && (
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => handleMarcarComoRecebida(conta)} 
-                                disabled={marcarComoRecebida.isPending}
-                              >
-                                <Check className="h-4 w-4" />
-                              </Button>
-                            )}
-                            {conta.comprovante_url && (
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            )}
+                        <div className="flex gap-2">
+                          {conta.status === 'pendente' && (
                             <Button 
-                              variant="ghost" 
-                              size="sm"
+                              variant="outline" 
+                              size="sm" 
+                              className="flex-1"
+                              onClick={() => handleMarcarComoRecebida(conta)}
+                              disabled={marcarParcelaComoPaga.isPending}
+                            >
+                              <Check className="h-3 w-3 mr-1" />
+                              Marcar como Recebida
+                            </Button>
+                          )}
+                          {!isParcelaContrato(conta) && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="flex-1"
                               onClick={() => handleDeleteConta(conta.id)}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Excluir
                             </Button>
-                          </div>
+                          )}
                         </div>
                       </div>
                     </Card>
@@ -402,77 +388,68 @@ export default function ContasReceber() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Status</TableHead>
+                        <TableHead>Tipo</TableHead>
                         <TableHead>Descrição</TableHead>
-                        <TableHead>Recebimento</TableHead>
-                        <TableHead>Data</TableHead>
+                        <TableHead>Vencimento</TableHead>
                         <TableHead>Valor</TableHead>
-                        <TableHead className="text-right">Ações</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="w-[100px]">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {paginatedContas.map((conta) => (
-                        <TableRow key={conta.id}>
+                        <TableRow 
+                          key={conta.id}
+                          className={cn(
+                            isParcelaContrato(conta) && "bg-blue-50/50"
+                          )}
+                        >
                           <TableCell>
-                            <StatusSelectorContasReceber conta={conta} size="sm" />
+                            {isParcelaContrato(conta) ? (
+                              <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+                                Parcela
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary">Conta</Badge>
+                            )}
                           </TableCell>
-                          <TableCell className="font-medium">
-                            <div className="flex items-center gap-2">
-                              <TrendingUp className="h-4 w-4 text-green-600 shrink-0" />
-                              <div>
-                                <div className="font-semibold">{conta.descricao || 'Receita sem descrição'}</div>
-                                {conta.venda_id && conta.vendas?.clientes && (
-                                  <div className="text-xs text-muted-foreground">
-                                    Cliente: {conta.vendas.clientes.nome}
-                                  </div>
-                                )}
-                              </div>
+                          <TableCell className="font-medium max-w-[300px]">
+                            <div className="truncate" title={conta.descricao}>
+                              {conta.descricao}
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-2">
-                              <CreditCard className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{getFormaPagamentoLabel(conta.forma_pagamento || 'a_vista', conta.parcelas || 1, conta.parcela_atual || 1)}</span>
-                            </div>
+                            {format(new Date(conta.data_vencimento), 'dd/MM/yyyy', { locale: ptBR })}
+                          </TableCell>
+                          <TableCell className="font-semibold">
+                            {formatCurrency(conta.valor)}
                           </TableCell>
                           <TableCell>
-                            <div className="text-sm">
-                              <div>{format(new Date(conta.data_transacao), "dd/MM/yyyy", { locale: ptBR })}</div>
-                            </div>
+                            <Badge className={getStatusColor(conta.status)}>
+                              {getStatusLabel(conta.status)}
+                            </Badge>
                           </TableCell>
                           <TableCell>
-                            <span className="font-bold text-green-600">
-                              {formatCurrency(Number(conta.valor))}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-1">
+                            <div className="flex gap-2">
                               {conta.status === 'pendente' && (
                                 <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  onClick={() => handleMarcarComoRecebida(conta)}
-                                  disabled={marcarComoRecebida.isPending}
-                                >
-                                  <Check className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {conta.comprovante_url && (
-                                <Button 
-                                  variant="ghost" 
+                                  variant="outline" 
                                   size="sm"
-                                  onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
+                                  onClick={() => handleMarcarComoRecebida(conta)}
+                                  disabled={marcarParcelaComoPaga.isPending}
                                 >
-                                  <Download className="h-4 w-4" />
+                                  <Check className="h-3 w-3" />
                                 </Button>
                               )}
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleDeleteConta(conta.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              {!isParcelaContrato(conta) && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleDeleteConta(conta.id)}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -482,46 +459,39 @@ export default function ContasReceber() {
                 </div>
               )}
 
-              {/* Paginação */}
               {totalPages > 1 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6">
-                  <div className="text-sm text-muted-foreground order-2 sm:order-1">
-                    Página {currentPage} de {totalPages}
-                  </div>
-                  
-                  <Pagination className="mx-0 w-fit order-1 sm:order-2">
-                    <PaginationContent className="gap-0">
-                      <PaginationItem>
-                        <PaginationPrevious 
-                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                          className={cn(
-                            "cursor-pointer select-none",
-                            currentPage === 1 && "opacity-50 cursor-not-allowed"
-                          )}
-                        />
-                      </PaginationItem>
+                <div className="mt-6">
+                  <Pagination>
+                    <PaginationContent>
+                      {currentPage > 1 && (
+                        <PaginationItem>
+                          <PaginationPrevious 
+                            onClick={() => handlePageChange(currentPage - 1)} 
+                            className="cursor-pointer" 
+                          />
+                        </PaginationItem>
+                      )}
                       
-                      {generatePaginationNumbers().map((page) => (
-                        <PaginationItem key={page}>
-                          <PaginationLink
-                            onClick={() => setCurrentPage(page)}
-                            isActive={currentPage === page}
-                            className="cursor-pointer select-none"
+                      {generatePaginationNumbers().map(pageNum => (
+                        <PaginationItem key={pageNum}>
+                          <PaginationLink 
+                            onClick={() => handlePageChange(pageNum)} 
+                            isActive={pageNum === currentPage} 
+                            className="cursor-pointer"
                           >
-                            {page}
+                            {pageNum}
                           </PaginationLink>
                         </PaginationItem>
                       ))}
                       
-                      <PaginationItem>
-                        <PaginationNext 
-                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                          className={cn(
-                            "cursor-pointer select-none",
-                            currentPage === totalPages && "opacity-50 cursor-not-allowed"
-                          )}
-                        />
-                      </PaginationItem>
+                      {currentPage < totalPages && (
+                        <PaginationItem>
+                          <PaginationNext 
+                            onClick={() => handlePageChange(currentPage + 1)} 
+                            className="cursor-pointer" 
+                          />
+                        </PaginationItem>
+                      )}
                     </PaginationContent>
                   </Pagination>
                 </div>
@@ -531,28 +501,27 @@ export default function ContasReceber() {
         </CardContent>
       </Card>
 
-      {/* Dialog de Confirmação de Delete */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir esta conta a receber? Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir esta conta? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ContaReceberDialog
+        open={false}
+        onOpenChange={() => {}}
+      />
     </div>
   );
 }

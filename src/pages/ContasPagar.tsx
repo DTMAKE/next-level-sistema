@@ -351,6 +351,7 @@ export default function ContasPagar() {
                               </span>
                             )}
                           </div>
+
                           <div className="flex items-center gap-2">
                             <CreditCard className="h-4 w-4 shrink-0" />
                             <span>{getFormaPagamentoLabel(conta.forma_pagamento, conta.parcelas, conta.parcela_atual)}</span>
