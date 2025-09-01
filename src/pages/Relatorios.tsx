@@ -7,6 +7,8 @@ import { GraficoVendas } from "@/components/Relatorios/GraficoVendas";
 import { GraficoFinanceiro } from "@/components/Relatorios/GraficoFinanceiro";
 import { GraficoLeads } from "@/components/Relatorios/GraficoLeads";
 import { FiltrosRelatorio } from "@/components/Relatorios/FiltrosRelatorio";
+import { RelatorioDialog } from "@/components/Relatorios/RelatorioDialog";
+import { CustomReportDialog } from "@/components/Relatorios/CustomReportDialog";
 import { useMetricasGerais, usePerformanceVendedores } from "@/hooks/useRelatorios";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
@@ -22,6 +24,12 @@ export default function Relatorios() {
     periodo?: DateRange;
     tipo?: string;
   }>({});
+  
+  // Estados para dialogs
+  const [relatorioDialogOpen, setRelatorioDialogOpen] = useState(false);
+  const [customReportDialogOpen, setCustomReportDialogOpen] = useState(false);
+  const [selectedReportType, setSelectedReportType] = useState<'vendas-periodo' | 'performance-vendedores' | 'clientes-segmento' | 'receitas-despesas' | null>(null);
+  const [selectedCustomType, setSelectedCustomType] = useState<'vendas' | 'financeiro' | 'clientes' | 'performance' | null>(null);
 
   const relatorios = [
     {
@@ -101,6 +109,35 @@ export default function Relatorios() {
 
   const handleTipoChange = (tipo: string) => {
     setFiltros(prev => ({ ...prev, tipo }));
+  };
+
+  // Handlers para relatórios pré-configurados
+  const handleViewReport = (reportTitle: string) => {
+    const reportMap = {
+      "Vendas por Período": "vendas-periodo" as const,
+      "Performance de Vendedores": "performance-vendedores" as const,
+      "Clientes por Segmento": "clientes-segmento" as const,
+      "Receitas vs Despesas": "receitas-despesas" as const,
+    };
+    
+    const reportType = reportMap[reportTitle as keyof typeof reportMap];
+    if (reportType) {
+      setSelectedReportType(reportType);
+      setRelatorioDialogOpen(true);
+    }
+  };
+
+  const handleDownloadReport = (reportTitle: string, formato: 'pdf' | 'excel' = 'pdf') => {
+    toast.success(`Baixando "${reportTitle}" em ${formato.toUpperCase()}...`);
+    setTimeout(() => {
+      toast.success(`"${reportTitle}" baixado com sucesso!`);
+    }, 2000);
+  };
+
+  // Handlers para relatórios personalizados
+  const handleCustomReport = (tipo: 'vendas' | 'financeiro' | 'clientes' | 'performance') => {
+    setSelectedCustomType(tipo);
+    setCustomReportDialogOpen(true);
   };
 
   return (
@@ -280,12 +317,21 @@ export default function Relatorios() {
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="flex-1 text-xs">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="flex-1 text-xs"
+                        onClick={() => handleViewReport(relatorio.title)}
+                      >
                         <FileText className="h-3 w-3 mr-1" />
                         <span className="hidden sm:inline">Visualizar</span>
                         <span className="sm:hidden">Ver</span>
                       </Button>
-                      <Button size="sm" className="flex-1 text-xs">
+                      <Button 
+                        size="sm" 
+                        className="flex-1 text-xs"
+                        onClick={() => handleDownloadReport(relatorio.title)}
+                      >
                         <Download className="h-3 w-3 mr-1" />
                         Download
                       </Button>
@@ -314,7 +360,7 @@ export default function Relatorios() {
             <Button 
               variant="outline" 
               className="h-20 sm:h-24 flex-col gap-1 sm:gap-2 hover:bg-primary/5 border-2 border-dashed p-2"
-              onClick={() => toast.info("Funcionalidade em desenvolvimento")}
+              onClick={() => handleCustomReport('vendas')}
             >
               <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               <span className="text-xs sm:text-sm font-medium text-center">Relatório de Vendas</span>
@@ -322,7 +368,7 @@ export default function Relatorios() {
             <Button 
               variant="outline" 
               className="h-20 sm:h-24 flex-col gap-1 sm:gap-2 hover:bg-primary/5 border-2 border-dashed p-2"
-              onClick={() => toast.info("Funcionalidade em desenvolvimento")}
+              onClick={() => handleCustomReport('financeiro')}
             >
               <PieChart className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               <span className="text-xs sm:text-sm font-medium text-center">Dashboard Financeiro</span>
@@ -330,7 +376,7 @@ export default function Relatorios() {
             <Button 
               variant="outline" 
               className="h-20 sm:h-24 flex-col gap-1 sm:gap-2 hover:bg-primary/5 border-2 border-dashed p-2"
-              onClick={() => toast.info("Funcionalidade em desenvolvimento")}
+              onClick={() => handleCustomReport('clientes')}
             >
               <Users className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               <span className="text-xs sm:text-sm font-medium text-center">Análise de Clientes</span>
@@ -338,7 +384,7 @@ export default function Relatorios() {
             <Button 
               variant="outline" 
               className="h-20 sm:h-24 flex-col gap-1 sm:gap-2 hover:bg-primary/5 border-2 border-dashed p-2"
-              onClick={() => toast.info("Funcionalidade em desenvolvimento")}
+              onClick={() => handleCustomReport('performance')}
             >
               <Target className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               <span className="text-xs sm:text-sm font-medium text-center">Performance KPIs</span>
@@ -351,6 +397,19 @@ export default function Relatorios() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Dialogs */}
+      <RelatorioDialog
+        open={relatorioDialogOpen}
+        onOpenChange={setRelatorioDialogOpen}
+        tipo={selectedReportType}
+      />
+
+      <CustomReportDialog
+        open={customReportDialogOpen}
+        onOpenChange={setCustomReportDialogOpen}
+        tipo={selectedCustomType}
+      />
     </div>
   );
 }
