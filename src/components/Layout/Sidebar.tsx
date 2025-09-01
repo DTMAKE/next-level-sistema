@@ -90,12 +90,6 @@ const modulosItems = [
     icon: Target,
     roles: ["admin", "vendedor"],
   },
-  {
-    title: "Contas a Receber",
-    url: "/contas-receber",
-    icon: TrendingUp,
-    roles: ["admin", "vendedor"],
-  },
 ];
 
 const adminItems = [
@@ -103,6 +97,12 @@ const adminItems = [
     title: "Financeiro",
     url: "/financeiro",
     icon: DollarSign,
+    roles: ["admin"],
+  },
+  {
+    title: "Contas a Receber",
+    url: "/contas-receber",
+    icon: TrendingUp,
     roles: ["admin"],
   },
   {

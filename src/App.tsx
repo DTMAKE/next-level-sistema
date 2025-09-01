@@ -153,7 +153,7 @@ const App = () => {
                    </ProtectedRoute>
                  } />
                   <Route path="/contas-receber" element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requiredRole="admin">
                       <Layout>
                         <ContasReceber />
                       </Layout>
