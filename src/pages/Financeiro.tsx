@@ -185,75 +185,6 @@ export default function Financeiro() {
         </div>
       </TooltipProvider>
 
-      {/* Ações Rápidas */}
-      <Card>
-        <CardHeader className="p-2 sm:p-3 md:p-4">
-          <CardTitle className="text-sm sm:text-base md:text-lg">Ações Rápidas</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">
-            Ferramentas financeiras mais utilizadas
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-1 sm:gap-2 md:gap-3">
-            <TransacaoDialog tipo="receita">
-              <Button variant="outline" className="h-12 sm:h-14 md:h-16 flex-col text-xs p-1 sm:p-2">
-                <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 mb-1 text-green-600 flex-shrink-0" />
-                <span className="text-center leading-tight">Lançar Receita</span>
-              </Button>
-            </TransacaoDialog>
-            
-            <TransacaoDialog tipo="despesa">
-              <Button variant="outline" className="h-12 sm:h-14 md:h-16 flex-col text-xs p-1 sm:p-2">
-                <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 mb-1 text-red-600 flex-shrink-0" />
-                <span className="text-center leading-tight">Registrar Despesa</span>
-              </Button>
-            </TransacaoDialog>
-            
-            <CategoriaDialog>
-              <Button variant="outline" className="h-12 sm:h-14 md:h-16 flex-col text-xs p-1 sm:p-2">
-                <Settings className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 mb-1 flex-shrink-0" />
-                <span className="text-center leading-tight">Gerenciar Categorias</span>
-              </Button>
-            </CategoriaDialog>
-            
-            <Button variant="outline" className="h-12 sm:h-14 md:h-16 flex-col text-xs p-1 sm:p-2" onClick={() => sincronizarVendas.mutate()} disabled={sincronizarVendas.isPending}>
-              <RefreshCw className={cn("h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 mb-1 flex-shrink-0", sincronizarVendas.isPending && "animate-spin")} />
-              <span className="text-center leading-tight">Sincronizar Vendas</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Despesas por Categoria */}
-      <Card>
-        <CardHeader className="p-2 sm:p-3 md:p-4">
-          <CardTitle className="text-sm sm:text-base md:text-lg">Despesas por Categoria</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">
-            Controle de gastos no período selecionado
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
-          {isLoadingTransacoes ? <div className="text-center text-muted-foreground text-xs sm:text-sm">Carregando...</div> : Object.keys(despesasPorCategoria).length === 0 ? <div className="text-center text-muted-foreground text-xs sm:text-sm">
-              Nenhuma despesa encontrada no período
-            </div> : <div className="space-y-1 sm:space-y-2">
-              {Object.entries(despesasPorCategoria).map(([categoria, valor]) => <div key={categoria} className="flex items-center justify-between gap-2 p-2 sm:p-3 rounded-lg border">
-                  <span className="text-xs sm:text-sm font-medium truncate flex-1">{categoria}</span>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="font-medium text-red-600 text-xs sm:text-sm flex-shrink-0 cursor-default">
-                          {shouldUseCompactFormat(Number(valor)) ? formatCompactCurrency(Number(valor)) : formatCurrency(Number(valor))}
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{formatFullCurrency(Number(valor))}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>)}
-            </div>}
-        </CardContent>
-      </Card>
 
       {/* Lista de Transações Recentes */}
       <Card>
@@ -295,6 +226,37 @@ export default function Financeiro() {
                           {transacao.tipo === 'receita' ? '+' : '-'}
                           {formatFullCurrency(Number(transacao.valor || 0))}
                         </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>)}
+            </div>}
+        </CardContent>
+      </Card>
+
+      {/* Despesas por Categoria */}
+      <Card>
+        <CardHeader className="p-2 sm:p-3 md:p-4">
+          <CardTitle className="text-sm sm:text-base md:text-lg">Despesas por Categoria</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">
+            Controle de gastos no período selecionado
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-2 sm:p-3 md:p-4 pt-0">
+          {isLoadingTransacoes ? <div className="text-center text-muted-foreground text-xs sm:text-sm">Carregando...</div> : Object.keys(despesasPorCategoria).length === 0 ? <div className="text-center text-muted-foreground text-xs sm:text-sm">
+              Nenhuma despesa encontrada no período
+            </div> : <div className="space-y-1 sm:space-y-2">
+              {Object.entries(despesasPorCategoria).map(([categoria, valor]) => <div key={categoria} className="flex items-center justify-between gap-2 p-2 sm:p-3 rounded-lg border">
+                  <span className="text-xs sm:text-sm font-medium truncate flex-1">{categoria}</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="font-medium text-red-600 text-xs sm:text-sm flex-shrink-0 cursor-default">
+                          {shouldUseCompactFormat(Number(valor)) ? formatCompactCurrency(Number(valor)) : formatCurrency(Number(valor))}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{formatFullCurrency(Number(valor))}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
