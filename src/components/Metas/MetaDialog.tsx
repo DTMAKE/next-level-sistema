@@ -21,7 +21,7 @@ interface MetaDialogProps {
 export function MetaDialog({ meta, mode = 'create', trigger, vendedorId }: MetaDialogProps) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const [selectedVendedor, setSelectedVendedor] = useState<string>(vendedorId || '');
+  const [selectedVendedor, setSelectedVendedor] = useState<string>(vendedorId || 'agency');
   const [formData, setFormData] = useState<CreateMetaData>({
     mes_ano: meta?.mes_ano || format(new Date(), 'yyyy-MM-01'),
     meta_faturamento: meta?.meta_faturamento || 50000,
@@ -41,9 +41,9 @@ export function MetaDialog({ meta, mode = 'create', trigger, vendedorId }: MetaD
     
     try {
       if (mode === 'edit' && meta) {
-        await updateMeta.mutateAsync({ id: meta.id, data: formData, vendedorId: selectedVendedor });
+        await updateMeta.mutateAsync({ id: meta.id, data: formData, vendedorId: selectedVendedor === 'agency' ? undefined : selectedVendedor });
       } else {
-        await createMeta.mutateAsync({ ...formData, vendedorId: selectedVendedor });
+        await createMeta.mutateAsync({ ...formData, vendedorId: selectedVendedor === 'agency' ? undefined : selectedVendedor });
       }
       setOpen(false);
       if (mode === 'create') {
@@ -56,7 +56,7 @@ export function MetaDialog({ meta, mode = 'create', trigger, vendedorId }: MetaD
           bonus_meta: 0,
           descricao: '',
         });
-        setSelectedVendedor('');
+        setSelectedVendedor('agency');
       }
     } catch (error) {
       // Error already handled by mutation hooks
@@ -102,7 +102,7 @@ export function MetaDialog({ meta, mode = 'create', trigger, vendedorId }: MetaD
                   <SelectValue placeholder="Selecione um vendedor ou deixe vazio para meta da agência" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Meta da Agência (Geral)</SelectItem>
+                  <SelectItem value="agency">Meta da Agência (Geral)</SelectItem>
                   {vendedores?.map((vendedor) => (
                     <SelectItem key={vendedor.id} value={vendedor.user_id}>
                       {vendedor.name} ({vendedor.role})
