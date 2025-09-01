@@ -243,45 +243,34 @@ export function useUpdateContaReceber() {
 }
 
 export function useDeleteContaReceber() {
+  const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (id: string) => {
-      console.log('Tentando deletar conta com ID:', id);
+      if (!user?.id) throw new Error('User not authenticated');
       
-      // Verificar se o usuário está autenticado
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('Usuário atual:', user?.id);
-      
-      // Verificar se a transação pertence ao usuário
+      // Verificar se a transação pertence ao usuário ou se é admin
       const { data: transacao, error: fetchError } = await supabase
         .from('transacoes_financeiras')
         .select('id, user_id, descricao')
         .eq('id', id)
         .single();
       
-      if (fetchError) {
-        console.error('Erro ao buscar transação:', fetchError);
-        throw fetchError;
-      }
+      if (fetchError) throw fetchError;
       
-      console.log('Transação encontrada:', transacao);
-      console.log('User ID da transação:', transacao?.user_id);
-      console.log('User ID atual:', user?.id);
-      console.log('User IDs coincidem?', transacao?.user_id === user?.id);
+      // Verificar permissões
+      if (user.role !== 'admin' && transacao?.user_id !== user.id) {
+        throw new Error('Você não tem permissão para excluir esta transação');
+      }
       
       const { error } = await supabase
         .from('transacoes_financeiras')
         .delete()
         .eq('id', id);
       
-      if (error) {
-        console.error('Erro ao deletar:', error);
-        throw error;
-      }
-      
-      console.log('Transação deletada com sucesso');
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
