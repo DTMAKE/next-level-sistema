@@ -76,7 +76,7 @@ export function useVendas(searchTerm?: string, page: number = 1, limit: number =
   const { user } = useAuth();
   
   return useQuery({
-    queryKey: ['vendas', user?.id, searchTerm, page, limit, selectedDate],
+    queryKey: ['vendas', user?.id, user?.role, searchTerm, page, limit, selectedDate],
     queryFn: async (): Promise<VendasResponse> => {
       if (!user?.id) throw new Error('User not authenticated');
       
@@ -88,8 +88,14 @@ export function useVendas(searchTerm?: string, page: number = 1, limit: number =
         .select(`
           *,
           cliente:clientes(id, nome, email, telefone, endereco)
-        `, { count: 'exact' })
-        .eq('user_id', user.id)
+        `, { count: 'exact' });
+
+      // Only filter by user_id if user is not admin
+      if (user.role !== 'admin') {
+        query = query.eq('user_id', user.id);
+      }
+      
+      query = query
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1);
 
@@ -129,12 +135,12 @@ export function useVenda(vendaId: string) {
   const { user } = useAuth();
   
   return useQuery({
-    queryKey: ['venda', vendaId, user?.id],
+    queryKey: ['venda', vendaId, user?.id, user?.role],
     queryFn: async () => {
       if (!user?.id) throw new Error('User not authenticated');
       if (!vendaId) throw new Error('Venda ID is required');
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('vendas')
         .select(`
           *,
@@ -147,9 +153,14 @@ export function useVenda(vendaId: string) {
             servico:servicos(id, nome, descricao, categoria)
           )
         `)
-        .eq('id', vendaId)
-        .eq('user_id', user.id)
-        .single();
+        .eq('id', vendaId);
+
+      // Only filter by user_id if user is not admin
+      if (user.role !== 'admin') {
+        query = query.eq('user_id', user.id);
+      }
+      
+      const { data, error } = await query.single();
       
       if (error) throw error;
       return data as Venda;

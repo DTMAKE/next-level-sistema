@@ -42,15 +42,22 @@ export function useLeads() {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ['leads', user?.id],
+    queryKey: ['leads', user?.id, user?.role],
     queryFn: async () => {
       if (!user) return [];
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('leads')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .select('*');
+
+      // Only filter by user_id if user is not admin
+      if (user.role !== 'admin') {
+        query = query.eq('user_id', user.id);
+      }
+      
+      query = query.order('created_at', { ascending: false });
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data as Lead[];

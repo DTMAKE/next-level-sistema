@@ -58,7 +58,7 @@ export function useContratos(searchTerm?: string) {
   const { user } = useAuth();
   
   return useQuery({
-    queryKey: ['contratos', user?.id, searchTerm],
+    queryKey: ['contratos', user?.id, user?.role, searchTerm],
     queryFn: async () => {
       if (!user?.id) throw new Error('User not authenticated');
       
@@ -67,9 +67,14 @@ export function useContratos(searchTerm?: string) {
         .select(`
           *,
           cliente:clientes(id, nome, email, telefone)
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        `);
+
+      // Only filter by user_id if user is not admin
+      if (user.role !== 'admin') {
+        query = query.eq('user_id', user.id);
+      }
+      
+      query = query.order('created_at', { ascending: false });
 
       if (searchTerm && searchTerm.trim()) {
         query = query.or(`numero_contrato.ilike.%${searchTerm}%,titulo.ilike.%${searchTerm}%,status.ilike.%${searchTerm}%`);
@@ -88,12 +93,12 @@ export function useContrato(contratoId: string) {
   const { user } = useAuth();
   
   return useQuery({
-    queryKey: ['contrato', contratoId, user?.id],
+    queryKey: ['contrato', contratoId, user?.id, user?.role],
     queryFn: async () => {
       if (!user?.id) throw new Error('User not authenticated');
       if (!contratoId) throw new Error('Contrato ID is required');
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('contratos')
         .select(`
           *,
@@ -106,9 +111,14 @@ export function useContrato(contratoId: string) {
             servico:servicos(id, nome, descricao)
           )
         `)
-        .eq('id', contratoId)
-        .eq('user_id', user.id)
-        .single();
+        .eq('id', contratoId);
+
+      // Only filter by user_id if user is not admin
+      if (user.role !== 'admin') {
+        query = query.eq('user_id', user.id);
+      }
+      
+      const { data, error } = await query.single();
       
       if (error) throw error;
       return data as any;
