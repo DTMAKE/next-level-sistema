@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { MetaDialog } from "@/components/Metas/MetaDialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { useMetas, useMetaAtual } from "@/hooks/useMetas";
+import { useMetas, useMetaAtual, useMetasVendedores } from "@/hooks/useMetas";
 import { 
   Target, 
   DollarSign, 
@@ -24,6 +24,7 @@ export default function Metas() {
   const { user } = useAuth();
   const { data: metas, isLoading } = useMetas();
   const { data: metaAtual } = useMetaAtual();
+  const { data: metasVendedores } = useMetasVendedores();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -218,12 +219,74 @@ export default function Metas() {
         </Card>
       )}
 
-      {/* Histórico de Metas */}
+      {/* Metas dos Vendedores - Só para Admin */}
+      {user?.role === 'admin' && metasVendedores && metasVendedores.length > 0 && (
+        <Card>
+          <CardHeader className="p-3 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">Metas dos Vendedores</CardTitle>
+            <CardDescription className="text-sm hidden sm:block">
+              Gerencie as metas individuais de cada vendedor
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="space-y-3 sm:space-y-4">
+              {metasVendedores.map((metaVendedor) => (
+                <div key={metaVendedor.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg hover:bg-muted/30 transition-colors gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="font-semibold text-sm sm:text-base">
+                        {metaVendedor.vendedor?.name} - {formatMonth(metaVendedor.mes_ano)}
+                      </h3>
+                      <Badge variant={metaVendedor.status === 'ativa' ? 'default' : 'secondary'} className="text-xs">
+                        {metaVendedor.status}
+                      </Badge>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Meta Vendas: </span>
+                        <span className="font-medium">{formatCurrency(Number(metaVendedor.meta_vendas))}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Meta Clientes: </span>
+                        <span className="font-medium">{metaVendedor.meta_clientes}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Bônus: </span>
+                        <span className="font-medium">{formatCurrency(Number(metaVendedor.bonus_meta || 0))}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 sm:ml-4 justify-end sm:justify-start">
+                    <MetaDialog 
+                      mode="create" 
+                      vendedorId={metaVendedor.vendedor_id}
+                      trigger={
+                        <Button size="sm" variant="outline" className="text-xs sm:text-sm">
+                          Nova Meta
+                        </Button>
+                      } 
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Histórico de Metas da Agência */}
       <Card>
         <CardHeader className="p-3 sm:p-6">
-          <CardTitle className="text-base sm:text-lg">Histórico de Metas</CardTitle>
+          <CardTitle className="text-base sm:text-lg">
+            {user?.role === 'admin' ? 'Metas da Agência' : 'Histórico de Metas'}
+          </CardTitle>
           <CardDescription className="text-sm hidden sm:block">
-            Visualize todas as metas criadas
+            {user?.role === 'admin' 
+              ? 'Metas gerais de faturamento da agência'
+              : 'Visualize todas as metas criadas'
+            }
           </CardDescription>
         </CardHeader>
         <CardContent className="p-3 sm:p-6 pt-0">

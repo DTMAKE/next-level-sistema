@@ -27,6 +27,7 @@ export interface CreateMetaData {
   meta_contratos: number;
   bonus_meta?: number;
   descricao?: string;
+  vendedorId?: string;
 }
 
 export interface ProgressoMeta {
@@ -243,21 +244,42 @@ export function useCreateMeta() {
         throw new Error('Apenas administradores podem criar metas');
       }
 
-      const { data: meta, error } = await supabase
-        .from('metas_faturamento')
-        .insert({
-          ...data,
-          user_id: user.id,
-        })
-        .select()
-        .single();
+      // If vendedorId is provided, create meta for specific salesperson
+      if (data.vendedorId) {
+        const { data: meta, error } = await supabase
+          .from('metas_vendedores')
+          .insert({
+            user_id: user.id, // Admin who created the goal
+            vendedor_id: data.vendedorId, // Salesperson for whom the goal is set
+            mes_ano: data.mes_ano,
+            meta_vendas: data.meta_faturamento, // Using faturamento as vendas for salesperson
+            meta_clientes: data.meta_novos_clientes,
+            bonus_meta: data.bonus_meta,
+          })
+          .select()
+          .single();
 
-      if (error) throw error;
-      return meta;
+        if (error) throw error;
+        return meta;
+      } else {
+        // Create agency-wide meta
+        const { data: meta, error } = await supabase
+          .from('metas_faturamento')
+          .insert({
+            ...data,
+            user_id: user.id,
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        return meta;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['metas'] });
       queryClient.invalidateQueries({ queryKey: ['meta-atual'] });
+      queryClient.invalidateQueries({ queryKey: ['metas-vendedores'] });
       toast({
         title: 'Meta criada',
         description: 'A meta foi criada com sucesso.',
@@ -278,7 +300,8 @@ export function useUpdateMeta() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateMetaData> }) => {
+    mutationFn: async ({ id, data, vendedorId }: { id: string; data: Partial<CreateMetaData>; vendedorId?: string }) => {
+      // Update in metas_faturamento (agency goals)
       const { data: meta, error } = await supabase
         .from('metas_faturamento')
         .update(data)
@@ -292,6 +315,7 @@ export function useUpdateMeta() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['metas'] });
       queryClient.invalidateQueries({ queryKey: ['meta-atual'] });
+      queryClient.invalidateQueries({ queryKey: ['metas-vendedores'] });
       toast({
         title: 'Meta atualizada',
         description: 'A meta foi atualizada com sucesso.',
@@ -304,5 +328,44 @@ export function useUpdateMeta() {
         variant: 'destructive',
       });
     },
+  });
+}
+
+// Hook para buscar metas dos vendedores
+export function useMetasVendedores() {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['metas-vendedores'],
+    queryFn: async () => {
+      if (!user || user.role !== 'admin') {
+        return [];
+      }
+
+      // First get metas_vendedores
+      const { data: metas, error: metasError } = await supabase
+        .from('metas_vendedores')
+        .select('*')
+        .order('mes_ano', { ascending: false });
+
+      if (metasError) throw metasError;
+      if (!metas || metas.length === 0) return [];
+
+      // Get vendedor profiles separately
+      const vendedorIds = [...new Set(metas.map(meta => meta.vendedor_id))];
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, name, role')
+        .in('user_id', vendedorIds);
+
+      if (profilesError) throw profilesError;
+
+      // Combine the data
+      return metas.map(meta => ({
+        ...meta,
+        vendedor: profiles?.find(p => p.user_id === meta.vendedor_id) || { name: 'Vendedor não encontrado', role: 'vendedor' }
+      }));
+    },
+    enabled: !!user && user.role === 'admin',
   });
 }

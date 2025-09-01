@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCreateMeta, useUpdateMeta, type MetaFaturamento, type CreateMetaData } from "@/hooks/useMetas";
+import { useVendedores } from "@/hooks/useVendedores";
+import { useAuth } from "@/contexts/AuthContext";
 import { Plus, Edit, Target, DollarSign, Users, FileText, Award } from "lucide-react";
 import { format } from "date-fns";
 
@@ -12,10 +15,13 @@ interface MetaDialogProps {
   meta?: MetaFaturamento;
   mode?: 'create' | 'edit';
   trigger?: React.ReactNode;
+  vendedorId?: string;
 }
 
-export function MetaDialog({ meta, mode = 'create', trigger }: MetaDialogProps) {
+export function MetaDialog({ meta, mode = 'create', trigger, vendedorId }: MetaDialogProps) {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
+  const [selectedVendedor, setSelectedVendedor] = useState<string>(vendedorId || '');
   const [formData, setFormData] = useState<CreateMetaData>({
     mes_ano: meta?.mes_ano || format(new Date(), 'yyyy-MM-01'),
     meta_faturamento: meta?.meta_faturamento || 50000,
@@ -28,15 +34,16 @@ export function MetaDialog({ meta, mode = 'create', trigger }: MetaDialogProps) 
 
   const createMeta = useCreateMeta();
   const updateMeta = useUpdateMeta();
+  const { data: vendedores } = useVendedores();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
       if (mode === 'edit' && meta) {
-        await updateMeta.mutateAsync({ id: meta.id, data: formData });
+        await updateMeta.mutateAsync({ id: meta.id, data: formData, vendedorId: selectedVendedor });
       } else {
-        await createMeta.mutateAsync(formData);
+        await createMeta.mutateAsync({ ...formData, vendedorId: selectedVendedor });
       }
       setOpen(false);
       if (mode === 'create') {
@@ -49,6 +56,7 @@ export function MetaDialog({ meta, mode = 'create', trigger }: MetaDialogProps) 
           bonus_meta: 0,
           descricao: '',
         });
+        setSelectedVendedor('');
       }
     } catch (error) {
       // Error already handled by mutation hooks
@@ -85,6 +93,26 @@ export function MetaDialog({ meta, mode = 'create', trigger }: MetaDialogProps) 
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Seleção de Vendedor para Admin */}
+          {user?.role === 'admin' && mode === 'create' && (
+            <div>
+              <Label htmlFor="vendedor">Para quem é esta meta?</Label>
+              <Select value={selectedVendedor} onValueChange={setSelectedVendedor}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um vendedor ou deixe vazio para meta da agência" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Meta da Agência (Geral)</SelectItem>
+                  {vendedores?.map((vendedor) => (
+                    <SelectItem key={vendedor.id} value={vendedor.user_id}>
+                      {vendedor.name} ({vendedor.role})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="mes_ano">Mês/Ano *</Label>
