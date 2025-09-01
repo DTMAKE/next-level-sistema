@@ -202,17 +202,42 @@ export function useUpdateContaReceber() {
         .eq('id', id);
       
       if (error) throw error;
+      return { id, data };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
+    onMutate: async ({ id, data }) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries({ queryKey: ['contas-receber'] });
+
+      // Snapshot the previous value
+      const previousContas = queryClient.getQueriesData({ queryKey: ['contas-receber'] });
+
+      // Optimistically update to the new value
+      queryClient.setQueriesData({ queryKey: ['contas-receber'] }, (old: ContaReceber[] | undefined) => {
+        if (!old) return old;
+        return old.map(conta => 
+          conta.id === id ? { ...conta, ...data } : conta
+        );
+      });
+
+      // Return a context object with the snapshotted value
+      return { previousContas };
     },
-    onError: (error: any) => {
-      console.error('Error updating conta a receber:', error);
+    onError: (err, variables, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousContas) {
+        context.previousContas.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
       toast({
         title: "Erro",
         description: "Erro ao atualizar conta a receber.",
         variant: "destructive",
       });
+    },
+    onSettled: () => {
+      // Always refetch after error or success to make sure we have the latest data
+      queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
     },
   });
 }
