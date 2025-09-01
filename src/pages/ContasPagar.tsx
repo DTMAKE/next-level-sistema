@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { TrendingDown, Search, Filter, Plus, Edit, Eye, Calendar, DollarSign, Check, Grid, List, MoreVertical, Trash2, FileText, CreditCard, Download } from "lucide-react";
+import { TrendingDown, Search, Filter, Plus, Edit, Eye, Calendar, DollarSign, Check, Grid, List, MoreVertical, Trash2, FileText, CreditCard, Download, Building2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -73,6 +73,10 @@ export default function ContasPagar() {
   const getFormaPagamentoLabel = (forma: string, parcelas: number, parcelaAtual: number) => {
     if (forma === 'a_vista') return 'À Vista';
     return `${parcelaAtual}/${parcelas}x`;
+  };
+
+  const isComissaoTransaction = (descricao: string) => {
+    return descricao?.toLowerCase().includes('comissão');
   };
 
   const handleMarcarComoPaga = (conta: any) => {
@@ -325,7 +329,11 @@ export default function ContasPagar() {
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            <DollarSign className="h-4 w-4 text-red-600 shrink-0" />
+                            {isComissaoTransaction(conta.descricao || '') ? (
+                              <Building2 className="h-4 w-4 text-purple-600 shrink-0" />
+                            ) : (
+                              <DollarSign className="h-4 w-4 text-red-600 shrink-0" />
+                            )}
                             <h3 className="font-semibold text-base truncate">
                               {conta.descricao || 'Despesa sem descrição'}
                             </h3>
@@ -351,6 +359,12 @@ export default function ContasPagar() {
                             <div className="flex items-center gap-2">
                               <FileText className="h-4 w-4 shrink-0" />
                               <span className="text-xs">Possui comprovante</span>
+                            </div>
+                          )}
+                          {isComissaoTransaction(conta.descricao || '') && (
+                            <div className="flex items-center gap-2">
+                              <Building2 className="h-3 w-3 text-purple-600" />
+                              <span className="text-xs text-purple-600 font-medium">Comissão de Contrato</span>
                             </div>
                           )}
                         </div>

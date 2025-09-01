@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { TrendingUp, Search, Filter, Plus, Calendar, DollarSign, Check, Grid, List, Trash2, FileText, CreditCard, Download, ShoppingCart, UserCheck } from "lucide-react";
+import { TrendingUp, Search, Filter, Plus, Calendar, DollarSign, Check, Grid, List, Trash2, FileText, CreditCard, Download, ShoppingCart, UserCheck, Building2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -72,6 +72,10 @@ export default function ContasReceber() {
   const getFormaPagamentoLabel = (forma: string, parcelas: number, parcelaAtual: number) => {
     if (forma === 'a_vista') return 'À Vista';
     return `${parcelaAtual}/${parcelas}x`;
+  };
+
+  const isContratoTransaction = (descricao: string) => {
+    return descricao?.toLowerCase().includes('contrato');
   };
 
   const handleMarcarComoRecebida = (conta: any) => {
@@ -320,7 +324,11 @@ export default function ContasReceber() {
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            <TrendingUp className="h-4 w-4 text-green-600 shrink-0" />
+                            {isContratoTransaction(conta.descricao || '') ? (
+                              <Building2 className="h-4 w-4 text-blue-600 shrink-0" />
+                            ) : (
+                              <TrendingUp className="h-4 w-4 text-green-600 shrink-0" />
+                            )}
                             <h3 className="font-semibold text-base truncate">
                               {conta.descricao || 'Receita sem descrição'}
                             </h3>
@@ -341,6 +349,12 @@ export default function ContasReceber() {
                             <div className="flex items-center gap-2">
                               <ShoppingCart className="h-3 w-3 text-blue-600" />
                               <span className="text-xs">Cliente: {conta.vendas.clientes.nome}</span>
+                            </div>
+                          )}
+                          {isContratoTransaction(conta.descricao || '') && (
+                            <div className="flex items-center gap-2">
+                              <Building2 className="h-3 w-3 text-blue-600" />
+                              <span className="text-xs text-blue-600 font-medium">Receita de Contrato</span>
                             </div>
                           )}
                         </div>
