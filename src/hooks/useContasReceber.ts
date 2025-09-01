@@ -248,12 +248,40 @@ export function useDeleteContaReceber() {
   
   return useMutation({
     mutationFn: async (id: string) => {
+      console.log('Tentando deletar conta com ID:', id);
+      
+      // Verificar se o usuário está autenticado
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('Usuário atual:', user?.id);
+      
+      // Verificar se a transação pertence ao usuário
+      const { data: transacao, error: fetchError } = await supabase
+        .from('transacoes_financeiras')
+        .select('id, user_id, descricao')
+        .eq('id', id)
+        .single();
+      
+      if (fetchError) {
+        console.error('Erro ao buscar transação:', fetchError);
+        throw fetchError;
+      }
+      
+      console.log('Transação encontrada:', transacao);
+      console.log('User ID da transação:', transacao?.user_id);
+      console.log('User ID atual:', user?.id);
+      console.log('User IDs coincidem?', transacao?.user_id === user?.id);
+      
       const { error } = await supabase
         .from('transacoes_financeiras')
         .delete()
         .eq('id', id);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao deletar:', error);
+        throw error;
+      }
+      
+      console.log('Transação deletada com sucesso');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
