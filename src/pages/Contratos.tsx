@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Search, Plus, FileText, Calendar, DollarSign, Edit, Trash2, User, MoreVertical, Grid, List } from "lucide-react";
 import { useContratos, type Contrato } from "@/hooks/useContratos";
 import { ContratoDialog } from "@/components/Contratos/ContratoDialog";
+import { ContratoRecorrenteBadge } from "@/components/Contratos/ContratoRecorrenteBadge";
 import { DeleteContratoDialog } from "@/components/Contratos/DeleteContratoDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -207,17 +208,23 @@ export default function Contratos() {
                       onClick={() => navigate(`/contratos/${contrato.id}`)}
                     >
                       <div className="flex flex-col gap-3">
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-4 w-4 text-accent shrink-0" />
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="font-semibold text-base truncate">
-                              {contrato.numero_contrato || `Contrato #${contrato.id.slice(-8)}`}
-                            </h3>
-                            <Badge className={getStatusColor(contrato.status)}>
-                              {getStatusLabel(contrato.status)}
-                            </Badge>
-                          </div>
-                        </div>
+                         <div className="flex items-center gap-3">
+                           <FileText className="h-4 w-4 text-accent shrink-0" />
+                           <div className="flex items-center gap-2 flex-wrap">
+                             <h3 className="font-semibold text-base truncate">
+                               {contrato.numero_contrato || `Contrato #${contrato.id.slice(-8)}`}
+                             </h3>
+                             <div className="flex gap-1">
+                               <Badge className={getStatusColor(contrato.status)}>
+                                 {getStatusLabel(contrato.status)}
+                               </Badge>
+                               <ContratoRecorrenteBadge 
+                                 tipoContrato={contrato.tipo_contrato || 'unico'}
+                                 valor={contrato.valor}
+                               />
+                             </div>
+                           </div>
+                         </div>
                         
                         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
@@ -286,17 +293,23 @@ export default function Contratos() {
                           className="cursor-pointer hover:bg-muted/50"
                           onClick={() => navigate(`/contratos/${contrato.id}`)}
                         >
-                          <TableCell className="font-medium">
-                            <div className="flex items-center gap-3">
-                              <FileText className="h-4 w-4 text-accent" />
-                              <div className="flex flex-col gap-1">
-                                <span>{contrato.numero_contrato || `Contrato #${contrato.id.slice(-8)}`}</span>
-                                <Badge className={getStatusColor(contrato.status)} variant="secondary">
-                                  {getStatusLabel(contrato.status)}
-                                </Badge>
-                              </div>
-                            </div>
-                          </TableCell>
+                           <TableCell className="font-medium">
+                             <div className="flex items-center gap-3">
+                               <FileText className="h-4 w-4 text-accent" />
+                               <div className="flex flex-col gap-1">
+                                 <span>{contrato.numero_contrato || `Contrato #${contrato.id.slice(-8)}`}</span>
+                                 <div className="flex gap-1">
+                                   <Badge className={getStatusColor(contrato.status)} variant="secondary">
+                                     {getStatusLabel(contrato.status)}
+                                   </Badge>
+                                   <ContratoRecorrenteBadge 
+                                     tipoContrato={contrato.tipo_contrato || 'unico'}
+                                     valor={contrato.valor}
+                                   />
+                                 </div>
+                               </div>
+                             </div>
+                           </TableCell>
                           <TableCell>{contrato.cliente?.nome || 'Cliente não encontrado'}</TableCell>
                           <TableCell>
                             {new Date(contrato.data_inicio).toLocaleDateString()}

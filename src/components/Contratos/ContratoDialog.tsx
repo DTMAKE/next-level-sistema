@@ -27,6 +27,9 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
     data_inicio: "",
     data_fim: "",
     status: "ativo" as "ativo" | "suspenso" | "cancelado" | "finalizado",
+    tipo_contrato: "unico" as "unico" | "recorrente",
+    dia_vencimento: 1,
+    observacoes: "",
     cliente_id: "",
   });
   const [servicosSelecionados, setServicosSelecionados] = useState<any[]>([]);
@@ -38,6 +41,9 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
         data_inicio: contrato.data_inicio || "",
         data_fim: contrato.data_fim || "",
         status: contrato.status || "ativo",
+        tipo_contrato: contrato.tipo_contrato || "unico",
+        dia_vencimento: contrato.dia_vencimento || 1,
+        observacoes: contrato.observacoes || "",
         cliente_id: contrato.cliente_id || "",
       });
       setPdfUrl((contrato as any).pdf_url || null);
@@ -46,6 +52,9 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
         data_inicio: "",
         data_fim: "",
         status: "ativo",
+        tipo_contrato: "unico",
+        dia_vencimento: 1,
+        observacoes: "",
         cliente_id: "",
       });
       setPdfUrl(null);
@@ -71,6 +80,9 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
       data_inicio: formData.data_inicio,
       data_fim: formData.data_fim || undefined,
       status: formData.status,
+      tipo_contrato: formData.tipo_contrato,
+      dia_vencimento: formData.dia_vencimento,
+      observacoes: formData.observacoes || undefined,
       cliente_id: formData.cliente_id,
       valor: valorTotalServicos,
       pdf_url: pdfUrl,
@@ -122,6 +134,24 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
               onClienteChange={(value) => handleInputChange("cliente_id", value)}
             />
 
+            <div className="space-y-2">
+              <Label htmlFor="tipo_contrato">Tipo de Contrato</Label>
+              <Select value={formData.tipo_contrato} onValueChange={(value) => handleInputChange("tipo_contrato", value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unico">Único (Pagamento único)</SelectItem>
+                  <SelectItem value="recorrente">Recorrente (Mensal)</SelectItem>
+                </SelectContent>
+              </Select>
+              {formData.tipo_contrato === 'recorrente' && (
+                <p className="text-sm text-muted-foreground">
+                  O valor será cobrado mensalmente até o fim do contrato
+                </p>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label htmlFor="data_inicio">Data de Início</Label>
@@ -134,7 +164,7 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="data_fim">Data de Fim</Label>
+                <Label htmlFor="data_fim">Data de Fim {formData.tipo_contrato === 'recorrente' ? '(Opcional)' : ''}</Label>
                 <Input
                   id="data_fim"
                   type="date"
@@ -143,6 +173,22 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
                 />
               </div>
             </div>
+
+            {formData.tipo_contrato === 'recorrente' && (
+              <div className="space-y-2">
+                <Label htmlFor="dia_vencimento">Dia do Vencimento Mensal</Label>
+                <Select value={formData.dia_vencimento?.toString()} onValueChange={(value) => handleInputChange("dia_vencimento", value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                      <SelectItem key={day} value={day.toString()}>Dia {day}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
@@ -157,6 +203,17 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
                   <SelectItem value="finalizado">Finalizado</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="observacoes">Observações</Label>
+              <Textarea
+                id="observacoes"
+                value={formData.observacoes}
+                onChange={(e) => handleInputChange("observacoes", e.target.value)}
+                placeholder="Observações sobre o contrato..."
+                className="min-h-[80px]"
+              />
             </div>
 
             <ServicosSelector
