@@ -126,13 +126,45 @@ export default function Contratos() {
       return { total: 1, pendentes: 0, pagas: 1 };
     }
 
-    // For recurring contracts, we don't have parcela details anymore
-    // Show as "Ativo" for active contracts
-    return {
-      total: 0,
-      pendentes: contrato.status === 'ativo' ? 1 : 0,
-      pagas: 0
-    };
+    // For recurring contracts, calculate parcels based on period
+    if (contrato.tipo_contrato === 'recorrente' && contrato.data_inicio && contrato.data_fim) {
+      const startDate = new Date(contrato.data_inicio);
+      const endDate = new Date(contrato.data_fim);
+      
+      // Calculate number of months between start and end dates
+      const yearDiff = endDate.getFullYear() - startDate.getFullYear();
+      const monthDiff = endDate.getMonth() - startDate.getMonth();
+      const totalMonths = yearDiff * 12 + monthDiff + 1; // +1 to include the start month
+      
+      const today = new Date();
+      const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const startMonth = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+      
+      // Calculate how many parcels should be paid by now
+      let monthsPassed = 0;
+      if (currentMonth >= startMonth) {
+        const passedYearDiff = currentMonth.getFullYear() - startMonth.getFullYear();
+        const passedMonthDiff = currentMonth.getMonth() - startMonth.getMonth();
+        monthsPassed = Math.min(passedYearDiff * 12 + passedMonthDiff + 1, totalMonths);
+      }
+      
+      return {
+        total: totalMonths,
+        pendentes: Math.max(0, monthsPassed - 0), // Assuming none are marked as paid yet
+        pagas: 0 // This would need to be calculated from actual payment records
+      };
+    }
+
+    // Fallback for recurring contracts without end date
+    if (contrato.tipo_contrato === 'recorrente') {
+      return {
+        total: 0, // Indefinite
+        pendentes: contrato.status === 'ativo' ? 1 : 0,
+        pagas: 0
+      };
+    }
+
+    return { total: 0, pendentes: 0, pagas: 0 };
   };
 
   if (error) {
