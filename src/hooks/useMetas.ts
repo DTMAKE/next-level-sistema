@@ -244,17 +244,21 @@ export function useCreateMeta() {
         throw new Error('Apenas administradores podem criar metas');
       }
 
-      // If vendedorId is provided, create meta for specific salesperson
+      // If vendedorId is provided, create/update meta for specific salesperson
       if (data.vendedorId) {
+        // Use UPSERT to handle existing records
         const { data: meta, error } = await supabase
           .from('metas_vendedores')
-          .insert({
+          .upsert({
             user_id: user.id, // Admin who created the goal
             vendedor_id: data.vendedorId, // Salesperson for whom the goal is set
             mes_ano: data.mes_ano,
             meta_vendas: data.meta_faturamento, // Using faturamento as vendas for salesperson
             meta_clientes: data.meta_novos_clientes,
             bonus_meta: data.bonus_meta,
+          }, {
+            onConflict: 'vendedor_id,mes_ano',
+            ignoreDuplicates: false
           })
           .select()
           .single();
@@ -262,12 +266,15 @@ export function useCreateMeta() {
         if (error) throw error;
         return meta;
       } else {
-        // Create agency-wide meta
+        // Create agency-wide meta with UPSERT as well
         const { data: meta, error } = await supabase
           .from('metas_faturamento')
-          .insert({
+          .upsert({
             ...data,
             user_id: user.id,
+          }, {
+            onConflict: 'user_id,mes_ano',
+            ignoreDuplicates: false
           })
           .select()
           .single();
@@ -281,13 +288,13 @@ export function useCreateMeta() {
       queryClient.invalidateQueries({ queryKey: ['meta-atual'] });
       queryClient.invalidateQueries({ queryKey: ['metas-vendedores'] });
       toast({
-        title: 'Meta criada',
-        description: 'A meta foi criada com sucesso.',
+        title: 'Meta criada/atualizada',
+        description: 'A meta foi salva com sucesso.',
       });
     },
     onError: (error) => {
       toast({
-        title: 'Erro ao criar meta',
+        title: 'Erro ao salvar meta',
         description: error.message,
         variant: 'destructive',
       });
