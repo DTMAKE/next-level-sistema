@@ -152,13 +152,13 @@ const App = () => {
                      </Layout>
                    </ProtectedRoute>
                  } />
-                 <Route path="/contas-receber" element={
-                   <ProtectedRoute requiredRole="admin">
-                     <Layout>
-                       <ContasReceber />
-                     </Layout>
-                   </ProtectedRoute>
-                 } />
+                  <Route path="/contas-receber" element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ContasReceber />
+                      </Layout>
+                    </ProtectedRoute>
+                  } />
                  <Route path="/contas-pagar" element={
                    <ProtectedRoute requiredRole="admin">
                      <Layout>
