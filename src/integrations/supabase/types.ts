@@ -265,6 +265,7 @@ export type Database = {
       }
       comissoes: {
         Row: {
+          contrato_id: string | null
           created_at: string
           data_pagamento: string | null
           id: string
@@ -276,10 +277,11 @@ export type Database = {
           user_id: string
           valor_comissao: number
           valor_venda: number
-          venda_id: string
+          venda_id: string | null
           vendedor_id: string
         }
         Insert: {
+          contrato_id?: string | null
           created_at?: string
           data_pagamento?: string | null
           id?: string
@@ -291,10 +293,11 @@ export type Database = {
           user_id: string
           valor_comissao: number
           valor_venda: number
-          venda_id: string
+          venda_id?: string | null
           vendedor_id: string
         }
         Update: {
+          contrato_id?: string | null
           created_at?: string
           data_pagamento?: string | null
           id?: string
@@ -306,7 +309,7 @@ export type Database = {
           user_id?: string
           valor_comissao?: number
           valor_venda?: number
-          venda_id?: string
+          venda_id?: string | null
           vendedor_id?: string
         }
         Relationships: []
@@ -363,10 +366,13 @@ export type Database = {
           data_fim: string | null
           data_inicio: string
           descricao: string | null
+          dia_vencimento: number | null
           id: string
           numero_contrato: string | null
+          observacoes: string | null
           pdf_url: string | null
           status: string
+          tipo_contrato: string | null
           titulo: string | null
           updated_at: string
           user_id: string
@@ -378,10 +384,13 @@ export type Database = {
           data_fim?: string | null
           data_inicio: string
           descricao?: string | null
+          dia_vencimento?: number | null
           id?: string
           numero_contrato?: string | null
+          observacoes?: string | null
           pdf_url?: string | null
           status?: string
+          tipo_contrato?: string | null
           titulo?: string | null
           updated_at?: string
           user_id: string
@@ -393,10 +402,13 @@ export type Database = {
           data_fim?: string | null
           data_inicio?: string
           descricao?: string | null
+          dia_vencimento?: number | null
           id?: string
           numero_contrato?: string | null
+          observacoes?: string | null
           pdf_url?: string | null
           status?: string
+          tipo_contrato?: string | null
           titulo?: string | null
           updated_at?: string
           user_id?: string
@@ -411,6 +423,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      contratos_recorrencias: {
+        Row: {
+          contrato_id: string
+          created_at: string
+          data_processamento: string | null
+          id: string
+          mes_referencia: string
+          status: string
+          updated_at: string
+          valor_mes: number
+        }
+        Insert: {
+          contrato_id: string
+          created_at?: string
+          data_processamento?: string | null
+          id?: string
+          mes_referencia: string
+          status?: string
+          updated_at?: string
+          valor_mes?: number
+        }
+        Update: {
+          contrato_id?: string
+          created_at?: string
+          data_processamento?: string | null
+          id?: string
+          mes_referencia?: string
+          status?: string
+          updated_at?: string
+          valor_mes?: number
+        }
+        Relationships: []
       }
       dashboard_images: {
         Row: {
@@ -1063,6 +1108,10 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      cancel_future_contract_accounts: {
+        Args: { p_contrato_id: string }
+        Returns: undefined
+      }
       create_default_kanban_columns: {
         Args: { projeto_id: string; user_id: string }
         Returns: undefined
@@ -1071,12 +1120,20 @@ export type Database = {
         Args: { client_id: string; client_name: string }
         Returns: string
       }
+      generate_future_receivables_and_payables: {
+        Args: { p_contrato_id: string }
+        Returns: undefined
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
       mark_commission_as_paid: {
         Args: { p_comissao_id: string }
+        Returns: undefined
+      }
+      process_contract_recurrences: {
+        Args: { target_month?: string }
         Returns: undefined
       }
       sync_all_commissions_to_financial: {
