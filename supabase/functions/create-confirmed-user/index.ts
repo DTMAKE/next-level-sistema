@@ -74,7 +74,7 @@ serve(async (req) => {
       )
     }
 
-    const { email, password, name, role, percentualComissao, metaMensal } = await req.json()
+    const { email, password, name, role, percentualComissao, percentualComissaoContrato, metaMensal } = await req.json()
 
     // Create user with admin client (already confirmed)
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -85,6 +85,7 @@ serve(async (req) => {
         name,
         role,
         percentual_comissao: percentualComissao,
+        percentual_comissao_contrato: percentualComissaoContrato,
         meta_mensal: metaMensal
       }
     })

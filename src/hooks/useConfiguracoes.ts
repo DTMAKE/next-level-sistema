@@ -12,6 +12,7 @@ export interface UserProfile {
   email?: string;
   created_at: string;
   percentual_comissao?: number;
+  percentual_comissao_contrato?: number;
   meta_mensal?: number;
   telefone?: string;
   endereco?: string;
@@ -34,7 +35,7 @@ export function useUsuarios() {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, user_id, name, role, percentual_comissao, meta_mensal, telefone, endereco, avatar_url, created_at, updated_at')
+        .select('id, user_id, name, role, percentual_comissao, percentual_comissao_contrato, meta_mensal, telefone, endereco, avatar_url, created_at, updated_at')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -89,16 +90,19 @@ export function useAtualizarConfigUsuario() {
     mutationFn: async ({ 
       userId, 
       percentualComissao, 
+      percentualComissaoContrato,
       metaMensal 
     }: { 
       userId: string; 
       percentualComissao?: number; 
+      percentualComissaoContrato?: number;
       metaMensal?: number; 
     }) => {
       const { data, error } = await supabase
         .from('profiles')
         .update({ 
           percentual_comissao: percentualComissao,
+          percentual_comissao_contrato: percentualComissaoContrato,
           meta_mensal: metaMensal
         })
         .eq('user_id', userId)
@@ -189,6 +193,7 @@ export function useCriarUsuario() {
       name, 
       role = 'vendedor',
       percentualComissao = 5.00,
+      percentualComissaoContrato = 1.00,
       metaMensal = 10000.00
     }: { 
       email: string; 
@@ -196,6 +201,7 @@ export function useCriarUsuario() {
       name: string; 
       role?: 'admin' | 'vendedor';
       percentualComissao?: number;
+      percentualComissaoContrato?: number;
       metaMensal?: number;
     }) => {
       if (!user || user.role !== 'admin') {
@@ -221,6 +227,7 @@ export function useCriarUsuario() {
           name,
           role,
           percentualComissao,
+          percentualComissaoContrato,
           metaMensal
         }),
       });

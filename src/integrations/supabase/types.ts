@@ -730,6 +730,7 @@ export type Database = {
           meta_mensal: number | null
           name: string | null
           percentual_comissao: number | null
+          percentual_comissao_contrato: number | null
           role: string | null
           telefone: string | null
           updated_at: string
@@ -743,6 +744,7 @@ export type Database = {
           meta_mensal?: number | null
           name?: string | null
           percentual_comissao?: number | null
+          percentual_comissao_contrato?: number | null
           role?: string | null
           telefone?: string | null
           updated_at?: string
@@ -756,6 +758,7 @@ export type Database = {
           meta_mensal?: number | null
           name?: string | null
           percentual_comissao?: number | null
+          percentual_comissao_contrato?: number | null
           role?: string | null
           telefone?: string | null
           updated_at?: string

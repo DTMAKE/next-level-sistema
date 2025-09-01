@@ -21,6 +21,7 @@ export function UserDialog({ user, mode = 'create', trigger }: UserDialogProps) 
     password: '',
     role: user?.role || 'vendedor',
     percentualComissao: user?.percentual_comissao || 5.00,
+    percentualComissaoContrato: user?.percentual_comissao_contrato || 1.00,
     metaMensal: user?.meta_mensal || 10000.00,
   });
 
@@ -38,6 +39,7 @@ export function UserDialog({ user, mode = 'create', trigger }: UserDialogProps) 
           name: formData.name,
           role: formData.role as 'admin' | 'vendedor',
           percentualComissao: formData.percentualComissao,
+          percentualComissaoContrato: formData.percentualComissaoContrato,
           metaMensal: formData.metaMensal,
         });
         setFormData({
@@ -46,12 +48,14 @@ export function UserDialog({ user, mode = 'create', trigger }: UserDialogProps) 
           password: '',
           role: 'vendedor',
           percentualComissao: 5.00,
+          percentualComissaoContrato: 1.00,
           metaMensal: 10000.00,
         });
       } else if (user) {
         await atualizarConfig.mutateAsync({
           userId: user.user_id,
           percentualComissao: formData.percentualComissao,
+          percentualComissaoContrato: formData.percentualComissaoContrato,
           metaMensal: formData.metaMensal,
         });
       }
@@ -155,7 +159,7 @@ export function UserDialog({ user, mode = 'create', trigger }: UserDialogProps) 
               <div>
                 <Label htmlFor="percentualComissao" className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4" />
-                  Percentual de Comissão (%)
+                  Percentual de Comissão - Vendas (%)
                 </Label>
                 <Input
                   id="percentualComissao"
@@ -167,6 +171,25 @@ export function UserDialog({ user, mode = 'create', trigger }: UserDialogProps) 
                   onChange={(e) => setFormData({ 
                     ...formData, 
                     percentualComissao: parseFloat(e.target.value) || 0 
+                  })}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="percentualComissaoContrato" className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  Comissão por Contrato Ativo (%)
+                </Label>
+                <Input
+                  id="percentualComissaoContrato"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={formData.percentualComissaoContrato}
+                  onChange={(e) => setFormData({ 
+                    ...formData, 
+                    percentualComissaoContrato: parseFloat(e.target.value) || 0 
                   })}
                 />
               </div>
