@@ -4,8 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, User, Phone, Mail, Building, X } from "lucide-react";
+import { Search, User, Phone, Mail, Building, X, Plus } from "lucide-react";
 import { useClientes } from "@/hooks/useClientes";
+import { ClienteDialog } from "@/components/Clientes/ClienteDialog";
 
 interface Cliente {
   id: string;
@@ -22,6 +23,7 @@ interface ClientesSelectorProps {
 
 export function ClientesSelector({ clienteId, onClienteChange }: ClientesSelectorProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [clienteDialogOpen, setClienteDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: clientesResponse, isLoading } = useClientes(searchTerm);
@@ -36,6 +38,11 @@ export function ClientesSelector({ clienteId, onClienteChange }: ClientesSelecto
 
   const limparSelecao = () => {
     onClienteChange("");
+  };
+
+  const handleNovoClienteCriado = () => {
+    setClienteDialogOpen(false);
+    // A query será invalidada automaticamente pelo hook de criação
   };
 
   return (
@@ -60,14 +67,25 @@ export function ClientesSelector({ clienteId, onClienteChange }: ClientesSelecto
           </DialogHeader>
           
           <div className="space-y-4 flex-1 min-h-0">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Pesquisar por nome, email ou telefone..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 h-10"
-              />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Pesquisar por nome, email ou telefone..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 h-10"
+                />
+              </div>
+              <Button
+                variant="outline"
+                size="default"
+                onClick={() => setClienteDialogOpen(true)}
+                className="h-10 px-3 whitespace-nowrap"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Cliente
+              </Button>
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-3 min-h-0">
@@ -130,6 +148,15 @@ export function ClientesSelector({ clienteId, onClienteChange }: ClientesSelecto
         </DialogContent>
       </Dialog>
 
+      <ClienteDialog
+        open={clienteDialogOpen}
+        onOpenChange={(open) => {
+          setClienteDialogOpen(open);
+          if (!open) {
+            handleNovoClienteCriado();
+          }
+        }}
+      />
     </div>
   );
 }
