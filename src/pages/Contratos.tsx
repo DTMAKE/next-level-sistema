@@ -123,17 +123,15 @@ export default function Contratos() {
 
   const getParcelasInfo = (contrato: Contrato) => {
     if (contrato.tipo_contrato === 'unico') {
-      return { total: 1, pendentes: 0, pagas: 0 };
+      return { total: 1, pendentes: 0, pagas: 1 };
     }
 
-    const parcelas = contrato.parcelas || [];
-    const pendentes = parcelas.filter(p => p.status_parcela === 'pendente').length;
-    const pagas = parcelas.filter(p => p.status_parcela === 'paga').length;
-
+    // For recurring contracts, we don't have parcela details anymore
+    // Show as "Ativo" for active contracts
     return {
-      total: parcelas.length,
-      pendentes,
-      pagas
+      total: 0,
+      pendentes: contrato.status === 'ativo' ? 1 : 0,
+      pagas: 0
     };
   };
 
