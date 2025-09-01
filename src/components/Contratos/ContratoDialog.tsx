@@ -7,9 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCreateContrato, useUpdateContrato, type Contrato } from "@/hooks/useContratos";
 import { useUpdateContratoServicos } from "@/hooks/useContratoServicos";
+import { useGenerateFutureAccounts } from "@/hooks/useGenerateFutureAccounts";
 import { ServicosSelector } from "./ServicosSelector";
 import { ClientesSelector } from "./ClientesSelector";
 import { PdfUploader } from "./PdfUploader";
+import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 interface ContratoDialogProps {
@@ -22,6 +24,7 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
   const createContrato = useCreateContrato();
   const updateContrato = useUpdateContrato();
   const updateContratoServicos = useUpdateContratoServicos();
+  const generateFutureAccounts = useGenerateFutureAccounts();
   
   const [formData, setFormData] = useState({
     data_inicio: "",
@@ -226,6 +229,34 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
               onPdfChange={setPdfUrl}
               disabled={isLoading}
             />
+
+            {/* Future accounts management for recurring contracts */}
+            {contrato && contrato.tipo_contrato === 'recorrente' && contrato.status === 'ativo' && (
+              <div className="space-y-3 p-4 bg-muted/50 rounded-lg border">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium">Gerenciar Contas Futuras</Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Regenerar contas a receber e pagar mensais para este contrato recorrente
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => generateFutureAccounts.mutate(contrato.id)}
+                    disabled={generateFutureAccounts.isPending}
+                  >
+                    {generateFutureAccounts.isPending ? (
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-4 w-4" />
+                    )}
+                    <span className="ml-2">Regenerar</span>
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-4">

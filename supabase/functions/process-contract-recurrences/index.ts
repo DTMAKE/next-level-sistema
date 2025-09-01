@@ -30,7 +30,8 @@ serve(async (req) => {
 
     console.log(`Processing contracts for month: ${formattedDate}`)
 
-    // Call the database function to process recurrences
+    // Call the updated database function to process contract recurrences
+    // This now handles both receivables and commission payables
     const { error } = await supabase.rpc('process_contract_recurrences', {
       target_month: formattedDate
     })
@@ -40,13 +41,14 @@ serve(async (req) => {
       throw error
     }
 
-    console.log('Contract recurrences processed successfully')
+    console.log('Contract recurrences and commissions processed successfully')
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Contract recurrences processed successfully',
-        target_month: formattedDate 
+        message: 'Contract recurrences and commissions processed successfully',
+        target_month: formattedDate,
+        processed_at: new Date().toISOString()
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -58,8 +60,9 @@ serve(async (req) => {
     console.error('Error in process-contract-recurrences function:', error)
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Internal server error',
-        success: false 
+        error: error.message || 'Failed to process contract recurrences',
+        success: false,
+        timestamp: new Date().toISOString()
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

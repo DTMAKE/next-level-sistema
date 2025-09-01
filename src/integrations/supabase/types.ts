@@ -1108,6 +1108,10 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      cancel_future_contract_accounts: {
+        Args: { p_contrato_id: string }
+        Returns: undefined
+      }
       create_default_kanban_columns: {
         Args: { projeto_id: string; user_id: string }
         Returns: undefined
@@ -1115,6 +1119,10 @@ export type Database = {
       generate_contract_number: {
         Args: { client_id: string; client_name: string }
         Returns: string
+      }
+      generate_future_receivables_and_payables: {
+        Args: { p_contrato_id: string }
+        Returns: undefined
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
