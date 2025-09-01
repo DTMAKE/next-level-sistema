@@ -12,8 +12,6 @@ export interface Contrato {
   data_inicio: string;
   data_fim?: string;
   status: 'ativo' | 'suspenso' | 'cancelado' | 'finalizado';
-  tipo_contrato?: 'unico' | 'recorrente';
-  dia_vencimento?: number;
   observacoes?: string;
   cliente_id: string;
   user_id: string;
@@ -48,11 +46,8 @@ export interface CreateContratoData {
   data_inicio: string;
   data_fim?: string;
   status: 'ativo' | 'suspenso' | 'cancelado' | 'finalizado';
-  tipo_contrato?: 'unico' | 'recorrente';
-  dia_vencimento?: number;
   cliente_id: string;
   pdf_url?: string;
-  observacoes?: string;
 }
 
 export interface UpdateContratoData extends CreateContratoData {
@@ -173,29 +168,10 @@ export function useCreateContrato() {
         .single();
 
       if (error) throw error;
-
-      // If it's a recurring contract and active, generate future accounts
-      if (data.tipo_contrato === 'recorrente' && data.status === 'ativo') {
-        try {
-          const { error: futureError } = await supabase.rpc('generate_future_receivables_and_payables', {
-            p_contrato_id: data.id
-          });
-          
-          if (futureError) {
-            console.error('Error generating future accounts:', futureError);
-            // Don't throw here to avoid breaking contract creation
-          }
-        } catch (futureError) {
-          console.error('Error generating future accounts:', futureError);
-        }
-      }
-
       return data as any;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
-      queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
-      queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
       toast({
         title: "Contrato criado",
         description: "Contrato adicionado com sucesso.",
@@ -217,13 +193,6 @@ export function useUpdateContrato() {
 
   return useMutation({
     mutationFn: async ({ id, ...contratoData }: UpdateContratoData) => {
-      // Get current contract data to compare changes
-      const { data: currentContract } = await supabase
-        .from('contratos')
-        .select('status, tipo_contrato')
-        .eq('id', id)
-        .single();
-
       const { data, error } = await supabase
         .from('contratos')
         .update(contratoData)
@@ -235,34 +204,10 @@ export function useUpdateContrato() {
         .single();
 
       if (error) throw error;
-
-      // Handle status changes for recurring contracts
-      if (data.tipo_contrato === 'recorrente') {
-        try {
-          // If changing from active to inactive, cancel future accounts
-          if (currentContract?.status === 'ativo' && 
-              (data.status === 'cancelado' || data.status === 'finalizado')) {
-            await supabase.rpc('cancel_future_contract_accounts', {
-              p_contrato_id: id
-            });
-          }
-          // If changing from inactive to active, generate future accounts
-          else if (currentContract?.status !== 'ativo' && data.status === 'ativo') {
-            await supabase.rpc('generate_future_receivables_and_payables', {
-              p_contrato_id: id
-            });
-          }
-        } catch (futureError) {
-          console.error('Error managing future accounts:', futureError);
-        }
-      }
-
       return data as any;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
-      queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
-      queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
       toast({
         title: "Contrato atualizado",
         description: "Informações do contrato atualizadas com sucesso.",

@@ -7,12 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCreateContrato, useUpdateContrato, type Contrato } from "@/hooks/useContratos";
 import { useUpdateContratoServicos } from "@/hooks/useContratoServicos";
-import { useGenerateFutureAccounts } from "@/hooks/useGenerateFutureAccounts";
 import { ServicosSelector } from "./ServicosSelector";
 import { ClientesSelector } from "./ClientesSelector";
 import { PdfUploader } from "./PdfUploader";
-import { ContratoValorPreview } from "./ContratoValorPreview";
-import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 interface ContratoDialogProps {
@@ -25,15 +22,11 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
   const createContrato = useCreateContrato();
   const updateContrato = useUpdateContrato();
   const updateContratoServicos = useUpdateContratoServicos();
-  const generateFutureAccounts = useGenerateFutureAccounts();
   
   const [formData, setFormData] = useState({
     data_inicio: "",
     data_fim: "",
     status: "ativo" as "ativo" | "suspenso" | "cancelado" | "finalizado",
-    tipo_contrato: "unico" as "unico" | "recorrente",
-    dia_vencimento: 1,
-    observacoes: "",
     cliente_id: "",
   });
   const [servicosSelecionados, setServicosSelecionados] = useState<any[]>([]);
@@ -45,9 +38,6 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
         data_inicio: contrato.data_inicio || "",
         data_fim: contrato.data_fim || "",
         status: contrato.status || "ativo",
-        tipo_contrato: contrato.tipo_contrato || "unico",
-        dia_vencimento: contrato.dia_vencimento || 1,
-        observacoes: contrato.observacoes || "",
         cliente_id: contrato.cliente_id || "",
       });
       setPdfUrl((contrato as any).pdf_url || null);
@@ -56,9 +46,6 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
         data_inicio: "",
         data_fim: "",
         status: "ativo",
-        tipo_contrato: "unico",
-        dia_vencimento: 1,
-        observacoes: "",
         cliente_id: "",
       });
       setPdfUrl(null);
@@ -84,9 +71,6 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
       data_inicio: formData.data_inicio,
       data_fim: formData.data_fim || undefined,
       status: formData.status,
-      tipo_contrato: formData.tipo_contrato,
-      dia_vencimento: formData.dia_vencimento,
-      observacoes: formData.observacoes || undefined,
       cliente_id: formData.cliente_id,
       valor: valorTotalServicos,
       pdf_url: pdfUrl,
@@ -138,63 +122,6 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
               onClienteChange={(value) => handleInputChange("cliente_id", value)}
             />
 
-            <div className="space-y-2">
-              <Label htmlFor="tipo_contrato">Tipo de Contrato</Label>
-              <Select value={formData.tipo_contrato} onValueChange={(value) => handleInputChange("tipo_contrato", value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unico">Único (Pagamento único)</SelectItem>
-                  <SelectItem value="recorrente">Recorrente (Mensal)</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              {/* Explicações claras sobre o valor */}
-              <div className="p-3 rounded-lg bg-muted/30 border">
-                {formData.tipo_contrato === 'recorrente' ? (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-primary">Contrato Recorrente</p>
-                    <p className="text-sm text-muted-foreground">
-                      • O valor inserido será cobrado <strong>mensalmente</strong><br/>
-                      • Serão geradas contas a receber automáticas todos os meses<br/>
-                      • Comissões serão calculadas mensalmente para vendedores
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-primary">Contrato Único</p>
-                    <p className="text-sm text-muted-foreground">
-                      • O valor inserido será o valor <strong>total</strong> do contrato<br/>
-                      • Será gerada apenas uma conta a receber<br/>
-                      • Comissão será calculada uma única vez
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Validação e sugestão */}
-              {formData.data_inicio && formData.data_fim && formData.tipo_contrato === 'unico' && (
-                (() => {
-                  const startDate = new Date(formData.data_inicio);
-                  const endDate = new Date(formData.data_fim);
-                  const diffMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
-                  
-                  if (diffMonths > 2) {
-                    return (
-                      <div className="p-3 rounded-lg bg-yellow-50 border border-yellow-200">
-                        <p className="text-sm text-yellow-800">
-                          ⚠️ <strong>Sugestão:</strong> Este contrato tem duração de {diffMonths} meses. 
-                          Considere usar "Recorrente (Mensal)" para gerar cobranças automáticas mensais.
-                        </p>
-                      </div>
-                    );
-                  }
-                  return null;
-                })()
-              )}
-            </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label htmlFor="data_inicio">Data de Início</Label>
@@ -207,7 +134,7 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="data_fim">Data de Fim {formData.tipo_contrato === 'recorrente' ? '(Opcional)' : ''}</Label>
+                <Label htmlFor="data_fim">Data de Fim</Label>
                 <Input
                   id="data_fim"
                   type="date"
@@ -216,22 +143,6 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
                 />
               </div>
             </div>
-
-            {formData.tipo_contrato === 'recorrente' && (
-              <div className="space-y-2">
-                <Label htmlFor="dia_vencimento">Dia do Vencimento Mensal</Label>
-                <Select value={formData.dia_vencimento?.toString()} onValueChange={(value) => handleInputChange("dia_vencimento", value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
-                      <SelectItem key={day} value={day.toString()}>Dia {day}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
 
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
@@ -248,65 +159,16 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="observacoes">Observações</Label>
-              <Textarea
-                id="observacoes"
-                value={formData.observacoes}
-                onChange={(e) => handleInputChange("observacoes", e.target.value)}
-                placeholder="Observações sobre o contrato..."
-                className="min-h-[80px]"
-              />
-            </div>
-
             <ServicosSelector
               servicosSelecionados={servicosSelecionados}
               onServicosChange={setServicosSelecionados}
             />
-
-            {/* Preview dos valores */}
-            {servicosSelecionados.length > 0 && (
-              <ContratoValorPreview
-                tipoContrato={formData.tipo_contrato}
-                valorTotal={servicosSelecionados.reduce((total, servico) => total + servico.valor_total, 0)}
-                dataInicio={formData.data_inicio}
-                dataFim={formData.data_fim}
-              />
-            )}
 
             <PdfUploader
               pdfUrl={pdfUrl}
               onPdfChange={setPdfUrl}
               disabled={isLoading}
             />
-
-            {/* Future accounts management for recurring contracts */}
-            {contrato && contrato.tipo_contrato === 'recorrente' && contrato.status === 'ativo' && (
-              <div className="space-y-3 p-4 bg-muted/50 rounded-lg border">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-sm font-medium">Gerenciar Contas Futuras</Label>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Regenerar contas a receber e pagar mensais para este contrato recorrente
-                    </p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => generateFutureAccounts.mutate(contrato.id)}
-                    disabled={generateFutureAccounts.isPending}
-                  >
-                    {generateFutureAccounts.isPending ? (
-                      <RefreshCw className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <RefreshCw className="h-4 w-4" />
-                    )}
-                    <span className="ml-2">Regenerar</span>
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
