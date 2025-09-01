@@ -10,6 +10,7 @@ import { useCreateContrato } from "@/hooks/useContratos";
 import { useUpdateContratoServicos } from "@/hooks/useContratoServicos";
 import { ServicosSelector } from "@/components/Contratos/ServicosSelector";
 import { ClientesSelector } from "@/components/Contratos/ClientesSelector";
+import { VendedorSelector } from "@/components/Contratos/VendedorSelector";
 import { PdfUploader } from "@/components/Contratos/PdfUploader";
 import { toast } from "sonner";
 
@@ -23,6 +24,7 @@ export default function NovoContrato() {
     data_fim: "",
     status: "ativo" as "ativo" | "suspenso" | "cancelado" | "finalizado",
     cliente_id: "",
+    vendedor_id: "",
   });
   const [servicosSelecionados, setServicosSelecionados] = useState<any[]>([]);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -46,6 +48,7 @@ export default function NovoContrato() {
       data_fim: formData.data_fim || undefined,
       status: formData.status,
       cliente_id: formData.cliente_id,
+      vendedor_id: formData.vendedor_id || undefined,
       valor: valorTotalServicos,
       pdf_url: pdfUrl,
     };
@@ -106,6 +109,12 @@ export default function NovoContrato() {
                 <ClientesSelector
                   clienteId={formData.cliente_id}
                   onClienteChange={(value) => handleInputChange("cliente_id", value)}
+                />
+
+                {/* Vendedor */}
+                <VendedorSelector
+                  vendedorId={formData.vendedor_id}
+                  onVendedorChange={(value) => handleInputChange("vendedor_id", value)}
                 />
 
                 {/* Datas */}

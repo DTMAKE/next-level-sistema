@@ -377,6 +377,7 @@ export type Database = {
           updated_at: string
           user_id: string
           valor: number
+          vendedor_id: string | null
         }
         Insert: {
           cliente_id: string
@@ -395,6 +396,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           valor?: number
+          vendedor_id?: string | null
         }
         Update: {
           cliente_id?: string
@@ -413,8 +415,16 @@ export type Database = {
           updated_at?: string
           user_id?: string
           valor?: number
+          vendedor_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "contratos_vendedor_id_fkey"
+            columns: ["vendedor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "fk_contratos_cliente_id"
             columns: ["cliente_id"]

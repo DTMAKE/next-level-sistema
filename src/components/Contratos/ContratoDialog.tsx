@@ -9,6 +9,7 @@ import { useCreateContrato, useUpdateContrato, type Contrato } from "@/hooks/use
 import { useUpdateContratoServicos } from "@/hooks/useContratoServicos";
 import { ServicosSelector } from "./ServicosSelector";
 import { ClientesSelector } from "./ClientesSelector";
+import { VendedorSelector } from "./VendedorSelector";
 import { PdfUploader } from "./PdfUploader";
 import { toast } from "sonner";
 
@@ -28,6 +29,7 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
     data_fim: "",
     status: "ativo" as "ativo" | "suspenso" | "cancelado" | "finalizado",
     cliente_id: "",
+    vendedor_id: "",
   });
   const [servicosSelecionados, setServicosSelecionados] = useState<any[]>([]);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -39,6 +41,7 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
         data_fim: contrato.data_fim || "",
         status: contrato.status || "ativo",
         cliente_id: contrato.cliente_id || "",
+        vendedor_id: (contrato as any).vendedor_id || "",
       });
       setPdfUrl((contrato as any).pdf_url || null);
     } else {
@@ -47,6 +50,7 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
         data_fim: "",
         status: "ativo",
         cliente_id: "",
+        vendedor_id: "",
       });
       setPdfUrl(null);
       setServicosSelecionados([]);
@@ -72,6 +76,7 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
       data_fim: formData.data_fim || undefined,
       status: formData.status,
       cliente_id: formData.cliente_id,
+      vendedor_id: formData.vendedor_id || undefined,
       valor: valorTotalServicos,
       pdf_url: pdfUrl,
     };
@@ -120,6 +125,11 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
             <ClientesSelector
               clienteId={formData.cliente_id}
               onClienteChange={(value) => handleInputChange("cliente_id", value)}
+            />
+
+            <VendedorSelector
+              vendedorId={formData.vendedor_id}
+              onVendedorChange={(value) => handleInputChange("vendedor_id", value)}
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
