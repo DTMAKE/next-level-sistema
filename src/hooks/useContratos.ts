@@ -363,72 +363,14 @@ export function useDeleteContrato() {
   });
 }
 
-// Hook para buscar parcelas de um contrato específico
-export function useParcelasContrato(contratoId: string) {
-  const { user } = useAuth();
-  
-  return useQuery({
-    queryKey: ['parcelas', contratoId, user?.id],
-    queryFn: async () => {
-      if (!user?.id) throw new Error('User not authenticated');
-      if (!contratoId) throw new Error('Contrato ID is required');
-      
-      const { data, error } = await supabase
-        .from('parcelas_contrato')
-        .select(`
-          *,
-          contrato:contratos(
-            id,
-            numero_contrato,
-            cliente:clientes(nome)
-          )
-        `)
-        .eq('contrato_id', contratoId)
-        .order('numero_parcela', { ascending: true });
-      
-      if (error) throw error;
-      return data as any[];
-    },
-    enabled: !!user?.id && !!contratoId,
-  });
-}
+// Hook para buscar parcelas de um contrato específico - DESABILITADO (tabela não existe)
+// export function useParcelasContrato(contratoId: string) {
+//   // Funcionalidade desabilitada - tabela parcelas_contrato não existe
+//   return { data: [], isLoading: false, error: null };
+// }
 
-// Hook para buscar comissões de um vendedor
-export function useComissoesVendedor(vendedorId?: string) {
-  const { user } = useAuth();
-  
-  return useQuery({
-    queryKey: ['comissoes', vendedorId, user?.id],
-    queryFn: async () => {
-      if (!user?.id) throw new Error('User not authenticated');
-      
-      let query = supabase
-        .from('comissoes_vendedor')
-        .select(`
-          *,
-          parcela:parcelas_contrato(
-            id,
-            data_vencimento,
-            contrato:contratos(
-              id,
-              numero_contrato,
-              cliente:clientes(nome)
-            )
-          ),
-          vendedor:profiles(name, email)
-        `);
-
-      if (vendedorId) {
-        query = query.eq('vendedor_id', vendedorId);
-      }
-      
-      query = query.order('created_at', { ascending: false });
-      
-      const { data, error } = await query;
-      
-      if (error) throw error;
-      return data as any[];
-    },
-    enabled: !!user?.id,
-  });
-}
+// Hook para buscar comissões de um vendedor - DESABILITADO (tabela não existe)  
+// export function useComissoesVendedor(vendedorId?: string) {
+//   // Funcionalidade desabilitada - tabela comissoes_vendedor não existe
+//   return { data: [], isLoading: false, error: null };
+// }
