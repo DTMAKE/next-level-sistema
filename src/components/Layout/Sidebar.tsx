@@ -84,6 +84,12 @@ const modulosItems = [
     icon: CalendarDays,
     roles: ["admin", "vendedor"],
   },
+  {
+    title: "Metas",
+    url: "/metas",
+    icon: Target,
+    roles: ["admin", "vendedor"],
+  },
 ];
 
 const adminItems = [
@@ -103,12 +109,6 @@ const adminItems = [
     title: "Contas a Pagar",
     url: "/contas-pagar",
     icon: TrendingDown,
-    roles: ["admin"],
-  },
-  {
-    title: "Metas",
-    url: "/metas",
-    icon: Target,
     roles: ["admin"],
   },
   {
