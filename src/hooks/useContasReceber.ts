@@ -48,14 +48,14 @@ export function useContasReceber(selectedDate: Date) {
   const { user } = useAuth();
   
   return useQuery({
-    queryKey: ['contas-receber', user?.id, selectedDate.getFullYear(), selectedDate.getMonth()],
+    queryKey: ['contas-receber', user?.id, user?.role, selectedDate.getFullYear(), selectedDate.getMonth()],
     queryFn: async (): Promise<ContaReceber[]> => {
       if (!user?.id) throw new Error('User not authenticated');
       
       const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
       const endOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('transacoes_financeiras')
         .select(`
           *,
@@ -71,11 +71,16 @@ export function useContasReceber(selectedDate: Date) {
             )
           )
         `)
-        .eq('user_id', user.id)
         .eq('tipo', 'receita')
         .gte('data_transacao', startOfMonth.toISOString().split('T')[0])
-        .lte('data_transacao', endOfMonth.toISOString().split('T')[0])
-        .order('data_transacao', { ascending: false });
+        .lte('data_transacao', endOfMonth.toISOString().split('T')[0]);
+
+      // Filter by user_id unless user is admin
+      if (user.role !== 'admin') {
+        query = query.eq('user_id', user.id);
+      }
+
+      const { data, error } = await query.order('data_transacao', { ascending: false });
       
       if (error) throw error;
       

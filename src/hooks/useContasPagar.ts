@@ -39,18 +39,23 @@ export function useContasPagar(selectedDate: Date) {
   const endOfMonth = format(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0), 'yyyy-MM-dd');
 
   return useQuery({
-    queryKey: ['contas-pagar', user?.id, startOfMonth, endOfMonth],
+    queryKey: ['contas-pagar', user?.id, user?.role, startOfMonth, endOfMonth],
     queryFn: async () => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('transacoes_financeiras')
         .select('*')
         .eq('tipo', 'despesa')
-        .eq('user_id', user.id)
         .gte('data_transacao', startOfMonth)
-        .lte('data_transacao', endOfMonth)
-        .order('data_transacao', { ascending: false });
+        .lte('data_transacao', endOfMonth);
+
+      // Filter by user_id unless user is admin
+      if (user.role !== 'admin') {
+        query = query.eq('user_id', user.id);
+      }
+
+      const { data, error } = await query.order('data_transacao', { ascending: false });
 
       if (error) throw error;
       return data as ContaPagar[];
