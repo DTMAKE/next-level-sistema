@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useContasPagar, useDeleteContaPagar, useMarcarComoPaga, useUpdateContaPagar } from "@/hooks/useContasPagar";
+import { useContasPagar, useDeleteContaPagar, useMarcarComoPaga } from "@/hooks/useContasPagar";
 import { ContaPagarDialog } from "@/components/ContasPagar/ContaPagarDialog";
 
 export default function ContasPagar() {
@@ -34,7 +34,6 @@ export default function ContasPagar() {
   const { data: contas, isLoading } = useContasPagar(selectedDate);
   const deleteContaPagar = useDeleteContaPagar();
   const marcarComoPaga = useMarcarComoPaga();
-  const updateContaPagar = useUpdateContaPagar();
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -76,14 +75,6 @@ export default function ContasPagar() {
 
   const handleMarcarComoPaga = (conta: any) => {
     marcarComoPaga.mutate(conta.id);
-  };
-
-  const handleMarcarComoPendente = (id: string) => {
-    updateContaPagar.mutate({ id, status: 'pendente' });
-  };
-
-  const handleMarcarComoCancelada = (id: string) => {
-    updateContaPagar.mutate({ id, status: 'cancelada' });
   };
 
   const handleDeleteConta = (id: string) => {
@@ -333,27 +324,9 @@ export default function ContasPagar() {
                               {conta.descricao || 'Despesa sem descrição'}
                             </h3>
                           </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Badge className={cn("text-xs cursor-pointer hover:bg-opacity-100", getStatusColor(conta.status || 'pendente'))}>
-                                {getStatusLabel(conta.status || 'pendente')}
-                              </Badge>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-popover border z-50">
-                              <DropdownMenuItem onClick={() => marcarComoPaga.mutate(conta.id)}>
-                                <div className="w-2 h-2 rounded-full bg-green-600 mr-2" />
-                                Marcar como Paga
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleMarcarComoPendente(conta.id)}>
-                                <div className="w-2 h-2 rounded-full bg-yellow-600 mr-2" />
-                                Marcar como Pendente
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleMarcarComoCancelada(conta.id)}>
-                                <div className="w-2 h-2 rounded-full bg-red-600 mr-2" />
-                                Marcar como Cancelada
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <Badge className={cn("text-xs", getStatusColor(conta.status || 'pendente'))}>
+                            {getStatusLabel(conta.status || 'pendente')}
+                          </Badge>
                         </div>
                         
                         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
@@ -433,27 +406,9 @@ export default function ContasPagar() {
                       {paginatedContas.map(conta => (
                         <TableRow key={conta.id}>
                           <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Badge className={cn("text-xs cursor-pointer hover:bg-opacity-100", getStatusColor(conta.status || 'pendente'))}>
-                                  {getStatusLabel(conta.status || 'pendente')}
-                                </Badge>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="start" className="bg-popover border z-50">
-                                <DropdownMenuItem onClick={() => marcarComoPaga.mutate(conta.id)}>
-                                  <div className="w-2 h-2 rounded-full bg-green-600 mr-2" />
-                                  Marcar como Paga
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleMarcarComoPendente(conta.id)}>
-                                  <div className="w-2 h-2 rounded-full bg-yellow-600 mr-2" />
-                                  Marcar como Pendente
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleMarcarComoCancelada(conta.id)}>
-                                  <div className="w-2 h-2 rounded-full bg-red-600 mr-2" />
-                                  Marcar como Cancelada
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            <Badge className={cn("text-xs", getStatusColor(conta.status || 'pendente'))}>
+                              {getStatusLabel(conta.status || 'pendente')}
+                            </Badge>
                           </TableCell>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
@@ -485,36 +440,39 @@ export default function ContasPagar() {
                           <TableCell className="font-bold text-red-600">
                             {formatCurrency(Number(conta.valor))}
                           </TableCell>
-                          <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm">
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="bg-popover border z-50">
-                                {conta.status === 'pendente' && (
-                                  <DropdownMenuItem 
-                                    onClick={() => handleMarcarComoPaga(conta)}
-                                    disabled={marcarComoPaga.isPending}
-                                  >
-                                    <Check className="h-4 w-4 mr-2" />
-                                    Marcar como Paga
-                                  </DropdownMenuItem>
-                                )}
-                                {conta.comprovante_url && (
-                                  <DropdownMenuItem onClick={() => handleDownloadComprovante(conta.comprovante_url!)}>
-                                    <Download className="h-4 w-4 mr-2" />
-                                    Baixar Comprovante
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem onClick={() => handleDeleteConta(conta.id)}>
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Excluir
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
+                           <TableCell>
+                             <div className="flex items-center gap-1">
+                               {conta.status === 'pendente' && (
+                                 <Button 
+                                   size="sm" 
+                                   onClick={() => handleMarcarComoPaga(conta)}
+                                   disabled={marcarComoPaga.isPending}
+                                   className="bg-green-600 hover:bg-green-700 text-white"
+                                 >
+                                   Paga
+                                 </Button>
+                               )}
+                               <DropdownMenu>
+                                 <DropdownMenuTrigger asChild>
+                                   <Button variant="ghost" size="sm">
+                                     <MoreVertical className="h-4 w-4" />
+                                   </Button>
+                                 </DropdownMenuTrigger>
+                                 <DropdownMenuContent align="end" className="bg-popover border z-50">
+                                   {conta.comprovante_url && (
+                                     <DropdownMenuItem onClick={() => handleDownloadComprovante(conta.comprovante_url!)}>
+                                       <Download className="h-4 w-4 mr-2" />
+                                       Baixar Comprovante
+                                     </DropdownMenuItem>
+                                   )}
+                                   <DropdownMenuItem onClick={() => handleDeleteConta(conta.id)}>
+                                     <Trash2 className="h-4 w-4 mr-2" />
+                                     Excluir
+                                   </DropdownMenuItem>
+                                 </DropdownMenuContent>
+                               </DropdownMenu>
+                             </div>
+                           </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
