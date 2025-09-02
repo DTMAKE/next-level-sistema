@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useContasPagar, useDeleteContaPagar, useToggleStatusContaPagar, useUpdateContaPagar, useCleanupOrphanPayables } from "@/hooks/useContasPagar";
+import { useContasPagar, useDeleteContaPagar, useToggleStatusContaPagar, useUpdateContaPagar, useCleanupOrphanPayables, useGenerateFutureCommissions, type ContaPagar } from "@/hooks/useContasPagar";
 import { ContaPagarDialog } from "@/components/ContasPagar/ContaPagarDialog";
 import { StatusSelectorContasPagar } from "@/components/ContasPagar/StatusSelectorContasPagar";
 
@@ -37,6 +37,7 @@ export default function ContasPagar() {
   const toggleStatusContaPagar = useToggleStatusContaPagar();
   const updateContaPagar = useUpdateContaPagar();
   const cleanupOrphanPayables = useCleanupOrphanPayables();
+  const generateFutureCommissions = useGenerateFutureCommissions();
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -205,6 +206,16 @@ export default function ContasPagar() {
         <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl truncate">Contas a Pagar</h1>
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
+          <Button
+            onClick={() => generateFutureCommissions.mutate(undefined)}
+            disabled={generateFutureCommissions.isPending}
+            variant="outline"
+            className="h-8 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm"
+            title="Gerar comissões futuras dos contratos"
+          >
+            <Building2 className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden lg:inline">Gerar Comissões</span>
+          </Button>
           <Button
             onClick={() => cleanupOrphanPayables.mutate()}
             disabled={cleanupOrphanPayables.isPending}

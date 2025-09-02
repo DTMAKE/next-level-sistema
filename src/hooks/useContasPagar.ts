@@ -63,21 +63,7 @@ export function useContasPagar(selectedDate: Date) {
             venda_id,
             contrato_id,
             mes_referencia,
-            percentual,
-            vendas (
-              cliente_id,
-              clientes (
-                nome
-              )
-            ),
-            contratos (
-              numero_contrato,
-              titulo,
-              cliente_id,
-              clientes (
-                nome
-              )
-            )
+            percentual
           )
         `)
         .eq('tipo', 'despesa')
@@ -106,6 +92,19 @@ export function useContasPagar(selectedDate: Date) {
           
           if (profile) {
             transaction.comissoes.vendedor_profile = profile;
+          }
+
+          // If commission is from a sale, get client name from venda
+          if (transaction.comissoes.venda_id) {
+            const { data: venda } = await supabase
+              .from('vendas')
+              .select('clientes(nome)')
+              .eq('id', transaction.comissoes.venda_id)
+              .single();
+            
+            if (venda?.clientes?.nome) {
+              transaction.comissoes.cliente_nome = venda.clientes.nome;
+            }
           }
 
           // If commission is from a contract, get contract details for proper parcel calculation
@@ -395,6 +394,60 @@ export const useCleanupOrphanPayables = () => {
       toast({
         title: "Erro",
         description: "Erro ao limpar contas órfãs. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+// Add function to generate future commissions for active contracts
+export const useGenerateFutureCommissions = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (contratoId?: string) => {
+      if (contratoId) {
+        // Generate for specific contract
+        const { data, error } = await supabase
+          .rpc('generate_future_contract_commissions', { p_contrato_id: contratoId });
+
+        if (error) throw error;
+        return data;
+      } else {
+        // Generate for all active recurring contracts
+        const { data: contratos } = await supabase
+          .from('contratos')
+          .select('id')
+          .eq('tipo_contrato', 'recorrente')
+          .eq('status', 'ativo');
+
+        if (contratos && contratos.length > 0) {
+          for (const contrato of contratos) {
+            const { error } = await supabase
+              .rpc('generate_future_contract_commissions', { p_contrato_id: contrato.id });
+            
+            if (error) {
+              console.error(`Erro ao gerar comissões para contrato ${contrato.id}:`, error);
+            }
+          }
+        }
+        
+        return contratos?.length || 0;
+      }
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
+      toast({
+        title: "Comissões geradas!",
+        description: "Comissões futuras dos contratos foram geradas com sucesso.",
+      });
+    },
+    onError: (error) => {
+      console.error('Error generating future commissions:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao gerar comissões futuras. Tente novamente.",
         variant: "destructive",
       });
     },

@@ -1162,6 +1162,10 @@ export type Database = {
         Args: { client_id: string; client_name: string }
         Returns: string
       }
+      generate_future_contract_commissions: {
+        Args: { p_contrato_id: string }
+        Returns: undefined
+      }
       generate_future_receivables_and_payables: {
         Args: { p_contrato_id: string }
         Returns: undefined
