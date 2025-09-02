@@ -399,11 +399,18 @@ export default function ContasReceber() {
                               size="sm"
                               onClick={() => handleDeleteConta(conta.id)}
                               disabled={deleteContaReceber.isPending}
-                              title={isContratoTransaction(conta.descricao || '') 
-                                ? "Verificar se contrato está ativo" 
-                                : conta.venda_id 
-                                ? "Verificar se venda está relacionada" 
-                                : "Excluir conta"}
+                              title={
+                                isContratoTransaction(conta.descricao || '') 
+                                  ? "⚠️ Esta conta está relacionada a um contrato - verifique se o contrato está ativo antes de excluir" 
+                                  : conta.venda_id 
+                                  ? "⚠️ Esta conta está relacionada a uma venda - não pode ser excluída se a venda estiver fechada" 
+                                  : "Excluir conta a receber"
+                              }
+                              className={cn(
+                                isContratoTransaction(conta.descricao || '') || conta.venda_id 
+                                  ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" 
+                                  : "text-destructive hover:text-destructive"
+                              )}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -487,6 +494,19 @@ export default function ContasReceber() {
                                 variant="ghost" 
                                 size="sm"
                                 onClick={() => handleDeleteConta(conta.id)}
+                                disabled={deleteContaReceber.isPending}
+                                title={
+                                  isContratoTransaction(conta.descricao || '') 
+                                    ? "⚠️ Esta conta está relacionada a um contrato - verifique se o contrato está ativo" 
+                                    : conta.venda_id 
+                                    ? "⚠️ Esta conta está relacionada a uma venda - não pode ser excluída se a venda estiver fechada" 
+                                    : "Excluir conta a receber"
+                                }
+                                className={cn(
+                                  isContratoTransaction(conta.descricao || '') || conta.venda_id 
+                                    ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" 
+                                    : "text-destructive hover:text-destructive"
+                                )}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -553,8 +573,12 @@ export default function ContasReceber() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir esta conta a receber? Esta ação não pode ser desfeita.
+            <AlertDialogDescription className="space-y-2">
+              <p>Tem certeza que deseja excluir esta conta a receber?</p>
+              <p className="text-sm text-muted-foreground">
+                <strong>Importante:</strong> Contas relacionadas a vendas fechadas ou contratos ativos não podem ser excluídas para manter a integridade dos dados financeiros.
+              </p>
+              <p className="text-xs text-destructive font-medium">Esta ação não pode ser desfeita.</p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

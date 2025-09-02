@@ -191,18 +191,32 @@ export function useCreateContaReceber() {
 }
 
 export function useUpdateContaReceber() {
+  const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<ContaReceber> }) => {
-      const { error } = await supabase
+      if (!user?.id) {
+        throw new Error('Usuário não autenticado');
+      }
+
+      console.log('Atualizando conta:', { id, data, user_id: user.id });
+      
+      const { data: result, error } = await supabase
         .from('transacoes_financeiras')
         .update(data)
-        .eq('id', id);
+        .eq('id', id)
+        .select()
+        .single();
       
-      if (error) throw error;
-      return { id, data };
+      if (error) {
+        console.error('Erro na atualização:', error);
+        throw error;
+      }
+      
+      console.log('Conta atualizada com sucesso:', result);
+      return { id, data: result };
     },
     onMutate: async ({ id, data }) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
@@ -222,16 +236,29 @@ export function useUpdateContaReceber() {
       // Return a context object with the snapshotted value
       return { previousContas };
     },
-    onError: (err, variables, context) => {
+    onError: (err: any, variables, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousContas) {
         context.previousContas.forEach(([queryKey, data]) => {
           queryClient.setQueryData(queryKey, data);
         });
       }
+      
+      console.error('Erro completo ao atualizar conta:', err);
+      
+      let errorMessage = "Erro ao atualizar conta a receber.";
+      
+      if (err.message?.includes('permission denied') || err.message?.includes('row-level security')) {
+        errorMessage = "Você não tem permissão para alterar esta conta.";
+      } else if (err.message?.includes('not found')) {
+        errorMessage = "Conta não encontrada.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       toast({
         title: "Erro",
-        description: "Erro ao atualizar conta a receber.",
+        description: errorMessage,
         variant: "destructive",
       });
     },

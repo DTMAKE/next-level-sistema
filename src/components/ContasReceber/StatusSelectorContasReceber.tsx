@@ -37,6 +37,14 @@ export function StatusSelectorContasReceber({ conta, disabled = false, size = "m
 
     const statusValue = newStatus === 'Recebida' ? 'confirmada' : newStatus === 'Cancelada' ? 'cancelada' : 'pendente';
     
+    console.log('Tentando alterar status:', { 
+      conta_id: conta.id, 
+      currentStatus, 
+      newStatus, 
+      statusValue,
+      conta_user_id: conta.user_id
+    });
+    
     try {
       await updateConta.mutateAsync({
         id: conta.id,
@@ -50,11 +58,8 @@ export function StatusSelectorContasReceber({ conta, disabled = false, size = "m
       });
     } catch (error) {
       console.error("Erro ao atualizar status:", error);
-      toast({
-        title: "Erro ao atualizar",
-        description: "Não foi possível atualizar o status",
-        variant: "destructive",
-      });
+      // O hook já trata os erros específicos, não precisa duplicar aqui
+      setIsOpen(false);
     }
   };
 
