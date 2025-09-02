@@ -18,6 +18,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useContasPagar, useDeleteContaPagar, useToggleStatusContaPagar, useUpdateContaPagar, type ContaPagar } from "@/hooks/useContasPagar";
 import { ContaPagarDialog } from "@/components/ContasPagar/ContaPagarDialog";
 import { StatusSelectorContasPagar } from "@/components/ContasPagar/StatusSelectorContasPagar";
+import { ComissaoInfo } from "@/components/ContasPagar/ComissaoInfo";
 
 export default function ContasPagar() {
   const { user } = useAuth();
@@ -89,14 +90,14 @@ export default function ContasPagar() {
         return {
           vendedor: vendedorNome,
           cliente: clienteNome,
-          tipo: 'contrato',
-          numeroContrato: conta.comissoes.contrato?.numero_contrato
+          tipo: 'contrato' as const,
+          numeroContrato: conta.comissoes.contrato?.numero_contrato || `Contrato ${conta.comissoes.contrato_id.slice(0, 8)}`
         };
       } else if (conta.comissoes.venda_id) {
         return {
           vendedor: vendedorNome,
           cliente: clienteNome,
-          tipo: 'venda'
+          tipo: 'venda' as const
         };
       }
     }
@@ -403,32 +404,8 @@ export default function ContasPagar() {
                                 )}
                               </span>
                             </div>
-                            {comissaoInfo && (
-                              <>
-                                <div className="flex items-center gap-2">
-                                  <UserCheck className="h-3 w-3 text-purple-600" />
-                                  <span className="text-xs">Vendedor: {comissaoInfo.vendedor}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {comissaoInfo.tipo === 'contrato' ? (
-                                    <Building2 className="h-3 w-3 text-blue-600" />
-                                  ) : (
-                                    <ShoppingCart className="h-3 w-3 text-green-600" />
-                                  )}
-                                  <span className="text-xs">
-                                    {comissaoInfo.tipo === 'contrato' 
-                                      ? `Contrato: ${comissaoInfo.numeroContrato}` 
-                                      : `Cliente: ${comissaoInfo.cliente}`
-                                    }
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <UserCheck className="h-3 w-3 text-purple-600" />
-                                  <span className="text-xs text-purple-600 font-medium">
-                                    Comissão de {comissaoInfo.tipo === 'contrato' ? 'Contrato' : 'Venda'}
-                                  </span>
-                                </div>
-                              </>
+                            {isComissaoTransaction(conta.descricao || '') && (
+                              <ComissaoInfo conta={conta} size="sm" />
                             )}
                           </div>
                           
@@ -496,11 +473,8 @@ export default function ContasPagar() {
                                   <div className="font-medium">
                                     {conta.descricao || 'Despesa sem descrição'}
                                   </div>
-                                  {comissaoInfo && (
-                                    <div className="text-xs text-muted-foreground">
-                                      Comissão: {comissaoInfo.vendedor} - {comissaoInfo.cliente}
-                                      {comissaoInfo.tipo === 'contrato' && ` (${comissaoInfo.numeroContrato})`}
-                                    </div>
+                                  {isComissaoTransaction(conta.descricao || '') && (
+                                    <ComissaoInfo conta={conta} size="sm" />
                                   )}
                                 </div>
                               </div>
