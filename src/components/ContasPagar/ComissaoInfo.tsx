@@ -19,18 +19,22 @@ export function ComissaoInfo({ conta, size = "md" }: ComissaoInfoProps) {
   const getComissaoInfo = (): ComissaoData | null => {
     if (conta.comissoes) {
       const vendedorNome = conta.comissoes.vendedor_profile?.name || 'Vendedor';
-      const clienteNome = conta.comissoes.cliente_nome || 
-                         conta.comissoes.contrato?.clientes?.nome || 
-                         'Cliente';
       
       if (conta.comissoes.contrato_id) {
+        // Para contratos, usar as informações do join com contratos
+        const numeroContrato = conta.comissoes.contratos?.numero_contrato || `Contrato ${conta.comissoes.contrato_id.slice(0, 8)}`;
+        const clienteNome = conta.comissoes.contratos?.clientes?.nome || 'Cliente';
+        
         return {
           vendedor: vendedorNome,
           cliente: clienteNome,
           tipo: 'contrato',
-          numeroContrato: conta.comissoes.contrato?.numero_contrato || `Contrato ${conta.comissoes.contrato_id.slice(0, 8)}`
+          numeroContrato: numeroContrato
         };
       } else if (conta.comissoes.venda_id) {
+        // Para vendas, usar as informações do join com vendas
+        const clienteNome = conta.comissoes.vendas?.clientes?.nome || 'Cliente';
+        
         return {
           vendedor: vendedorNome,
           cliente: clienteNome,
