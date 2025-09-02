@@ -28,6 +28,8 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
     data_inicio: "",
     data_fim: "",
     status: "ativo" as "ativo" | "suspenso" | "cancelado" | "finalizado",
+    tipo_contrato: "unico" as "unico" | "recorrente",
+    dia_vencimento: 1,
     cliente_id: "",
     vendedor_id: "",
   });
@@ -40,15 +42,19 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
         data_inicio: contrato.data_inicio || "",
         data_fim: contrato.data_fim || "",
         status: contrato.status || "ativo",
+        tipo_contrato: contrato.tipo_contrato || "unico",
+        dia_vencimento: contrato.dia_vencimento || 1,
         cliente_id: contrato.cliente_id || "",
-        vendedor_id: (contrato as any).vendedor_id || "",
+        vendedor_id: contrato.vendedor_id || "",
       });
-      setPdfUrl((contrato as any).pdf_url || null);
+      setPdfUrl(contrato.pdf_url || null);
     } else {
       setFormData({
         data_inicio: "",
         data_fim: "",
         status: "ativo",
+        tipo_contrato: "unico",
+        dia_vencimento: 1,
         cliente_id: "",
         vendedor_id: "",
       });
@@ -58,7 +64,11 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
   }, [contrato, open]);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'dia_vencimento') {
+      setFormData(prev => ({ ...prev, [field]: parseInt(value) }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,12 +79,19 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
       return;
     }
 
+    if (formData.tipo_contrato === 'recorrente' && !formData.data_fim) {
+      toast.error("Para contratos recorrentes, a data de fim é obrigatória");
+      return;
+    }
+
     const valorTotalServicos = servicosSelecionados.reduce((total, servico) => total + servico.valor_total, 0);
 
     const contratoData = {
       data_inicio: formData.data_inicio,
       data_fim: formData.data_fim || undefined,
       status: formData.status,
+      tipo_contrato: formData.tipo_contrato,
+      dia_vencimento: formData.dia_vencimento,
       cliente_id: formData.cliente_id,
       vendedor_id: formData.vendedor_id || undefined,
       valor: valorTotalServicos,
@@ -154,20 +171,56 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ativo">Ativo</SelectItem>
-                  <SelectItem value="suspenso">Suspenso</SelectItem>
-                  <SelectItem value="cancelado">Cancelado</SelectItem>
-                  <SelectItem value="finalizado">Finalizado</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ativo">Ativo</SelectItem>
+                    <SelectItem value="suspenso">Suspenso</SelectItem>
+                    <SelectItem value="cancelado">Cancelado</SelectItem>
+                    <SelectItem value="finalizado">Finalizado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="tipo_contrato">Tipo de Contrato</Label>
+                <Select value={formData.tipo_contrato} onValueChange={(value) => handleInputChange("tipo_contrato", value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unico">Único</SelectItem>
+                    <SelectItem value="recorrente">Recorrente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+
+            {formData.tipo_contrato === 'recorrente' && (
+              <div className="space-y-2">
+                <Label htmlFor="dia_vencimento">Dia de Vencimento</Label>
+                <Select 
+                  value={formData.dia_vencimento.toString()} 
+                  onValueChange={(value) => handleInputChange("dia_vencimento", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 28 }, (_, i) => i + 1).map(day => (
+                      <SelectItem key={day} value={day.toString()}>
+                        Dia {day}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <ServicosSelector
               servicosSelecionados={servicosSelecionados}

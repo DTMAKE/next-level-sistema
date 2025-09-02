@@ -12,6 +12,9 @@ export interface Contrato {
   data_inicio: string;
   data_fim?: string;
   status: 'ativo' | 'suspenso' | 'cancelado' | 'finalizado';
+  tipo_contrato: 'unico' | 'recorrente';
+  dia_vencimento?: number;
+  vendedor_id?: string;
   observacoes?: string;
   cliente_id: string;
   user_id: string;
@@ -46,6 +49,9 @@ export interface CreateContratoData {
   data_inicio: string;
   data_fim?: string;
   status: 'ativo' | 'suspenso' | 'cancelado' | 'finalizado';
+  tipo_contrato: 'unico' | 'recorrente';
+  dia_vencimento?: number;
+  vendedor_id?: string;
   cliente_id: string;
   pdf_url?: string;
 }
