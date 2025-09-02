@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useContasReceber, useDeleteContaReceber, useMarcarComoRecebida } from "@/hooks/useContasReceber";
+import { useContasReceber, useDeleteContaReceber, useMarcarComoRecebida, useCleanupOrphanReceivables } from "@/hooks/useContasReceber";
 import { ContaReceberDialog } from "@/components/ContasReceber/ContaReceberDialog";
 import { StatusSelectorContasReceber } from "@/components/ContasReceber/StatusSelectorContasReceber";
 
@@ -35,6 +35,7 @@ export default function ContasReceber() {
   const { data: contas, isLoading } = useContasReceber(selectedDate);
   const deleteContaReceber = useDeleteContaReceber();
   const marcarComoRecebida = useMarcarComoRecebida();
+  const cleanupOrphanReceivables = useCleanupOrphanReceivables();
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -159,13 +160,23 @@ export default function ContasReceber() {
         <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl truncate">Contas a Receber</h1>
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
-          <ContaReceberDialog>
-            <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm">
-              <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Nova Receita</span>
-              <span className="sm:hidden">Nova</span>
+            <Button
+              onClick={() => cleanupOrphanReceivables.mutate()}
+              disabled={cleanupOrphanReceivables.isPending}
+              variant="outline"
+              className="h-8 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm"
+              title="Limpar contas órfãs de contratos inativos"
+            >
+              <Trash2 className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden lg:inline">Limpar Órfãs</span>
             </Button>
-          </ContaReceberDialog>
+            <ContaReceberDialog>
+              <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm">
+                <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Nova Receita</span>
+                <span className="sm:hidden">Nova</span>
+              </Button>
+            </ContaReceberDialog>
         </div>
       </div>
 
@@ -387,6 +398,12 @@ export default function ContasReceber() {
                               variant="ghost" 
                               size="sm"
                               onClick={() => handleDeleteConta(conta.id)}
+                              disabled={deleteContaReceber.isPending}
+                              title={isContratoTransaction(conta.descricao || '') 
+                                ? "Verificar se contrato está ativo" 
+                                : conta.venda_id 
+                                ? "Verificar se venda está relacionada" 
+                                : "Excluir conta"}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>

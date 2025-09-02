@@ -248,6 +248,17 @@ export function useDeleteContaReceber() {
   
   return useMutation({
     mutationFn: async (id: string) => {
+      // Primeiro validar se pode deletar
+      const { data: validation, error: validationError } = await supabase
+        .rpc('validate_delete_conta_receber', { conta_id: id });
+      
+      if (validationError) throw validationError;
+      
+      if (!validation?.[0]?.can_delete) {
+        throw new Error(validation?.[0]?.message || 'Não é possível excluir esta conta');
+      }
+      
+      // Se passou na validação, deletar
       const { error } = await supabase
         .from('transacoes_financeiras')
         .delete()
@@ -264,9 +275,17 @@ export function useDeleteContaReceber() {
     },
     onError: (error: any) => {
       console.error('Error deleting conta a receber:', error);
+      
+      // Mostrar mensagem específica do erro de validação
+      const errorMessage = error.message?.includes('contrato ativo') 
+        ? "Não é possível excluir: existe contrato ativo relacionado"
+        : error.message?.includes('venda relacionada')
+        ? "Não é possível excluir: existe venda relacionada"
+        : error.message || "Erro ao excluir conta a receber.";
+      
       toast({
         title: "Erro",
-        description: "Erro ao excluir conta a receber.",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -298,6 +317,33 @@ export function useMarcarComoRecebida() {
       toast({
         title: "Erro",
         description: "Erro ao marcar conta como recebida.",
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useCleanupOrphanReceivables() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('cleanup_orphan_receivables');
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
+      toast({
+        title: "Sucesso!",
+        description: "Contas órfãs de contratos inativos foram removidas.",
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error cleaning up orphan receivables:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao limpar contas órfãs.",
         variant: "destructive",
       });
     },

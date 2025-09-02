@@ -1125,6 +1125,10 @@ export type Database = {
         Args: { p_contrato_id: string }
         Returns: undefined
       }
+      cleanup_orphan_receivables: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_default_kanban_columns: {
         Args: { projeto_id: string; user_id: string }
         Returns: undefined
@@ -1156,6 +1160,13 @@ export type Database = {
       sync_commissions_to_financial: {
         Args: { p_user_id: string }
         Returns: undefined
+      }
+      validate_delete_conta_receber: {
+        Args: { conta_id: string }
+        Returns: {
+          can_delete: boolean
+          message: string
+        }[]
       }
       validate_password_strength: {
         Args: { password: string }
