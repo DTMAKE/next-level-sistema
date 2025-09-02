@@ -9,7 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { TrendingDown, Search, Filter, Plus, Edit, Eye, Calendar, DollarSign, Check, Grid, List, MoreVertical, Trash2, FileText, CreditCard, Download, Building2 } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -355,10 +355,10 @@ export default function ContasPagar() {
                         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 shrink-0" />
-                            <span>{format(new Date(conta.data_transacao), "dd/MM/yyyy", { locale: ptBR })}</span>
+                            <span>{format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}</span>
                             {conta.data_vencimento && (
                               <span className="text-xs">
-                                • Venc: {format(new Date(conta.data_vencimento), "dd/MM/yyyy", { locale: ptBR })}
+                                • Venc: {format(parseISO(conta.data_vencimento + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}
                               </span>
                             )}
                           </div>
@@ -456,10 +456,10 @@ export default function ContasPagar() {
                           </TableCell>
                           <TableCell>
                             <div>
-                              {format(new Date(conta.data_transacao), "dd/MM/yyyy", { locale: ptBR })}
+                              {format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}
                               {conta.data_vencimento && (
                                 <div className="text-xs text-muted-foreground">
-                                  Venc: {format(new Date(conta.data_vencimento), "dd/MM/yyyy", { locale: ptBR })}
+                                  Venc: {format(parseISO(conta.data_vencimento + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}
                                 </div>
                               )}
                             </div>
