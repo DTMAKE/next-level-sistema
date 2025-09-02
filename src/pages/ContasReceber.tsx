@@ -19,7 +19,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useContasReceber, useDeleteContaReceber, useMarcarComoRecebida } from "@/hooks/useContasReceber";
 import { ContaReceberDialog } from "@/components/ContasReceber/ContaReceberDialog";
 import { useContractRecurrences } from "@/hooks/useContractRecurrences";
-import { useParcelasContrato, useMarcarParcelaComoPaga } from "@/hooks/useParcelasContrato";
 
 export default function ContasReceber() {
   const { user } = useAuth();
@@ -35,12 +34,10 @@ export default function ContasReceber() {
   const itemsPerPage = 10;
   
   const { data: contas, isLoading, refetch } = useContasReceber(selectedDate);
-  const { data: parcelasContratos, isLoading: isLoadingParcelas } = useParcelasContrato(selectedDate);
   const { processRecurrences, isProcessing } = useContractRecurrences();
   
   const deleteContaReceber = useDeleteContaReceber();
   const marcarComoRecebida = useMarcarComoRecebida();
-  const marcarParcelaComoPaga = useMarcarParcelaComoPaga();
 
   // Process contract recurrences when date changes
   useEffect(() => {
@@ -98,20 +95,10 @@ export default function ContasReceber() {
   };
 
   const handleMarcarComoRecebida = (conta: any) => {
-    if (conta.isParcela) {
-      // Se for uma parcela, marcar como paga na tabela de parcelas
-      marcarParcelaComoPaga.mutate(conta.id);
-    } else {
-      // Se for uma conta regular, usar o hook existente
-      marcarComoRecebida.mutate(conta.id);
-    }
+    marcarComoRecebida.mutate(conta.id);
   };
 
-  const handleDeleteConta = (id: string, isParcela: boolean = false) => {
-    // Não permitir exclusão de parcelas de contratos
-    if (isParcela) {
-      return;
-    }
+  const handleDeleteConta = (id: string) => {
     setContaToDelete(id);
     setDeleteDialogOpen(true);
   };
@@ -128,41 +115,11 @@ export default function ContasReceber() {
     window.open(url, '_blank');
   };
 
-  // Combinar contas regulares com parcelas de contratos
-  const allContas = useMemo(() => {
-    const contasArray = contas || [];
-    const parcelasArray = parcelasContratos || [];
-    
-    // Converter parcelas para formato compatível com contas
-    const parcelasConvertidas = parcelasArray.map(parcela => ({
-      id: parcela.id,
-      descricao: `Parcela ${parcela.numero_parcela} - ${parcela.contratos?.descricao || 'Contrato'}`,
-      valor: parcela.valor_parcela,
-      data_transacao: parcela.data_vencimento,
-      data_vencimento: parcela.data_vencimento,
-      status: parcela.status_parcela === 'paga' ? 'confirmada' : 'pendente',
-      forma_pagamento: 'parcelado',
-      parcelas: null,
-      parcela_atual: null,
-      observacoes: `Cliente: ${parcela.contratos?.clientes?.nome || 'N/A'}`,
-      comprovante_url: null,
-      user_id: parcela.contratos?.user_id || '',
-      categoria_id: null,
-      venda_id: null,
-      created_at: parcela.created_at,
-      updated_at: parcela.updated_at,
-      isParcela: true, // Flag para identificar que é uma parcela
-      parcelaOriginal: parcela // Manter referência à parcela original
-    }));
-    
-    return [...contasArray, ...parcelasConvertidas];
-  }, [contas, parcelasContratos]);
-
   // Filtrar contas baseado no status
   const filteredContas = useMemo(() => {
-    if (statusFilter === 'all') return allContas;
-    return allContas.filter(conta => conta.status === statusFilter);
-  }, [allContas, statusFilter]);
+    if (statusFilter === 'all') return contas || [];
+    return (contas || []).filter(conta => conta.status === statusFilter);
+  }, [contas, statusFilter]);
 
   // Filtrar por termo de busca
   const searchedContas = useMemo(() => {
@@ -302,7 +259,7 @@ export default function ContasReceber() {
         </CardHeader>
         
         <CardContent className="p-4 sm:p-6">
-          {isLoading || isLoadingParcelas ? (
+          {isLoading ? (
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="space-y-2">
@@ -330,10 +287,7 @@ export default function ContasReceber() {
                   {paginatedContas.map((conta) => (
                     <Card 
                       key={conta.id} 
-                      className={cn(
-                        "p-4 hover:shadow-md transition-shadow",
-                        conta.isParcela && "border-l-4 border-l-blue-500"
-                      )}
+                      className="p-4 hover:shadow-md transition-shadow"
                     >
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-3">
@@ -344,11 +298,6 @@ export default function ContasReceber() {
                             </h3>
                           </div>
                           <div className="flex gap-2">
-                            {conta.isParcela && (
-                              <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                Parcela
-                              </Badge>
-                            )}
                             <Badge className={getStatusColor(conta.status)}>
                               {getStatusLabel(conta.status)}
                             </Badge>
@@ -384,23 +333,21 @@ export default function ContasReceber() {
                               size="sm" 
                               className="flex-1"
                               onClick={() => handleMarcarComoRecebida(conta)}
-                              disabled={marcarComoRecebida.isPending || marcarParcelaComoPaga.isPending}
+                              disabled={marcarComoRecebida.isPending}
                             >
                               <Check className="h-3 w-3 mr-1" />
                               Marcar como Recebida
                             </Button>
                           )}
-                          {!conta.isParcela && (
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="flex-1"
-                              onClick={() => handleDeleteConta(conta.id, conta.isParcela)}
-                            >
-                              <Trash2 className="h-3 w-3 mr-1" />
-                              Excluir
-                            </Button>
-                          )}
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1"
+                            onClick={() => handleDeleteConta(conta.id)}
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" />
+                            Excluir
+                          </Button>
                         </div>
                       </div>
                     </Card>
@@ -426,13 +373,7 @@ export default function ContasReceber() {
                           key={conta.id}
                         >
                           <TableCell>
-                            {conta.isParcela ? (
-                              <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                Parcela
-                              </Badge>
-                            ) : (
-                              <Badge variant="secondary">Conta</Badge>
-                            )}
+                            <Badge variant="secondary">Conta</Badge>
                           </TableCell>
                           <TableCell className="font-medium max-w-[300px]">
                             <div className="truncate" title={conta.descricao}>
@@ -451,27 +392,25 @@ export default function ContasReceber() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                                                    <div className="flex gap-2">
-                          {conta.status === 'pendente' && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleMarcarComoRecebida(conta)}
-                              disabled={marcarComoRecebida.isPending || marcarParcelaComoPaga.isPending}
-                            >
-                              <Check className="h-3 w-3" />
-                            </Button>
-                          )}
-                          {!conta.isParcela && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleDeleteConta(conta.id, conta.isParcela)}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          )}
-                        </div>
+                            <div className="flex gap-2">
+                              {conta.status === 'pendente' && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleMarcarComoRecebida(conta)}
+                                  disabled={marcarComoRecebida.isPending}
+                                >
+                                  <Check className="h-3 w-3" />
+                                </Button>
+                              )}
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleDeleteConta(conta.id)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
