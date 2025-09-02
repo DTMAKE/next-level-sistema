@@ -202,8 +202,7 @@ export function useUpdateContaPagar() {
         .from('transacoes_financeiras')
         .update(data)
         .eq('id', id)
-        .select()
-        .single();
+        .select();
       
       if (error) {
         console.error('Erro na atualização:', error);
