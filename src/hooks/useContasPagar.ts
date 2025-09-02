@@ -11,14 +11,20 @@ export interface ContaPagar {
   valor: number;
   data_transacao: string;
   data_vencimento?: string;
-  status: 'pendente' | 'confirmada' | 'cancelada';
-  forma_pagamento: 'a_vista' | 'parcelado';
+  status: string;
+  forma_pagamento: string;
   parcelas: number;
   parcela_atual: number;
   comprovante_url?: string;
   observacoes?: string;
+  comissao_id?: string;
   created_at: string;
   updated_at: string;
+  categorias_financeiras?: {
+    nome: string;
+    cor: string;
+  } | null;
+  comissoes?: any;
 }
 
 export interface CreateContaPagarData {
@@ -40,12 +46,44 @@ export function useContasPagar(selectedDate: Date) {
 
   return useQuery({
     queryKey: ['contas-pagar', user?.id, user?.role, startOfMonth, endOfMonth],
-    queryFn: async () => {
+    queryFn: async (): Promise<ContaPagar[]> => {
       if (!user?.id) throw new Error('User not authenticated');
 
       let query = supabase
         .from('transacoes_financeiras')
-        .select('*')
+        .select(`
+          *,
+          categorias_financeiras (
+            nome,
+            cor
+          ),
+          comissoes (
+            id,
+            vendedor_id,
+            venda_id,
+            contrato_id,
+            mes_referencia,
+            percentual,
+            profiles:vendedor_id (
+              name,
+              role
+            ),
+            vendas (
+              cliente_id,
+              clientes (
+                nome
+              )
+            ),
+            contratos (
+              numero_contrato,
+              titulo,
+              cliente_id,
+              clientes (
+                nome
+              )
+            )
+          )
+        `)
         .eq('tipo', 'despesa')
         .gte('data_transacao', startOfMonth)
         .lte('data_transacao', endOfMonth);
@@ -58,7 +96,7 @@ export function useContasPagar(selectedDate: Date) {
       const { data, error } = await query.order('data_transacao', { ascending: false });
 
       if (error) throw error;
-      return data as ContaPagar[];
+      return (data || []) as ContaPagar[];
     },
     enabled: !!user?.id,
   });

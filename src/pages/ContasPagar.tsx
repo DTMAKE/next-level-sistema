@@ -76,8 +76,40 @@ export default function ContasPagar() {
     return `${parcelaAtual}/${parcelas}x`;
   };
 
-  const isComissaoTransaction = (descricao: string) => {
-    return descricao?.toLowerCase().includes('comissão');
+  const isComissaoTransaction = (conta: any) => {
+    return !!conta.comissao_id;
+  };
+
+  const getComissaoInfo = (conta: any) => {
+    if (!conta.comissoes) return null;
+    
+    const comissao = conta.comissoes;
+    const vendedorNome = comissao.profiles?.name || 'Vendedor';
+    
+    let clienteNome = '';
+    let tipoComissao = '';
+    let referencia = '';
+    
+    if (comissao.contratos) {
+      // Comissão de contrato recorrente
+      clienteNome = comissao.contratos.clientes?.nome || 'Cliente';
+      tipoComissao = 'Contrato Recorrente';
+      referencia = comissao.contratos.numero_contrato || comissao.contratos.titulo || 'Contrato';
+    } else if (comissao.vendas) {
+      // Comissão de venda única
+      clienteNome = comissao.vendas.clientes?.nome || 'Cliente';
+      tipoComissao = 'Venda Única';
+      referencia = 'Venda';
+    }
+    
+    return {
+      vendedorNome,
+      clienteNome,
+      tipoComissao,
+      referencia,
+      percentual: comissao.percentual || 0,
+      mesReferencia: comissao.mes_referencia
+    };
   };
 
   const handleToggleStatus = (conta: any) => {
@@ -89,7 +121,7 @@ export default function ContasPagar() {
 
   const canDeleteConta = (conta: any) => {
     // Não pode deletar se for comissão ou relacionada a contrato/venda
-    return !isComissaoTransaction(conta.descricao || '');
+    return !isComissaoTransaction(conta);
   };
 
   const handleStatusChange = (contaId: string, newStatus: 'pendente' | 'confirmada' | 'cancelada') => {
@@ -348,14 +380,24 @@ export default function ContasPagar() {
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            {isComissaoTransaction(conta.descricao || '') ? (
+                            {isComissaoTransaction(conta) ? (
                               <Building2 className="h-4 w-4 text-purple-600 shrink-0" />
                             ) : (
                               <DollarSign className="h-4 w-4 text-red-600 shrink-0" />
                             )}
-                            <h3 className="font-semibold text-base truncate">
-                              {conta.descricao || 'Despesa sem descrição'}
-                            </h3>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-semibold text-base truncate">
+                                {conta.descricao || 'Despesa sem descrição'}
+                              </h3>
+                              {isComissaoTransaction(conta) && (() => {
+                                const info = getComissaoInfo(conta);
+                                return info ? (
+                                  <p className="text-sm text-purple-600 font-medium truncate">
+                                    {info.tipoComissao} • {info.vendedorNome} • {info.clienteNome}
+                                  </p>
+                                ) : null;
+                              })()}
+                            </div>
                           </div>
                            <StatusSelectorContasPagar conta={conta} size="sm" />
                         </div>
@@ -380,12 +422,27 @@ export default function ContasPagar() {
                               <span className="text-xs">Possui comprovante</span>
                             </div>
                           )}
-                          {isComissaoTransaction(conta.descricao || '') && (
-                            <div className="flex items-center gap-2">
-                              <Building2 className="h-3 w-3 text-purple-600" />
-                              <span className="text-xs text-purple-600 font-medium">Comissão de Contrato</span>
-                            </div>
-                          )}
+                          {isComissaoTransaction(conta) && (() => {
+                            const info = getComissaoInfo(conta);
+                            return info ? (
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                  <Building2 className="h-3 w-3 text-purple-600" />
+                                  <span className="text-xs text-purple-600 font-medium">
+                                    {info.tipoComissao} ({info.percentual}%)
+                                  </span>
+                                </div>
+                                <div className="text-xs text-muted-foreground ml-5">
+                                  Ref: {format(new Date(info.mesReferencia + 'T00:00:00'), "MM/yyyy", { locale: ptBR })}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <Building2 className="h-3 w-3 text-purple-600" />
+                                <span className="text-xs text-purple-600 font-medium">Comissão</span>
+                              </div>
+                            );
+                          })()}
                         </div>
                         
                         <div className="flex items-center justify-between">
@@ -449,29 +506,37 @@ export default function ContasPagar() {
                             <StatusSelectorContasPagar conta={conta} size="sm" />
                            </TableCell>
                            <TableCell className="font-medium">
-                             <div className="flex items-center gap-2">
-                               {isComissaoTransaction(conta.descricao || '') ? (
-                                 <Building2 className="h-4 w-4 text-purple-600" />
-                               ) : (
-                                 <TrendingDown className="h-4 w-4 text-red-600" />
-                               )}
-                               <div>
-                                 <div>{conta.descricao || 'Despesa sem descrição'}</div>
-                                 {conta.comprovante_url && (
-                                   <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                     <FileText className="h-3 w-3" />
-                                     Possui comprovante
-                                   </div>
-                                 )}
-                                 {isComissaoTransaction(conta.descricao || '') && (
-                                   <div className="text-xs text-purple-600 font-medium flex items-center gap-1">
-                                     <Building2 className="h-3 w-3" />
-                                     Comissão de Contrato
-                                   </div>
-                                 )}
-                               </div>
-                             </div>
-                           </TableCell>
+                              <div className="flex items-center gap-2">
+                                {isComissaoTransaction(conta) ? (
+                                  <Building2 className="h-4 w-4 text-purple-600" />
+                                ) : (
+                                  <TrendingDown className="h-4 w-4 text-red-600" />
+                                )}
+                                <div>
+                                  <div>{conta.descricao || 'Despesa sem descrição'}</div>
+                                  {conta.comprovante_url && (
+                                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                      <FileText className="h-3 w-3" />
+                                      Possui comprovante
+                                    </div>
+                                  )}
+                                  {isComissaoTransaction(conta) && (() => {
+                                    const info = getComissaoInfo(conta);
+                                    return info ? (
+                                      <div className="text-xs text-purple-600 font-medium flex items-center gap-1">
+                                        <Building2 className="h-3 w-3" />
+                                        {info.tipoComissao} • {info.vendedorNome}
+                                      </div>
+                                    ) : (
+                                      <div className="text-xs text-purple-600 font-medium flex items-center gap-1">
+                                        <Building2 className="h-3 w-3" />
+                                        Comissão
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
+                              </div>
+                            </TableCell>
                           <TableCell>
                             {getFormaPagamentoLabel(conta.forma_pagamento, conta.parcelas, conta.parcela_atual)}
                           </TableCell>
