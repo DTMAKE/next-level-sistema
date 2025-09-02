@@ -80,7 +80,7 @@ export function useContasReceber(selectedDate: Date) {
         query = query.eq('user_id', user.id);
       }
 
-      const { data, error } = await query.order('data_transacao', { ascending: false });
+      const { data, error } = await query.order('updated_at', { ascending: false });
       
       if (error) throw error;
       
