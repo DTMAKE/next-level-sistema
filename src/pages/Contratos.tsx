@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, Plus, FileText, Calendar, DollarSign, Edit, Trash2, User, MoreVertical, Grid, List, CreditCard, TrendingUp } from "lucide-react";
+import { Search, Plus, FileText, Calendar, DollarSign, Edit, Trash2, User, MoreVertical, Grid, List } from "lucide-react";
 import { useContratos, type Contrato } from "@/hooks/useContratos";
 import { ContratoDialog } from "@/components/Contratos/ContratoDialog";
 import { DeleteContratoDialog } from "@/components/Contratos/DeleteContratoDialog";
@@ -96,75 +96,6 @@ export default function Contratos() {
       case 'finalizado': return 'Finalizado';
       default: return status;
     }
-  };
-
-  const getTipoContratoLabel = (tipo: string) => {
-    switch (tipo) {
-      case 'recorrente': return 'Recorrente';
-      case 'unico': return 'Único';
-      default: return tipo;
-    }
-  };
-
-  const getTipoContratoColor = (tipo: string) => {
-    switch (tipo) {
-      case 'recorrente': return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
-      case 'unico': return 'bg-purple-100 text-purple-800 hover:bg-purple-200';
-      default: return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
-    }
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
-
-  const getParcelasInfo = (contrato: Contrato) => {
-    if (contrato.tipo_contrato === 'unico') {
-      return { total: 1, pendentes: 0, pagas: 1 };
-    }
-
-    // For recurring contracts, calculate parcels based on period
-    if (contrato.tipo_contrato === 'recorrente' && contrato.data_inicio && contrato.data_fim) {
-      const startDate = new Date(contrato.data_inicio);
-      const endDate = new Date(contrato.data_fim);
-      
-      // Calculate number of months between start and end dates
-      const yearDiff = endDate.getFullYear() - startDate.getFullYear();
-      const monthDiff = endDate.getMonth() - startDate.getMonth();
-      const totalMonths = yearDiff * 12 + monthDiff + 1; // +1 to include the start month
-      
-      const today = new Date();
-      const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      const startMonth = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-      
-      // Calculate how many parcels should be paid by now
-      let monthsPassed = 0;
-      if (currentMonth >= startMonth) {
-        const passedYearDiff = currentMonth.getFullYear() - startMonth.getFullYear();
-        const passedMonthDiff = currentMonth.getMonth() - startMonth.getMonth();
-        monthsPassed = Math.min(passedYearDiff * 12 + passedMonthDiff + 1, totalMonths);
-      }
-      
-      return {
-        total: totalMonths,
-        pendentes: Math.max(0, monthsPassed - 0), // Assuming none are marked as paid yet
-        pagas: 0 // This would need to be calculated from actual payment records
-      };
-    }
-
-    // Fallback for recurring contracts without end date
-    if (contrato.tipo_contrato === 'recorrente') {
-      return {
-        total: 0, // Indefinite
-        pendentes: contrato.status === 'ativo' ? 1 : 0,
-        pagas: 0
-      };
-    }
-
-    return { total: 0, pendentes: 0, pagas: 0 };
   };
 
   if (error) {
@@ -269,85 +200,71 @@ export default function Contratos() {
               {viewMode === "cards" || isMobile ? (
                 // Card View (Mobile and Desktop when cards selected)
                 <div className="space-y-3">
-                  {paginatedData.map((contrato) => {
-                    const parcelasInfo = getParcelasInfo(contrato);
-                    return (
-                      <Card 
-                        key={contrato.id} 
-                        className="p-4 hover:shadow-md transition-shadow cursor-pointer"
-                        onClick={() => navigate(`/contratos/${contrato.id}`)}
-                      >
-                        <div className="flex flex-col gap-3">
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-3">
-                              <FileText className="h-4 w-4 text-accent shrink-0" />
-                              <h3 className="font-semibold text-base truncate">
-                                {contrato.numero_contrato || 'Contrato'}
-                              </h3>
-                            </div>
-                            <div className="flex gap-2">
-                              <Badge className={getStatusColor(contrato.status)}>
-                                {getStatusLabel(contrato.status)}
-                              </Badge>
-                              <Badge className={getTipoContratoColor(contrato.tipo_contrato)}>
-                                {getTipoContratoLabel(contrato.tipo_contrato)}
-                              </Badge>
-                            </div>
+                  {paginatedData.map((contrato) => (
+                    <Card 
+                      key={contrato.id} 
+                      className="p-4 hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => navigate(`/contratos/${contrato.id}`)}
+                    >
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <FileText className="h-4 w-4 text-accent shrink-0" />
+                            <h3 className="font-semibold text-base truncate">
+                              {contrato.numero_contrato || 'Contrato'}
+                            </h3>
                           </div>
-                          
-                          <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4 shrink-0" />
-                              <span className="truncate">{contrato.cliente?.nome || 'Cliente não encontrado'}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4 shrink-0" />
-                              <span>
-                                {new Date(contrato.data_inicio).toLocaleDateString()}
-                                {contrato.data_fim && ` - ${new Date(contrato.data_fim).toLocaleDateString()}`}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <DollarSign className="h-4 w-4 shrink-0" />
-                              <span>
-                                {formatCurrency(contrato.valor)}
-                              </span>
-                            </div>
-                            {contrato.tipo_contrato === 'recorrente' && (
-                              <div className="flex items-center gap-2">
-                                <CreditCard className="h-4 w-4 shrink-0" />
-                                <span>
-                                  Parcelas: {parcelasInfo.pagas}/{parcelasInfo.total} pagas
-                                  {parcelasInfo.pendentes > 0 && ` (${parcelasInfo.pendentes} pendentes)`}
-                                </span>
-                              </div>
-                            )}
+                          <Badge className={getStatusColor(contrato.status)}>
+                            {getStatusLabel(contrato.status)}
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 shrink-0" />
+                            <span className="truncate">{contrato.cliente?.nome || 'Cliente não encontrado'}</span>
                           </div>
-                          
-                          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="flex-1"
-                              onClick={() => handleEditContrato(contrato)}
-                            >
-                              <Edit className="h-3 w-3 mr-1" />
-                              Editar
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="flex-1"
-                              onClick={() => handleDeleteContrato(contrato)}
-                            >
-                              <Trash2 className="h-3 w-3 mr-1" />
-                              Excluir
-                            </Button>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 shrink-0" />
+                            <span>
+                              {new Date(contrato.data_inicio).toLocaleDateString()}
+                              {contrato.data_fim && ` - ${new Date(contrato.data_fim).toLocaleDateString()}`}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <DollarSign className="h-4 w-4 shrink-0" />
+                            <span>
+                              {new Intl.NumberFormat('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL'
+                              }).format(contrato.valor)}
+                            </span>
                           </div>
                         </div>
-                      </Card>
-                    );
-                  })}
+                        
+                        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1"
+                            onClick={() => handleEditContrato(contrato)}
+                          >
+                            <Edit className="h-3 w-3 mr-1" />
+                            Editar
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1"
+                            onClick={() => handleDeleteContrato(contrato)}
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" />
+                            Excluir
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
               ) : (
                 // Table View (Desktop only)
@@ -356,92 +273,68 @@ export default function Contratos() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Status</TableHead>
-                        <TableHead>Tipo</TableHead>
                         <TableHead>Contrato</TableHead>
                         <TableHead>Cliente</TableHead>
                         <TableHead>Período</TableHead>
                         <TableHead>Valor</TableHead>
-                        <TableHead>Parcelas</TableHead>
                         <TableHead className="w-[100px]">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {paginatedData.map((contrato) => {
-                        const parcelasInfo = getParcelasInfo(contrato);
-                        return (
-                          <TableRow 
-                            key={contrato.id} 
-                            className="cursor-pointer hover:bg-muted/50"
-                            onClick={() => navigate(`/contratos/${contrato.id}`)}
-                          >
-                            <TableCell>
-                              <Badge className={getStatusColor(contrato.status)} variant="secondary">
-                                {getStatusLabel(contrato.status)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={getTipoContratoColor(contrato.tipo_contrato)} variant="secondary">
-                                {getTipoContratoLabel(contrato.tipo_contrato)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              <div className="flex items-center gap-2">
-                                <FileText className="h-4 w-4 text-accent" />
-                                {contrato.numero_contrato || 'Contrato'}
-                              </div>
-                            </TableCell>
-                            <TableCell>{contrato.cliente?.nome || 'Cliente não encontrado'}</TableCell>
-                            <TableCell>
-                              {new Date(contrato.data_inicio).toLocaleDateString()}
-                              {contrato.data_fim && ` - ${new Date(contrato.data_fim).toLocaleDateString()}`}
-                            </TableCell>
-                            <TableCell>
-                              {formatCurrency(contrato.valor)}
-                            </TableCell>
-                            <TableCell>
-                              {contrato.tipo_contrato === 'recorrente' ? (
-                                <div className="flex items-center gap-2">
-                                  <CreditCard className="h-4 w-4 text-muted-foreground" />
-                                  <span className="text-sm">
-                                    {parcelasInfo.pagas}/{parcelasInfo.total}
-                                    {parcelasInfo.pendentes > 0 && (
-                                      <span className="text-yellow-600 ml-1">
-                                        ({parcelasInfo.pendentes})
-                                      </span>
-                                    )}
-                                  </span>
-                                </div>
-                              ) : (
-                                <span className="text-muted-foreground text-sm">-</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <div onClick={(e) => e.stopPropagation()}>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm">
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleEditContrato(contrato)}>
-                                      <Edit className="h-4 w-4 mr-2" />
-                                      Editar
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem 
-                                      onClick={() => handleDeleteContrato(contrato)} 
-                                      className="text-destructive"
-                                    >
-                                      <Trash2 className="h-4 w-4 mr-2" />
-                                      Excluir
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
+                      {paginatedData.map((contrato) => (
+                        <TableRow 
+                          key={contrato.id} 
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => navigate(`/contratos/${contrato.id}`)}
+                        >
+                          <TableCell>
+                            <Badge className={getStatusColor(contrato.status)} variant="secondary">
+                              {getStatusLabel(contrato.status)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-accent" />
+                              {contrato.numero_contrato || 'Contrato'}
+                            </div>
+                          </TableCell>
+                          <TableCell>{contrato.cliente?.nome || 'Cliente não encontrado'}</TableCell>
+                          <TableCell>
+                            {new Date(contrato.data_inicio).toLocaleDateString()}
+                            {contrato.data_fim && ` - ${new Date(contrato.data_fim).toLocaleDateString()}`}
+                          </TableCell>
+                          <TableCell>
+                            {new Intl.NumberFormat('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL'
+                            }).format(contrato.valor)}
+                          </TableCell>
+                          <TableCell>
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => handleEditContrato(contrato)}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Editar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleDeleteContrato(contrato)} 
+                                    className="text-destructive"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Excluir
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 </div>

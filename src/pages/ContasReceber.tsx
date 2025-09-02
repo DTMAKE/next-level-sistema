@@ -1,145 +1,93 @@
-import { useState, useEffect, useMemo } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { 
-  TrendingUp, 
-  Plus, 
-  Search, 
-  MoreVertical, 
-  Edit, 
-  Trash2, 
-  Calendar,
-  Download,
-  Grid3X3,
-  List,
-  Filter,
-  RefreshCw,
-  CheckCircle
-} from "lucide-react";
-import { useContasReceber, useDeleteContaReceber, useMarcarComoRecebida } from "@/hooks/useContasReceber";
-import { useContractRecurrences } from "@/hooks/useContractRecurrences";
-import { useNavigate } from "react-router-dom";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { TrendingUp, Search, Filter, Plus, Calendar, DollarSign, Check, Grid, List, Trash2, FileText, CreditCard, Download, ShoppingCart, UserCheck } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useContasReceber, useDeleteContaReceber, useMarcarComoRecebida } from "@/hooks/useContasReceber";
 import { ContaReceberDialog } from "@/components/ContasReceber/ContaReceberDialog";
 import { StatusSelectorContasReceber } from "@/components/ContasReceber/StatusSelectorContasReceber";
-import { useIsMobile } from "@/hooks/use-mobile";
-
-const ITEMS_PER_PAGE = 10;
 
 export default function ContasReceber() {
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
-  const [showDialog, setShowDialog] = useState(false);
-  const [selectedConta, setSelectedConta] = useState<any>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [contaToDelete, setContaToDelete] = useState<any>(null);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  
-  const { data: contas = [], isLoading } = useContasReceber(selectedDate);
-  const deleteConta = useDeleteContaReceber();
-  const marcarComoRecebida = useMarcarComoRecebida();
-  const processRecurrences = useContractRecurrences();
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const { user } = useAuth();
   const isMobile = useIsMobile();
-
-  // Trigger contract recurrence processing when date changes
-  useEffect(() => {
-    const processContractRecurrences = async () => {
-      try {
-        await processRecurrences.processRecurrences(format(selectedDate, 'yyyy-MM-dd'));
-      } catch (error) {
-        console.error('Erro ao processar recorrências:', error);
-      }
-    };
-
-    processContractRecurrences();
-  }, [selectedDate]);
-
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<"cards" | "table">(isMobile ? "cards" : "table");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [contaToDelete, setContaToDelete] = useState<string | null>(null);
+  
+  const itemsPerPage = 10;
+  
+  const { data: contas, isLoading } = useContasReceber(selectedDate);
+  const deleteContaReceber = useDeleteContaReceber();
+  const marcarComoRecebida = useMarcarComoRecebida();
+  
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   };
-
-  const getStatusColor = (status: string | null) => {
+  
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case 'confirmada': return 'bg-green-100 text-green-800 border-green-200';
-      case 'cancelada': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'pendente':
+        return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400';
+      case 'confirmada':
+        return 'bg-green-500/10 text-green-700 dark:text-green-400';
+      case 'cancelada':
+        return 'bg-red-500/10 text-red-700 dark:text-red-400';
+      default:
+        return 'bg-gray-500/10 text-gray-700 dark:text-gray-400';
     }
   };
-
-  const getStatusLabel = (status: string | null) => {
+  
+  const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'confirmada': return 'Recebida';
-      case 'cancelada': return 'Cancelada';
-      default: return 'Pendente';
+      case 'pendente':
+        return 'Pendente';
+      case 'confirmada':
+        return 'Recebida';
+      case 'cancelada':
+        return 'Cancelada';
+      default:
+        return status;
     }
   };
 
-  const getFormaPagamentoLabel = (forma: string | null, parcelas?: number) => {
-    if (!forma) return 'N/A';
-    if (forma === 'parcelado' && parcelas) {
-      return `Parcelado (${parcelas}x)`;
-    }
-    return forma === 'a_vista' ? 'À Vista' : forma;
+  const getFormaPagamentoLabel = (forma: string, parcelas: number, parcelaAtual: number) => {
+    if (forma === 'a_vista') return 'À Vista';
+    return `${parcelaAtual}/${parcelas}x`;
   };
 
-  const handleMarcarComoRecebida = async (contaId: string) => {
-    try {
-      await marcarComoRecebida.mutateAsync(contaId);
-      toast({
-        title: "Conta marcada como recebida!",
-        description: "O status foi atualizado com sucesso.",
-      });
-    } catch (error) {
-      console.error("Erro ao marcar conta como recebida:", error);
-      toast({
-        title: "Erro ao atualizar",
-        description: "Não foi possível marcar a conta como recebida.",
-        variant: "destructive",
-      });
-    }
+  const handleMarcarComoRecebida = (conta: any) => {
+    marcarComoRecebida.mutate(conta.id);
   };
 
-  const handleDeleteConta = (conta: any) => {
-    setContaToDelete(conta);
+  const handleDeleteConta = (id: string) => {
+    setContaToDelete(id);
     setDeleteDialogOpen(true);
   };
 
-  const confirmDelete = async () => {
-    if (!contaToDelete) return;
-    
-    try {
-      await deleteConta.mutateAsync(contaToDelete.id);
-      toast({
-        title: "Conta excluída!",
-        description: "A conta foi removida com sucesso.",
-      });
+  const confirmDelete = () => {
+    if (contaToDelete) {
+      deleteContaReceber.mutate(contaToDelete);
       setDeleteDialogOpen(false);
       setContaToDelete(null);
-    } catch (error) {
-      console.error("Erro ao excluir conta:", error);
-      toast({
-        title: "Erro ao excluir",
-        description: "Não foi possível excluir a conta.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -147,498 +95,419 @@ export default function ContasReceber() {
     window.open(url, '_blank');
   };
 
-  // Filter contas by status
+  // Aplicar filtros e memoização para performance
   const filteredContas = useMemo(() => {
+    if (!contas) return [];
+    
     return contas.filter(conta => {
-      if (statusFilter === "all") return true;
-      return conta.status === statusFilter;
-    });
-  }, [contas, statusFilter]);
+      const matchesSearch = !searchTerm || 
+        conta.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || conta.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    }).sort((a, b) => new Date(b.data_transacao).getTime() - new Date(a.data_transacao).getTime());
+  }, [contas, searchTerm, statusFilter]);
 
-  // Search contas
-  const searchedContas = useMemo(() => {
-    if (!searchTerm) return filteredContas;
-    return filteredContas.filter(conta =>
-      conta.descricao?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      conta.observacoes?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [filteredContas, searchTerm]);
+  // Paginação
+  const totalPages = Math.ceil(filteredContas.length / itemsPerPage);
+  const paginatedContas = filteredContas.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // Paginated contas
-  const paginatedContas = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return searchedContas.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [searchedContas, currentPage]);
+  // Calcular totais
+  const totalContas = filteredContas.reduce((sum, d) => sum + Number(d.valor), 0);
+  const contasPendentes = filteredContas.filter(d => d.status === 'pendente').reduce((sum, d) => sum + Number(d.valor), 0);
+  const contasRecebidas = filteredContas.filter(d => d.status === 'confirmada').reduce((sum, d) => sum + Number(d.valor), 0);
 
-  const totalPages = Math.ceil(searchedContas.length / ITEMS_PER_PAGE);
+  // Reset page quando filtros mudam
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
 
-  // Calculate totals
-  const totals = useMemo(() => {
-    return contas.reduce((acc, conta) => {
-      const valor = conta.valor || 0;
-      acc.total += valor;
-      
-      if (conta.status === 'confirmada') {
-        acc.recebidas += valor;
-      } else if (conta.status === 'pendente') {
-        acc.pendentes += valor;
-      }
-      
-      return acc;
-    }, { total: 0, pendentes: 0, recebidas: 0 });
-  }, [contas]);
+  const handleFilterChange = (filter: string) => {
+    setStatusFilter(filter);
+    setCurrentPage(1);
+  };
 
-  // Status counts for filter badges
-  const statusCounts = useMemo(() => {
-    return contas.reduce((acc, conta) => {
-      const status = conta.status || 'pendente';
-      acc[status] = (acc[status] || 0) + 1;
-      acc.total = (acc.total || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-  }, [contas]);
-
+  // Geração de números da paginação
   const generatePaginationNumbers = () => {
-    const maxVisible = isMobile ? 3 : 5;
     const pages = [];
-    
-    if (totalPages <= maxVisible) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      const start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-      const end = Math.min(totalPages, start + maxVisible - 1);
-      
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
+    const maxVisiblePages = isMobile ? 3 : 5;
+    const halfVisible = Math.floor(maxVisiblePages / 2);
+    let startPage = Math.max(1, currentPage - halfVisible);
+    let endPage = Math.min(totalPages, currentPage + halfVisible);
+
+    if (currentPage <= halfVisible) {
+      endPage = Math.min(totalPages, maxVisiblePages);
     }
-    
+    if (currentPage > totalPages - halfVisible) {
+      startPage = Math.max(1, totalPages - maxVisiblePages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
     return pages;
   };
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto p-4 space-y-6">
-        <div className="flex justify-between items-center">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-10 w-32" />
+  return (
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
+      {/* Header */}
+      <div className="flex flex-row justify-between items-center gap-2">
+        <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl truncate">Contas a Receber</h1>
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
+          <ContaReceberDialog>
+            <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm">
+              <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Nova Receita</span>
+              <span className="sm:hidden">Nova</span>
+            </Button>
+          </ContaReceberDialog>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="pb-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-8 w-32" />
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
-        
+      </div>
+
+      {/* Cards de Resumo */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Total a Receber</CardTitle>
+            <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="space-y-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full" />
-            ))}
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-green-600">
+              {formatCurrency(totalContas)}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Pendentes</CardTitle>
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-yellow-600">
+              {formatCurrency(contasPendentes)}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-2 lg:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Recebidas</CardTitle>
+            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="p-3 sm:p-6 pt-0">
+            <div className="text-lg sm:text-2xl font-bold text-green-600">
+              {formatCurrency(contasRecebidas)}
+            </div>
           </CardContent>
         </Card>
       </div>
-    );
-  }
 
-  return (
-    <div className="container mx-auto p-4 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-green-600" />
-            Contas a Receber
-          </h1>
-          <p className="text-muted-foreground">
-            Gerencie suas contas a receber e receitas
-          </p>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row gap-2">
-          <Button
-            onClick={() => processRecurrences.processRecurrences(format(selectedDate, 'yyyy-MM-dd'))}
-            variant="outline"
-            size="sm"
-            disabled={processRecurrences.isProcessing}
-            className="flex items-center gap-2"
-          >
-            {processRecurrences.isProcessing ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <RefreshCw className="w-4 h-4" />
-            )}
-            Sincronizar Contratos
-          </Button>
-          
-          <Button
-            onClick={() => {
-              setSelectedConta(null);
-              setShowDialog(true);
-            }}
-            className="flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Nova Conta
-          </Button>
-        </div>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-blue-600" />
-              Total a Receber
-            </CardDescription>
-            <CardTitle className="text-2xl font-bold text-blue-600">
-              {formatCurrency(totals.total)}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-yellow-600" />
-              Pendentes
-            </CardDescription>
-            <CardTitle className="text-2xl font-bold text-yellow-600">
-              {formatCurrency(totals.pendentes)}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-600" />
-              Recebidas
-            </CardDescription>
-            <CardTitle className="text-2xl font-bold text-green-600">
-              {formatCurrency(totals.recebidas)}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
-
-      {/* Filters Card */}
+      {/* Filtros e Controles */}
       <Card>
-        <CardHeader className="pb-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex items-center gap-4">
-              <MonthYearPicker
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-              />
-              
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  placeholder="Buscar contas..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-row gap-2 items-center">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Buscar por nome da receita..." 
+                  className="pl-10 h-10 text-sm" 
+                  value={searchTerm} 
+                  onChange={e => handleSearchChange(e.target.value)} 
                 />
               </div>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-10 px-3 shrink-0">
+                    <Filter className="h-4 w-4" />
+                    <span className="ml-2 hidden sm:inline">
+                      {statusFilter === "all" ? "Status" : getStatusLabel(statusFilter)}
+                    </span>
+                    {statusFilter !== "all" && (
+                      <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-popover border z-50">
+                  <DropdownMenuItem onClick={() => handleFilterChange("all")}>
+                    Todos os status
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("pendente")}>
+                    <div className="w-2 h-2 rounded-full bg-yellow-600 mr-2" />
+                    Pendente
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("confirmada")}>
+                    <div className="w-2 h-2 rounded-full bg-green-600 mr-2" />
+                    Recebida
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("cancelada")}>
+                    <div className="w-2 h-2 rounded-full bg-red-600 mr-2" />
+                    Cancelada
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {!isMobile && (
+                <div className="flex items-center gap-2 ml-2">
+                  <Button 
+                    variant={viewMode === "cards" ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setViewMode("cards")}
+                  >
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant={viewMode === "table" ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setViewMode("table")}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
             
-            <div className="flex items-center gap-2">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-40">
-                  <div className="flex items-center gap-2">
-                    <Filter className="w-4 h-4" />
-                    <SelectValue placeholder="Status" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">
-                    Todos ({statusCounts.total || 0})
-                  </SelectItem>
-                  <SelectItem value="pendente">
-                    Pendentes ({statusCounts.pendente || 0})
-                  </SelectItem>
-                  <SelectItem value="confirmada">
-                    Recebidas ({statusCounts.confirmada || 0})
-                  </SelectItem>
-                  <SelectItem value="cancelada">
-                    Canceladas ({statusCounts.cancelada || 0})
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-
-              <div className="flex border rounded-md">
-                <Button
-                  variant={viewMode === "cards" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("cards")}
-                  className="rounded-r-none"
-                >
-                  <Grid3X3 className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === "table" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("table")}
-                  className="rounded-l-none"
-                >
-                  <List className="w-4 h-4" />
-                </Button>
+            {filteredContas.length > 0 && (
+              <div className="text-sm text-muted-foreground">
+                Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredContas.length)} de {filteredContas.length} conta(s)
               </div>
-            </div>
+            )}
           </div>
         </CardHeader>
         
-        <CardContent>
-          {searchedContas.length === 0 ? (
+        <CardContent className="p-4 sm:p-6">
+          {isLoading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              ))}
+            </div>
+          ) : paginatedContas.length === 0 ? (
             <div className="text-center py-12">
-              <TrendingUp className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Nenhuma conta encontrada</h3>
-              <p className="text-muted-foreground mb-4">
-                {searchTerm ? "Tente ajustar os filtros ou termos de busca." : "Não há contas a receber para este período."}
+              <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">
+                {searchTerm || statusFilter !== "all" 
+                  ? "Nenhum resultado encontrado" 
+                  : "Nenhuma conta encontrada"}
+              </h3>
+              <p className="text-muted-foreground mb-4 text-sm">
+                {searchTerm || statusFilter !== "all"
+                  ? "Não encontramos contas com os filtros aplicados."
+                  : "Comece adicionando sua primeira conta a receber."}
               </p>
-              <Button
-                onClick={() => {
-                  setSelectedConta(null);
-                  setShowDialog(true);
-                }}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Criar Nova Conta
-              </Button>
+              {!searchTerm && statusFilter === "all" && (
+                <ContaReceberDialog>
+                  <Button className="gradient-premium border-0 text-background">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Adicionar Conta
+                  </Button>
+                </ContaReceberDialog>
+              )}
             </div>
           ) : (
             <>
-              {/* Cards View */}
-              {(viewMode === "cards" || isMobile) && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {paginatedContas.map((conta) => (
-                    <Card key={conta.id} className="hover:shadow-md transition-shadow">
-                      <CardHeader className="pb-4">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1 min-w-0">
-                            <CardTitle className="text-base font-semibold truncate">
-                              {conta.descricao}
-                            </CardTitle>
-                            <CardDescription className="text-2xl font-bold text-green-600 mt-1">
-                              {formatCurrency(conta.valor || 0)}
-                            </CardDescription>
+              {viewMode === "cards" || isMobile ? (
+                // Card View
+                <div className="space-y-3">
+                  {paginatedContas.map(conta => (
+                    <Card key={conta.id} className="p-4 hover:shadow-md transition-shadow">
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <TrendingUp className="h-4 w-4 text-green-600 shrink-0" />
+                            <h3 className="font-semibold text-base truncate">
+                              {conta.descricao || 'Receita sem descrição'}
+                            </h3>
                           </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreVertical className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setSelectedConta(conta);
-                                  setShowDialog(true);
-                                }}
-                              >
-                                <Edit className="w-4 h-4 mr-2" />
-                                Editar
-                              </DropdownMenuItem>
-                              {conta.status === 'pendente' && (
-                                <DropdownMenuItem
-                                  onClick={() => handleMarcarComoRecebida(conta.id)}
-                                >
-                                  <CheckCircle className="w-4 h-4 mr-2" />
-                                  Marcar como Recebida
-                                </DropdownMenuItem>
-                              )}
-                              {conta.comprovante_url && (
-                                <DropdownMenuItem
-                                  onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
-                                >
-                                  <Download className="w-4 h-4 mr-2" />
-                                  Comprovante
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteConta(conta)}
-                                className="text-red-600"
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Excluir
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <StatusSelectorContasReceber conta={conta} size="sm" />
                         </div>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">Status</span>
-                            <StatusSelectorContasReceber conta={conta} size="sm" />
+                        
+                        <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 shrink-0" />
+                            <span>{format(new Date(conta.data_transacao), "dd/MM/yyyy", { locale: ptBR })}</span>
                           </div>
-                          
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">Vencimento</span>
-                            <span className="text-sm font-medium">
-                              {conta.data_vencimento ? format(new Date(conta.data_vencimento), "dd/MM/yyyy", { locale: ptBR }) : 'N/A'}
-                            </span>
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="h-4 w-4 shrink-0" />
+                            <span>{getFormaPagamentoLabel(conta.forma_pagamento || 'a_vista', conta.parcelas || 1, conta.parcela_atual || 1)}</span>
                           </div>
-                          
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">Forma de Pagamento</span>
-                            <Badge variant="outline" className="text-xs">
-                              {getFormaPagamentoLabel(conta.forma_pagamento, (conta as any).numero_parcelas || undefined)}
-                            </Badge>
-                          </div>
-                          
-                          {conta.observacoes && (
-                            <div className="pt-2 border-t">
-                              <span className="text-sm text-muted-foreground">Observações:</span>
-                              <p className="text-sm mt-1 line-clamp-2">{conta.observacoes}</p>
+                          {conta.venda_id && conta.vendas?.clientes && (
+                            <div className="flex items-center gap-2">
+                              <ShoppingCart className="h-3 w-3 text-blue-600" />
+                              <span className="text-xs">Cliente: {conta.vendas.clientes.nome}</span>
                             </div>
                           )}
                         </div>
-                      </CardContent>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="font-bold text-green-600 text-lg">
+                            {formatCurrency(Number(conta.valor))}
+                          </div>
+                          <div className="flex gap-1">
+                            {conta.status === 'pendente' && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleMarcarComoRecebida(conta)} 
+                                disabled={marcarComoRecebida.isPending}
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {conta.comprovante_url && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleDeleteConta(conta.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
                     </Card>
                   ))}
                 </div>
-              )}
-
-              {/* Table View */}
-              {viewMode === "table" && !isMobile && (
-                <div className="rounded-md border overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-muted/50">
-                        <tr>
-                          <th className="px-4 py-3 text-left text-sm font-medium">Descrição</th>
-                          <th className="px-4 py-3 text-right text-sm font-medium">Valor</th>
-                          <th className="px-4 py-3 text-center text-sm font-medium">Status</th>
-                          <th className="px-4 py-3 text-center text-sm font-medium">Vencimento</th>
-                          <th className="px-4 py-3 text-center text-sm font-medium">Forma Pgto</th>
-                          <th className="px-4 py-3 text-center text-sm font-medium">Ações</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {paginatedContas.map((conta, index) => (
-                          <tr key={conta.id} className={index % 2 === 0 ? "bg-background" : "bg-muted/25"}>
-                            <td className="px-4 py-3">
+              ) : (
+                // Table View
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Descrição</TableHead>
+                        <TableHead>Recebimento</TableHead>
+                        <TableHead>Data</TableHead>
+                        <TableHead>Valor</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedContas.map((conta) => (
+                        <TableRow key={conta.id}>
+                          <TableCell>
+                            <StatusSelectorContasReceber conta={conta} size="sm" />
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              <TrendingUp className="h-4 w-4 text-green-600 shrink-0" />
                               <div>
-                                <div className="font-medium">{conta.descricao}</div>
-                                {conta.observacoes && (
-                                  <div className="text-sm text-muted-foreground truncate max-w-xs">
-                                    {conta.observacoes}
+                                <div className="font-semibold">{conta.descricao || 'Receita sem descrição'}</div>
+                                {conta.venda_id && conta.vendas?.clientes && (
+                                  <div className="text-xs text-muted-foreground">
+                                    Cliente: {conta.vendas.clientes.nome}
                                   </div>
                                 )}
                               </div>
-                            </td>
-                            <td className="px-4 py-3 text-right font-semibold text-green-600">
-                              {formatCurrency(conta.valor || 0)}
-                            </td>
-                            <td className="px-4 py-3 text-center">
-                              <StatusSelectorContasReceber conta={conta} size="sm" />
-                            </td>
-                            <td className="px-4 py-3 text-center text-sm">
-                              {conta.data_vencimento ? format(new Date(conta.data_vencimento), "dd/MM/yyyy", { locale: ptBR }) : 'N/A'}
-                            </td>
-                            <td className="px-4 py-3 text-center">
-                              <Badge variant="outline" className="text-xs">
-                                {getFormaPagamentoLabel(conta.forma_pagamento, (conta as any).numero_parcelas || undefined)}
-                              </Badge>
-                            </td>
-                            <td className="px-4 py-3 text-center">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm">
-                                    <MoreVertical className="w-4 h-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      setSelectedConta(conta);
-                                      setShowDialog(true);
-                                    }}
-                                  >
-                                    <Edit className="w-4 h-4 mr-2" />
-                                    Editar
-                                  </DropdownMenuItem>
-                                  {conta.status === 'pendente' && (
-                                    <DropdownMenuItem
-                                      onClick={() => handleMarcarComoRecebida(conta.id)}
-                                    >
-                                      <CheckCircle className="w-4 h-4 mr-2" />
-                                      Marcar como Recebida
-                                    </DropdownMenuItem>
-                                  )}
-                                  {conta.comprovante_url && (
-                                    <DropdownMenuItem
-                                      onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
-                                    >
-                                      <Download className="w-4 h-4 mr-2" />
-                                      Comprovante
-                                    </DropdownMenuItem>
-                                  )}
-                                  <DropdownMenuItem
-                                    onClick={() => handleDeleteConta(conta)}
-                                    className="text-red-600"
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Excluir
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <CreditCard className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">{getFormaPagamentoLabel(conta.forma_pagamento || 'a_vista', conta.parcelas || 1, conta.parcela_atual || 1)}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              <div>{format(new Date(conta.data_transacao), "dd/MM/yyyy", { locale: ptBR })}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <span className="font-bold text-green-600">
+                              {formatCurrency(Number(conta.valor))}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              {conta.status === 'pendente' && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => handleMarcarComoRecebida(conta)}
+                                  disabled={marcarComoRecebida.isPending}
+                                >
+                                  <Check className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {conta.comprovante_url && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              )}
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleDeleteConta(conta.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               )}
 
-              {/* Pagination */}
+              {/* Paginação */}
               {totalPages > 1 && (
-                <div className="mt-6">
-                  <Pagination>
-                    <PaginationContent>
-                      {currentPage > 1 && (
-                        <PaginationItem>
-                          <PaginationPrevious 
-                            onClick={() => setCurrentPage(currentPage - 1)}
-                            className="cursor-pointer"
-                          />
-                        </PaginationItem>
-                      )}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6">
+                  <div className="text-sm text-muted-foreground order-2 sm:order-1">
+                    Página {currentPage} de {totalPages}
+                  </div>
+                  
+                  <Pagination className="mx-0 w-fit order-1 sm:order-2">
+                    <PaginationContent className="gap-0">
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          className={cn(
+                            "cursor-pointer select-none",
+                            currentPage === 1 && "opacity-50 cursor-not-allowed"
+                          )}
+                        />
+                      </PaginationItem>
                       
                       {generatePaginationNumbers().map((page) => (
                         <PaginationItem key={page}>
                           <PaginationLink
                             onClick={() => setCurrentPage(page)}
                             isActive={currentPage === page}
-                            className="cursor-pointer"
+                            className="cursor-pointer select-none"
                           >
                             {page}
                           </PaginationLink>
                         </PaginationItem>
                       ))}
                       
-                      {currentPage < totalPages && (
-                        <PaginationItem>
-                          <PaginationNext 
-                            onClick={() => setCurrentPage(currentPage + 1)}
-                            className="cursor-pointer"
-                          />
-                        </PaginationItem>
-                      )}
+                      <PaginationItem>
+                        <PaginationNext 
+                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                          className={cn(
+                            "cursor-pointer select-none",
+                            currentPage === totalPages && "opacity-50 cursor-not-allowed"
+                          )}
+                        />
+                      </PaginationItem>
                     </PaginationContent>
                   </Pagination>
                 </div>
@@ -648,24 +517,23 @@ export default function ContasReceber() {
         </CardContent>
       </Card>
 
-      {/* Dialogs */}
-      {showDialog && (
-        <ContaReceberDialog>
-          <div />
-        </ContaReceberDialog>
-      )}
-
+      {/* Dialog de Confirmação de Delete */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir a conta "{contaToDelete?.descricao}"? Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir esta conta a receber? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>

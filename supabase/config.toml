@@ -5,6 +5,3 @@ verify_jwt = false
 
 [functions.google-calendar]
 verify_jwt = true
-
-[functions.process-contract-recurrences]
-verify_jwt = false

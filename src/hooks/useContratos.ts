@@ -12,9 +12,6 @@ export interface Contrato {
   data_inicio: string;
   data_fim?: string;
   status: 'ativo' | 'suspenso' | 'cancelado' | 'finalizado';
-  tipo_contrato: 'unico' | 'recorrente';
-  dia_vencimento?: number;
-  vendedor_id?: string;
   observacoes?: string;
   cliente_id: string;
   user_id: string;
@@ -49,9 +46,6 @@ export interface CreateContratoData {
   data_inicio: string;
   data_fim?: string;
   status: 'ativo' | 'suspenso' | 'cancelado' | 'finalizado';
-  tipo_contrato: 'unico' | 'recorrente';
-  dia_vencimento?: number;
-  vendedor_id?: string;
   cliente_id: string;
   pdf_url?: string;
 }
@@ -178,11 +172,9 @@ export function useCreateContrato() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
-      queryClient.invalidateQueries({ queryKey: ['parcelas'] });
-      queryClient.invalidateQueries({ queryKey: ['comissoes'] });
       toast({
         title: "Contrato criado",
-        description: "Contrato adicionado com sucesso. As parcelas foram geradas automaticamente.",
+        description: "Contrato adicionado com sucesso.",
       });
     },
     onError: (error: Error) => {
@@ -216,8 +208,6 @@ export function useUpdateContrato() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
-      queryClient.invalidateQueries({ queryKey: ['parcelas'] });
-      queryClient.invalidateQueries({ queryKey: ['comissoes'] });
       toast({
         title: "Contrato atualizado",
         description: "Informações do contrato atualizadas com sucesso.",
@@ -248,8 +238,6 @@ export function useDeleteContrato() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
-      queryClient.invalidateQueries({ queryKey: ['parcelas'] });
-      queryClient.invalidateQueries({ queryKey: ['comissoes'] });
       toast({
         title: "Contrato removido",
         description: "Contrato removido com sucesso.",
@@ -264,15 +252,3 @@ export function useDeleteContrato() {
     },
   });
 }
-
-// Hook para buscar parcelas de um contrato específico - DESABILITADO (tabela não existe)
-// export function useParcelasContrato(contratoId: string) {
-//   // Funcionalidade desabilitada - tabela parcelas_contrato não existe
-//   return { data: [], isLoading: false, error: null };
-// }
-
-// Hook para buscar comissões de um vendedor - DESABILITADO (tabela não existe)  
-// export function useComissoesVendedor(vendedorId?: string) {
-//   // Funcionalidade desabilitada - tabela comissoes_vendedor não existe
-//   return { data: [], isLoading: false, error: null };
-// }

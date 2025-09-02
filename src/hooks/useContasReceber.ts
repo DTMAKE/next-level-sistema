@@ -243,30 +243,11 @@ export function useUpdateContaReceber() {
 }
 
 export function useDeleteContaReceber() {
-  const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async (id: string) => {
-      if (!user?.id) throw new Error('User not authenticated');
-      
-      // Admin pode deletar qualquer transação, usuário comum só as suas próprias
-      if (user.role !== 'admin') {
-        // Verificar se a transação pertence ao usuário
-        const { data: transacao, error: fetchError } = await supabase
-          .from('transacoes_financeiras')
-          .select('user_id')
-          .eq('id', id)
-          .single();
-        
-        if (fetchError) throw fetchError;
-        
-        if (transacao?.user_id !== user.id) {
-          throw new Error('Você não tem permissão para excluir esta transação');
-        }
-      }
-      
       const { error } = await supabase
         .from('transacoes_financeiras')
         .delete()
