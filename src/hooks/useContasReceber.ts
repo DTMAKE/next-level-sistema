@@ -329,21 +329,36 @@ export function useCleanupOrphanReceivables() {
   
   return useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc('cleanup_orphan_receivables');
-      if (error) throw error;
+      const { data, error } = await supabase.functions.invoke('cleanup-orphan-receivables');
+      
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
+      
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
+      
+      const { deletedCount, details, message } = data || {};
+      
       toast({
-        title: "Sucesso!",
-        description: "Contas órfãs de contratos inativos foram removidas.",
+        title: deletedCount > 0 ? "Sucesso!" : "Informação",
+        description: message || `${deletedCount || 0} conta(s) órfã(s) removida(s).`,
+        variant: deletedCount > 0 ? "default" : "default",
       });
+      
+      // Log details for debugging
+      if (details && details.length > 0) {
+        console.log('Cleanup details:', details);
+      }
     },
     onError: (error: any) => {
       console.error('Error cleaning up orphan receivables:', error);
       toast({
         title: "Erro",
-        description: "Erro ao limpar contas órfãs.",
+        description: "Erro ao limpar contas órfãs. Verifique o console para mais detalhes.",
         variant: "destructive",
       });
     },
