@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
 export interface ContaPagar {
@@ -66,6 +66,7 @@ export function useContasPagar(selectedDate: Date) {
 
 export function useCreateContaPagar() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -165,6 +166,7 @@ export function useCreateContaPagar() {
 }
 
 export function useUpdateContaPagar() {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -195,29 +197,46 @@ export function useUpdateContaPagar() {
 }
 
 export function useDeleteContaPagar() {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('transacoes_financeiras')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      const { data, error } = await supabase.functions.invoke('delete-conta-pagar', {
+        body: { conta_id: id }
+      });
+      
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
+      
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+      
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
       toast({
         title: "Sucesso!",
-        description: "Conta a pagar removida com sucesso.",
+        description: "Conta excluída com sucesso.",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Error deleting conta a pagar:', error);
+      
+      // Mostrar mensagem específica do erro de validação
+      const errorMessage = error.message?.includes('contrato ativo') 
+        ? "Não é possível excluir: existe contrato ativo relacionado"
+        : error.message?.includes('venda relacionada')
+        ? "Não é possível excluir: existe venda relacionada"
+        : error.message || "Erro ao excluir conta a pagar.";
+      
       toast({
-        title: "Erro!",
-        description: "Erro ao remover conta a pagar.",
+        title: "Erro",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -225,6 +244,7 @@ export function useDeleteContaPagar() {
 }
 
 export function useMarcarComoPaga() {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -256,6 +276,7 @@ export function useMarcarComoPaga() {
 
 // Add cleanup function for orphan commission payables
 export const useCleanupOrphanPayables = () => {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   return useMutation({

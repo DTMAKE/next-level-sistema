@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.delete-conta-receber]
 verify_jwt = false
+
+[functions.delete-conta-pagar]
+verify_jwt = false
