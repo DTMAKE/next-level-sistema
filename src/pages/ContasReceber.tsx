@@ -320,7 +320,18 @@ export default function ContasReceber() {
                             {conta.comprovante_url && <Button variant="ghost" size="sm" onClick={() => handleDownloadComprovante(conta.comprovante_url!)}>
                                 <Download className="h-4 w-4" />
                               </Button>}
-                            <Button variant="ghost" size="sm" onClick={() => handleDeleteConta(conta.id)} disabled={deleteContaReceber.isPending} title={isContratoTransaction(conta.descricao || '') ? "⚠️ Esta conta está relacionada a um contrato - verifique se o contrato está ativo antes de excluir" : conta.venda_id ? "⚠️ Esta conta está relacionada a uma venda - não pode ser excluída se a venda estiver fechada" : "Excluir conta a receber"} className={cn(isContratoTransaction(conta.descricao || '') || conta.venda_id ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" : "text-destructive hover:text-destructive")}>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleDeleteConta(conta.id)} 
+                              disabled={deleteContaReceber.isPending || isContratoTransaction(conta.descricao || '')} 
+                              title={isContratoTransaction(conta.descricao || '') ? "⚠️ Esta conta faz parte de um contrato. Para cancelar, desative o contrato completo." : conta.venda_id ? "⚠️ Esta conta está relacionada a uma venda - não pode ser excluída se a venda estiver fechada" : "Excluir conta a receber"} 
+                              className={cn(
+                                isContratoTransaction(conta.descricao || '') ? "text-gray-400 cursor-not-allowed" : 
+                                conta.venda_id ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" : 
+                                "text-destructive hover:text-destructive"
+                              )}
+                            >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>

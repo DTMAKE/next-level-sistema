@@ -67,7 +67,26 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
     if (field === 'dia_vencimento') {
       setFormData(prev => ({ ...prev, [field]: parseInt(value) }));
     } else {
-      setFormData(prev => ({ ...prev, [field]: value }));
+      setFormData(prev => {
+        const updated = { ...prev, [field]: value };
+        
+        // Auto-detect recurring contracts based on duration
+        if ((field === 'data_inicio' || field === 'data_fim') && updated.data_inicio && updated.data_fim) {
+          const startDate = new Date(updated.data_inicio);
+          const endDate = new Date(updated.data_fim);
+          const diffMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
+          
+          // If contract duration is more than 1 month, suggest recurring type
+          if (diffMonths > 0) {
+            updated.tipo_contrato = 'recorrente';
+            toast.info(`Contrato detectado como recorrente (${diffMonths + 1} meses de duração)`);
+          } else {
+            updated.tipo_contrato = 'unico';
+          }
+        }
+        
+        return updated;
+      });
     }
   };
 

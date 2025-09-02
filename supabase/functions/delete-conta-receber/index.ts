@@ -58,24 +58,45 @@ Deno.serve(async (req) => {
     let canDelete = true;
     let errorMessage = '';
 
-    // Check if it's linked to an active contract
-    if (conta.descricao?.includes('Contrato')) {
-      const contractMatch = conta.descricao.match(/Contrato\s+(.+?)\s+-/);
+    // Check if it's linked to an active contract (improved detection)
+    if (conta.descricao?.includes('Contrato') || conta.descricao?.toLowerCase().includes('receita recorrente')) {
+      // Try to extract contract number or ID from description
+      const contractMatch = conta.descricao.match(/Contrato\s+(.+?)\s+-/) || 
+                           conta.descricao.match(/contrato\s+([a-f0-9-]{36})/i);
+      
       if (contractMatch) {
         const contractIdentifier = contractMatch[1].trim();
         
-        // Only check by numero_contrato since contractIdentifier is a string, not UUID
-        const { data: activeContract } = await supabaseClient
+        // Check by numero_contrato first, then by ID if it looks like a UUID
+        let contractQuery = supabaseClient
           .from('contratos')
-          .select('id, status')
-          .eq('numero_contrato', contractIdentifier)
-          .eq('status', 'ativo')
-          .maybeSingle();
+          .select('id, status, tipo_contrato, numero_contrato')
+          .eq('status', 'ativo');
+          
+        if (contractIdentifier.length === 36 && contractIdentifier.includes('-')) {
+          // Looks like UUID
+          contractQuery = contractQuery.eq('id', contractIdentifier);
+        } else {
+          // Looks like contract number
+          contractQuery = contractQuery.eq('numero_contrato', contractIdentifier);
+        }
+
+        const { data: activeContract } = await contractQuery.maybeSingle();
 
         if (activeContract) {
           canDelete = false;
-          errorMessage = 'Não é possível excluir: existe contrato ativo relacionado';
+          if (activeContract.tipo_contrato === 'recorrente') {
+            errorMessage = 'Não é possível excluir parcelas individuais de contratos recorrentes. Para cancelar, desative o contrato inteiro.';
+          } else {
+            errorMessage = 'Não é possível excluir: existe contrato ativo relacionado';
+          }
         }
+      }
+      
+      // Additional check: if description mentions recurring revenue, block deletion
+      if (conta.descricao?.toLowerCase().includes('receita recorrente')) {
+        canDelete = false;
+        errorMessage = 'Não é possível excluir parcelas de receita recorrente individualmente. Para cancelar, desative o contrato relacionado.';
       }
     }
 
