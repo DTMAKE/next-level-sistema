@@ -64,10 +64,6 @@ export function useContasPagar(selectedDate: Date) {
             contrato_id,
             mes_referencia,
             percentual,
-            profiles:vendedor_id (
-              name,
-              role
-            ),
             vendas (
               cliente_id,
               clientes (
@@ -96,7 +92,25 @@ export function useContasPagar(selectedDate: Date) {
       const { data, error } = await query.order('data_transacao', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as ContaPagar[];
+      
+      const transactions = (data || []) as ContaPagar[];
+
+      // Enrich commission data with seller profile information
+      for (const transaction of transactions) {
+        if (transaction.comissoes && transaction.comissoes.vendedor_id) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('name, role')
+            .eq('user_id', transaction.comissoes.vendedor_id)
+            .single();
+          
+          if (profile) {
+            transaction.comissoes.vendedor_profile = profile;
+          }
+        }
+      }
+
+      return transactions;
     },
     enabled: !!user?.id,
   });

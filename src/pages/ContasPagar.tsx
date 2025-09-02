@@ -84,7 +84,7 @@ export default function ContasPagar() {
     if (!conta.comissoes) return null;
     
     const comissao = conta.comissoes;
-    const vendedorNome = comissao.profiles?.name || 'Vendedor';
+    const vendedorNome = comissao.vendedor_profile?.name || 'Vendedor';
     
     let clienteNome = '';
     let tipoComissao = '';
