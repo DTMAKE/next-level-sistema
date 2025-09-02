@@ -1125,6 +1125,10 @@ export type Database = {
         Args: { p_contrato_id: string }
         Returns: undefined
       }
+      cleanup_orphan_commission_payables: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       cleanup_orphan_receivables: {
         Args: Record<PropertyKey, never>
         Returns: undefined

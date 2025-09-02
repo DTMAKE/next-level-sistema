@@ -253,3 +253,34 @@ export function useMarcarComoPaga() {
     },
   });
 }
+
+// Add cleanup function for orphan commission payables
+export const useCleanupOrphanPayables = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      // Call the database function to cleanup orphan commission payables
+      const { data, error } = await supabase
+        .rpc('cleanup_orphan_commission_payables');
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (deletedCount) => {
+      queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
+      toast({
+        title: "Limpeza concluída!",
+        description: `${deletedCount || 0} conta(s) órfã(s) removida(s).`,
+      });
+    },
+    onError: (error) => {
+      console.error('Error cleaning up orphan payables:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao limpar contas órfãs. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
+};

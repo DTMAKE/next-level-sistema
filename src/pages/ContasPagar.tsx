@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useContasPagar, useDeleteContaPagar, useMarcarComoPaga, useUpdateContaPagar } from "@/hooks/useContasPagar";
+import { useContasPagar, useDeleteContaPagar, useMarcarComoPaga, useUpdateContaPagar, useCleanupOrphanPayables } from "@/hooks/useContasPagar";
 import { ContaPagarDialog } from "@/components/ContasPagar/ContaPagarDialog";
 import { StatusSelectorContasPagar } from "@/components/ContasPagar/StatusSelectorContasPagar";
 
@@ -36,6 +36,7 @@ export default function ContasPagar() {
   const deleteContaPagar = useDeleteContaPagar();
   const marcarComoPaga = useMarcarComoPaga();
   const updateContaPagar = useUpdateContaPagar();
+  const cleanupOrphanPayables = useCleanupOrphanPayables();
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
