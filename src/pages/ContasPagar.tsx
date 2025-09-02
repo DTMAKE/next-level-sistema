@@ -36,8 +36,6 @@ export default function ContasPagar() {
   const deleteContaPagar = useDeleteContaPagar();
   const toggleStatusContaPagar = useToggleStatusContaPagar();
   const updateContaPagar = useUpdateContaPagar();
-  const cleanupOrphanPayables = useCleanupOrphanPayables();
-  const generateFutureCommissions = useGenerateFutureCommissions();
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
