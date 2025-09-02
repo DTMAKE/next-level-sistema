@@ -59,7 +59,7 @@ export function StatusSelectorContasPagar({ conta, disabled = false, size = "md"
       
       await updateConta.mutateAsync({
         id: conta.id,
-        status: statusValue,
+        data: { status: statusValue },
       });
       
       setIsOpen(false);

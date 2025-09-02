@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
 
 export interface ContaPagar {
   id: string;
@@ -41,14 +40,14 @@ export interface CreateContaPagarData {
 export function useContasPagar(selectedDate: Date) {
   const { user } = useAuth();
   
-  const startOfMonth = format(selectedDate, 'yyyy-MM-01');
-  const endOfMonth = format(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0), 'yyyy-MM-dd');
-
   return useQuery({
-    queryKey: ['contas-pagar', user?.id, user?.role, startOfMonth, endOfMonth],
+    queryKey: ['contas-pagar', user?.id, user?.role, selectedDate.getFullYear(), selectedDate.getMonth()],
     queryFn: async (): Promise<ContaPagar[]> => {
       if (!user?.id) throw new Error('User not authenticated');
-
+      
+      const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+      const endOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+      
       let query = supabase
         .from('transacoes_financeiras')
         .select(`
@@ -67,132 +66,19 @@ export function useContasPagar(selectedDate: Date) {
           )
         `)
         .eq('tipo', 'despesa')
-        .gte('data_transacao', startOfMonth)
-        .lte('data_transacao', endOfMonth);
+        .gte('data_transacao', startOfMonth.toISOString().split('T')[0])
+        .lte('data_transacao', endOfMonth.toISOString().split('T')[0]);
 
       // Filter by user_id unless user is admin
       if (user.role !== 'admin') {
         query = query.eq('user_id', user.id);
       }
 
-      const { data, error } = await query.order('data_transacao', { ascending: false });
+      const { data, error } = await query.order('updated_at', { ascending: false });
 
       if (error) throw error;
       
-      const transactions = (data || []) as ContaPagar[];
-      const validTransactions: ContaPagar[] = [];
-
-      // Filter and validate transactions
-      for (const transaction of transactions) {
-        let isValidTransaction = true;
-
-        // If this is a commission transaction, validate it
-        if (transaction.comissoes && transaction.comissao_id) {
-          const commission = transaction.comissoes;
-          
-          // Check if commission is from a sale
-          if (commission.venda_id) {
-            const { data: venda } = await supabase
-              .from('vendas')
-              .select('id, clientes(nome)')
-              .eq('id', commission.venda_id)
-              .maybeSingle();
-            
-            if (!venda) {
-              // Sale doesn't exist anymore, skip this orphaned commission
-              console.log(`Skipping orphaned commission from deleted sale: ${commission.venda_id}`);
-              isValidTransaction = false;
-            } else if (venda?.clientes?.nome) {
-              transaction.comissoes.cliente_nome = venda.clientes.nome;
-            }
-          }
-
-          // Check if commission is from a contract
-          if (commission.contrato_id && isValidTransaction) {
-            const { data: contract } = await supabase
-              .from('contratos')
-              .select(`
-                numero_contrato, 
-                tipo_contrato, 
-                data_inicio, 
-                data_fim, 
-                cliente_id,
-                user_id,
-                clientes(nome)
-              `)
-              .eq('id', commission.contrato_id)
-              .maybeSingle();
-
-            if (!contract) {
-              // Contract doesn't exist anymore, skip this orphaned commission
-              console.log(`Skipping orphaned commission from deleted contract: ${commission.contrato_id}`);
-              isValidTransaction = false;
-            } else {
-              // Check if contract was created by admin - fetch the creator's profile separately
-              const { data: contractCreatorProfile } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('user_id', contract.user_id)
-                .single();
-
-              if (contractCreatorProfile?.role === 'admin') {
-                console.log(`Skipping commission from admin-created contract: ${commission.contrato_id}`);
-                isValidTransaction = false;
-              } else {
-                transaction.comissoes.contrato = contract;
-                
-                // Get seller profile
-                const { data: profile } = await supabase
-                  .from('profiles')
-                  .select('name, role')
-                  .eq('user_id', commission.vendedor_id)
-                  .single();
-                
-                if (profile) {
-                  transaction.comissoes.vendedor_profile = profile;
-                }
-
-                // Calculate parcel information for recurring contracts
-                if (contract.tipo_contrato === 'recorrente' && contract.data_inicio && contract.data_fim) {
-                  const startDate = new Date(contract.data_inicio);
-                  const endDate = new Date(contract.data_fim);
-                  const transactionDate = new Date(transaction.data_transacao);
-                  
-                  // Calculate total months
-                  const totalMonths = Math.max(1, 
-                    (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                    (endDate.getMonth() - startDate.getMonth()) + 1
-                  );
-                  
-                  // Calculate current month (parcel)
-                  const currentMonth = Math.max(1,
-                    (transactionDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                    (transactionDate.getMonth() - startDate.getMonth()) + 1
-                  );
-                  
-                  // Update description with proper parcel format
-                  const baseDescription = `Comissão de ${profile?.name || 'Vendedor'} - ${contract.clientes?.nome || 'Cliente'}`;
-                  transaction.descricao = `${baseDescription} (${Math.min(currentMonth, totalMonths)}/${totalMonths})`;
-                  
-                  // Store parcel info for UI usage
-                  transaction.parcela_atual = Math.min(currentMonth, totalMonths);
-                  transaction.parcelas = totalMonths;
-                }
-              }
-            }
-          }
-        } else if (transaction.comissoes && !transaction.comissao_id) {
-          // Commission exists but transaction doesn't reference it properly, skip
-          isValidTransaction = false;
-        }
-
-        // Only add valid transactions
-        if (isValidTransaction) {
-          validTransactions.push(transaction);
-        }
-      }
-
-      return validTransactions;
+      return data || [];
     },
     enabled: !!user?.id,
   });
@@ -261,8 +147,8 @@ export function useCreateContaPagar() {
             tipo: 'despesa',
             descricao: `${data.descricao} (${i}/${data.parcelas})`,
             valor: valorParcela,
-            data_transacao: format(dataTransacao, 'yyyy-MM-dd'),
-            data_vencimento: dataVencimento ? format(dataVencimento, 'yyyy-MM-dd') : null,
+            data_transacao: dataTransacao.toISOString().split('T')[0],
+            data_vencimento: dataVencimento ? dataVencimento.toISOString().split('T')[0] : null,
             forma_pagamento: 'parcelado',
             parcelas: data.parcelas || 1,
             parcela_atual: i,
@@ -300,41 +186,80 @@ export function useCreateContaPagar() {
 }
 
 export function useUpdateContaPagar() {
+  const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
+  
   return useMutation({
-    mutationFn: async ({ id, ...data }: Partial<ContaPagar> & { id: string }) => {
-      console.log('Executando mutação update:', { id, data });
+    mutationFn: async ({ id, data }: { id: string; data: Partial<ContaPagar> }) => {
+      if (!user?.id) {
+        throw new Error('Usuário não autenticado');
+      }
+
+      console.log('Atualizando conta:', { id, data, user_id: user.id });
       
       const { data: result, error } = await supabase
         .from('transacoes_financeiras')
         .update(data)
         .eq('id', id)
-        .select();
-
-      console.log('Resultado da mutação:', { result, error });
-
-      if (error) throw error;
-      return result;
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Erro na atualização:', error);
+        throw error;
+      }
+      
+      console.log('Conta atualizada com sucesso:', result);
+      return { id, data: result };
     },
-    onSuccess: (data) => {
-      console.log('Mutação bem-sucedida:', data);
-      // Invalidação mais abrangente para garantir atualização
-      queryClient.invalidateQueries({ queryKey: ['contas-pagar'], exact: false });
-      queryClient.refetchQueries({ queryKey: ['contas-pagar'], exact: false });
-      toast({
-        title: "Sucesso!",
-        description: "Conta a pagar atualizada com sucesso.",
+    onMutate: async ({ id, data }) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries({ queryKey: ['contas-pagar'] });
+
+      // Snapshot the previous value
+      const previousContas = queryClient.getQueriesData({ queryKey: ['contas-pagar'] });
+
+      // Optimistically update to the new value
+      queryClient.setQueriesData({ queryKey: ['contas-pagar'] }, (old: ContaPagar[] | undefined) => {
+        if (!old) return old;
+        return old.map(conta => 
+          conta.id === id ? { ...conta, ...data } : conta
+        );
       });
+
+      // Return a context object with the snapshotted value
+      return { previousContas };
     },
-    onError: (error) => {
-      console.error('Error updating conta a pagar:', error);
+    onError: (err: any, variables, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousContas) {
+        context.previousContas.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      
+      console.error('Erro completo ao atualizar conta:', err);
+      
+      let errorMessage = "Erro ao atualizar conta a pagar.";
+      
+      if (err.message?.includes('permission denied') || err.message?.includes('row-level security')) {
+        errorMessage = "Você não tem permissão para alterar esta conta.";
+      } else if (err.message?.includes('not found')) {
+        errorMessage = "Conta não encontrada.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       toast({
-        title: "Erro!",
-        description: "Erro ao atualizar conta a pagar.",
+        title: "Erro",
+        description: errorMessage,
         variant: "destructive",
       });
+    },
+    onSettled: () => {
+      // Always refetch after error or success to make sure we have the latest data
+      queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
     },
   });
 }
@@ -419,89 +344,3 @@ export function useToggleStatusContaPagar() {
     },
   });
 }
-
-// Add cleanup function for orphan commission payables
-export const useCleanupOrphanPayables = () => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => {
-      // Call the database function to cleanup orphan commission payables
-      const { data, error } = await supabase
-        .rpc('cleanup_orphan_commission_payables');
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (deletedCount) => {
-      queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
-      toast({
-        title: "Limpeza concluída!",
-        description: `${deletedCount || 0} conta(s) órfã(s) removida(s).`,
-      });
-    },
-    onError: (error) => {
-      console.error('Error cleaning up orphan payables:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao limpar contas órfãs. Tente novamente.",
-        variant: "destructive",
-      });
-    },
-  });
-};
-
-// Add function to generate future commissions for active contracts
-export const useGenerateFutureCommissions = () => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (contratoId?: string) => {
-      if (contratoId) {
-        // Generate for specific contract
-        const { data, error } = await supabase
-          .rpc('generate_future_contract_commissions', { p_contrato_id: contratoId });
-
-        if (error) throw error;
-        return data;
-      } else {
-        // Generate for all active recurring contracts
-        const { data: contratos } = await supabase
-          .from('contratos')
-          .select('id')
-          .eq('tipo_contrato', 'recorrente')
-          .eq('status', 'ativo');
-
-        if (contratos && contratos.length > 0) {
-          for (const contrato of contratos) {
-            const { error } = await supabase
-              .rpc('generate_future_contract_commissions', { p_contrato_id: contrato.id });
-            
-            if (error) {
-              console.error(`Erro ao gerar comissões para contrato ${contrato.id}:`, error);
-            }
-          }
-        }
-        
-        return contratos?.length || 0;
-      }
-    },
-    onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
-      toast({
-        title: "Comissões geradas!",
-        description: "Comissões futuras dos contratos foram geradas com sucesso.",
-      });
-    },
-    onError: (error) => {
-      console.error('Error generating future commissions:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao gerar comissões futuras. Tente novamente.",
-        variant: "destructive",
-      });
-    },
-  });
-};

@@ -119,7 +119,7 @@ export default function ContasPagar() {
   const handleStatusChange = (conta: ContaPagar, novoStatus: string) => {
     updateContaPagar.mutate({
       id: conta.id,
-      status: novoStatus
+      data: { status: novoStatus }
     });
   };
 
