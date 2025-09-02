@@ -9,7 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { TrendingUp, Search, Filter, Plus, Calendar, DollarSign, Check, Grid, List, Trash2, FileText, CreditCard, Download, ShoppingCart, UserCheck, Building2 } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -350,7 +350,7 @@ export default function ContasReceber() {
                         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 shrink-0" />
-                            <span>{format(new Date(conta.data_transacao), "dd/MM/yyyy", { locale: ptBR })}</span>
+                            <span>{format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <CreditCard className="h-4 w-4 shrink-0" />
@@ -461,7 +461,7 @@ export default function ContasReceber() {
                           </TableCell>
                           <TableCell>
                             <div className="text-sm">
-                              <div>{format(new Date(conta.data_transacao), "dd/MM/yyyy", { locale: ptBR })}</div>
+                              <div>{format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}</div>
                             </div>
                           </TableCell>
                           <TableCell>
