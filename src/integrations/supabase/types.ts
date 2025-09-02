@@ -1137,6 +1137,17 @@ export type Database = {
         Args: { projeto_id: string; user_id: string }
         Returns: undefined
       }
+      fix_sales_financial_transactions: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          action_type: string
+          cliente_nome: string
+          data_venda: string
+          message: string
+          valor: number
+          venda_id: string
+        }[]
+      }
       generate_contract_number: {
         Args: { client_id: string; client_name: string }
         Returns: string
@@ -1148,6 +1159,14 @@ export type Database = {
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_sales_financial_issues_summary: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          count_issues: number
+          description: string
+          issue_type: string
+        }[]
       }
       mark_commission_as_paid: {
         Args: { p_comissao_id: string }
