@@ -24,6 +24,46 @@ Deno.serve(async (req) => {
 
     console.log('Starting cleanup of orphan receivables...');
 
+    // Find receivables without valid origin (venda_id is null)
+    const { data: orphanWithoutSale, error: fetchOrphanError } = await supabaseClient
+      .from('transacoes_financeiras')
+      .select('id, descricao, valor, data_transacao')
+      .eq('tipo', 'receita')
+      .is('venda_id', null)
+      .eq('status', 'pendente');
+
+    if (fetchOrphanError) {
+      console.error('Error fetching orphan receivables without sale:', fetchOrphanError);
+      throw fetchOrphanError;
+    }
+
+    console.log(`Found ${orphanWithoutSale?.length || 0} orphan receivables without sale origin`);
+
+    const result: DeleteResult = {
+      deletedCount: 0,
+      details: []
+    };
+
+    // Delete orphan receivables without sale origin
+    if (orphanWithoutSale && orphanWithoutSale.length > 0) {
+      const orphanIds = orphanWithoutSale.map(r => r.id);
+      
+      const { error: deleteOrphanError } = await supabaseClient
+        .from('transacoes_financeiras')
+        .delete()
+        .in('id', orphanIds);
+
+      if (!deleteOrphanError) {
+        result.deletedCount += orphanWithoutSale.length;
+        result.details.push(...orphanWithoutSale.map(r => 
+          `Conta órfã sem origem removida: ${r.descricao} - R$ ${r.valor}`
+        ));
+        console.log(`Deleted ${orphanWithoutSale.length} orphan receivables without sale`);
+      } else {
+        console.error('Error deleting orphan receivables:', deleteOrphanError);
+      }
+    }
+
     // Find receivables from inactive contracts (pending only)
     const { data: orphanReceivables, error: fetchError } = await supabaseClient
       .from('transacoes_financeiras')
@@ -43,102 +83,108 @@ Deno.serve(async (req) => {
       throw fetchError;
     }
 
-    console.log(`Found ${orphanReceivables?.length || 0} potential orphan receivables`);
+    console.log(`Found ${orphanReceivables?.length || 0} potential orphan contract receivables`);
 
     if (!orphanReceivables || orphanReceivables.length === 0) {
-      return new Response(
-        JSON.stringify({ deletedCount: 0, details: [], message: 'Nenhuma conta órfã encontrada' }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
-      );
+      if (result.deletedCount === 0) {
+        return new Response(
+          JSON.stringify({ deletedCount: 0, details: [], message: 'Nenhuma conta órfã encontrada' }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200 
+          }
+        );
+      }
     }
 
-    const result: DeleteResult = {
-      deletedCount: 0,
-      details: []
+    const result2: DeleteResult = {
+      deletedCount: result.deletedCount,
+      details: [...result.details]
     };
 
     // Check each receivable to see if it's truly orphaned
-    for (const receivable of orphanReceivables) {
-      try {
-        // Extract contract number/id from description
-        const contractMatch = receivable.descricao?.match(/Contrato\s+(.+?)\s+-/);
-        if (!contractMatch) continue;
+    if (orphanReceivables && orphanReceivables.length > 0) {
+      for (const receivable of orphanReceivables) {
+        try {
+          // Extract contract number/id from description
+          const contractMatch = receivable.descricao?.match(/Contrato\s+(.+?)\s+-/);
+          if (!contractMatch) continue;
 
-        const contractIdentifier = contractMatch[1].trim();
-        
-        // Check if contract exists and is active
-        const { data: activeContract } = await supabaseClient
-          .from('contratos')
-          .select('id, status')
-          .or(`numero_contrato.eq.${contractIdentifier},id.eq.${contractIdentifier}`)
-          .eq('status', 'ativo')
-          .single();
+          const contractIdentifier = contractMatch[1].trim();
+          
+          // Check if contract exists and is active
+          const { data: activeContract } = await supabaseClient
+            .from('contratos')
+            .select('id, status')
+            .eq('numero_contrato', contractIdentifier)
+            .eq('status', 'ativo')
+            .maybeSingle();
 
-        // If no active contract found, this receivable is orphaned
-        if (!activeContract) {
-          const { error: deleteError } = await supabaseClient
-            .from('transacoes_financeiras')
-            .delete()
-            .eq('id', receivable.id);
+          // If no active contract found, this receivable is orphaned
+          if (!activeContract) {
+            const { error: deleteError } = await supabaseClient
+              .from('transacoes_financeiras')
+              .delete()
+              .eq('id', receivable.id);
 
-          if (!deleteError) {
-            result.deletedCount++;
-            result.details.push(`Conta removida: ${receivable.descricao} - R$ ${receivable.valor}`);
-            console.log(`Deleted orphan receivable: ${receivable.id}`);
-          } else {
-            console.error(`Error deleting receivable ${receivable.id}:`, deleteError);
+            if (!deleteError) {
+              result2.deletedCount++;
+              result2.details.push(`Conta removida: ${receivable.descricao} - R$ ${receivable.valor}`);
+              console.log(`Deleted orphan receivable: ${receivable.id}`);
+            } else {
+              console.error(`Error deleting receivable ${receivable.id}:`, deleteError);
+            }
           }
+        } catch (error) {
+          console.error(`Error processing receivable ${receivable.id}:`, error);
         }
-      } catch (error) {
-        console.error(`Error processing receivable ${receivable.id}:`, error);
       }
     }
 
     // Also clean up receivables with contract descriptions that don't match any existing contract
-    const { data: allContracts } = await supabaseClient
-      .from('contratos')
-      .select('id, numero_contrato');
+    if (orphanReceivables && orphanReceivables.length > 0) {
+      const { data: allContracts } = await supabaseClient
+        .from('contratos')
+        .select('id, numero_contrato');
 
-    const existingIdentifiers = new Set([
-      ...allContracts?.map(c => c.numero_contrato).filter(Boolean) || [],
-      ...allContracts?.map(c => c.id) || []
-    ]);
+      const existingIdentifiers = new Set([
+        ...allContracts?.map(c => c.numero_contrato).filter(Boolean) || [],
+        ...allContracts?.map(c => c.id) || []
+      ]);
 
-    // Find receivables that reference non-existent contracts
-    for (const receivable of orphanReceivables) {
-      try {
-        const contractMatch = receivable.descricao?.match(/Contrato\s+(.+?)\s+-/);
-        if (!contractMatch) continue;
+      // Find receivables that reference non-existent contracts
+      for (const receivable of orphanReceivables) {
+        try {
+          const contractMatch = receivable.descricao?.match(/Contrato\s+(.+?)\s+-/);
+          if (!contractMatch) continue;
 
-        const contractIdentifier = contractMatch[1].trim();
-        
-        if (!existingIdentifiers.has(contractIdentifier)) {
-          const { error: deleteError } = await supabaseClient
-            .from('transacoes_financeiras')
-            .delete()
-            .eq('id', receivable.id);
+          const contractIdentifier = contractMatch[1].trim();
+          
+          if (!existingIdentifiers.has(contractIdentifier)) {
+            const { error: deleteError } = await supabaseClient
+              .from('transacoes_financeiras')
+              .delete()
+              .eq('id', receivable.id);
 
-          if (!deleteError) {
-            result.deletedCount++;
-            result.details.push(`Conta de contrato inexistente removida: ${receivable.descricao} - R$ ${receivable.valor}`);
-            console.log(`Deleted receivable from non-existent contract: ${receivable.id}`);
+            if (!deleteError) {
+              result2.deletedCount++;
+              result2.details.push(`Conta de contrato inexistente removida: ${receivable.descricao} - R$ ${receivable.valor}`);
+              console.log(`Deleted receivable from non-existent contract: ${receivable.id}`);
+            }
           }
+        } catch (error) {
+          console.error(`Error processing non-existent contract receivable ${receivable.id}:`, error);
         }
-      } catch (error) {
-        console.error(`Error processing non-existent contract receivable ${receivable.id}:`, error);
       }
     }
 
-    console.log(`Cleanup completed. Deleted ${result.deletedCount} orphan receivables.`);
+    console.log(`Cleanup completed. Deleted ${result2.deletedCount} orphan receivables.`);
 
     return new Response(
       JSON.stringify({
-        ...result,
-        message: result.deletedCount > 0 
-          ? `${result.deletedCount} conta(s) órfã(s) removida(s) com sucesso`
+        ...result2,
+        message: result2.deletedCount > 0 
+          ? `${result2.deletedCount} conta(s) órfã(s) removida(s) com sucesso`
           : 'Nenhuma conta órfã encontrada para remoção'
       }),
       { 
