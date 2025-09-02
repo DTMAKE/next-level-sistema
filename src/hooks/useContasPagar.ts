@@ -243,31 +243,34 @@ export function useDeleteContaPagar() {
   });
 }
 
-export function useMarcarComoPaga() {
+export function useToggleStatusContaPagar() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, currentStatus }: { id: string; currentStatus: string }) => {
+      const newStatus = currentStatus === 'confirmada' ? 'pendente' : 'confirmada';
+      
       const { error } = await supabase
         .from('transacoes_financeiras')
-        .update({ status: 'confirmada' })
+        .update({ status: newStatus })
         .eq('id', id);
 
       if (error) throw error;
+      return { id, newStatus };
     },
-    onSuccess: () => {
+    onSuccess: ({ newStatus }) => {
       queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
       toast({
         title: "Sucesso!",
-        description: "Conta marcada como paga.",
+        description: newStatus === 'confirmada' ? "Conta marcada como paga." : "Conta marcada como pendente.",
       });
     },
     onError: (error) => {
-      console.error('Error marking as paid:', error);
+      console.error('Error toggling conta status:', error);
       toast({
         title: "Erro!",
-        description: "Erro ao marcar como paga.",
+        description: "Erro ao alterar status da conta.",
         variant: "destructive",
       });
     },
