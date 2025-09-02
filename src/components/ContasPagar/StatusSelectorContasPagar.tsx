@@ -35,9 +35,12 @@ export function StatusSelectorContasPagar({ conta, disabled = false, size = "md"
     // Don't update if it's the same status
     if (currentStatus === newStatus) return;
 
-    const statusValue = newStatus === 'Paga' ? 'confirmada' : newStatus === 'Cancelada' ? 'cancelada' : 'pendente';
+    const statusValue = newStatus === 'Paga' ? 'confirmada' : 
+                       newStatus === 'Cancelada' ? 'cancelada' : 'pendente';
     
     try {
+      console.log('Atualizando status:', { id: conta.id, from: conta.status, to: statusValue });
+      
       await updateConta.mutateAsync({
         id: conta.id,
         status: statusValue,
