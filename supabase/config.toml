@@ -8,3 +8,6 @@ verify_jwt = true
 
 [functions.cleanup-orphan-receivables]
 verify_jwt = false
+
+[functions.delete-conta-receber]
+verify_jwt = false

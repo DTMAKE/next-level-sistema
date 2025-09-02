@@ -248,23 +248,20 @@ export function useDeleteContaReceber() {
   
   return useMutation({
     mutationFn: async (id: string) => {
-      // Primeiro validar se pode deletar
-      const { data: validation, error: validationError } = await supabase
-        .rpc('validate_delete_conta_receber', { conta_id: id });
+      const { data, error } = await supabase.functions.invoke('delete-conta-receber', {
+        body: { conta_id: id }
+      });
       
-      if (validationError) throw validationError;
-      
-      if (!validation?.[0]?.can_delete) {
-        throw new Error(validation?.[0]?.message || 'Não é possível excluir esta conta');
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
       }
       
-      // Se passou na validação, deletar
-      const { error } = await supabase
-        .from('transacoes_financeiras')
-        .delete()
-        .eq('id', id);
+      if (data?.error) {
+        throw new Error(data.error);
+      }
       
-      if (error) throw error;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
