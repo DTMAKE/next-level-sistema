@@ -95,7 +95,7 @@ export function useContasPagar(selectedDate: Date) {
       
       const transactions = (data || []) as ContaPagar[];
 
-      // Enrich commission data with seller profile information
+      // Enrich commission data with seller profile information and contract details
       for (const transaction of transactions) {
         if (transaction.comissoes && transaction.comissoes.vendedor_id) {
           const { data: profile } = await supabase
@@ -106,6 +106,46 @@ export function useContasPagar(selectedDate: Date) {
           
           if (profile) {
             transaction.comissoes.vendedor_profile = profile;
+          }
+
+          // If commission is from a contract, get contract details for proper parcel calculation
+          if (transaction.comissoes.contrato_id) {
+            const { data: contract } = await supabase
+              .from('contratos')
+              .select('numero_contrato, tipo_contrato, data_inicio, data_fim, cliente_id, clientes(nome)')
+              .eq('id', transaction.comissoes.contrato_id)
+              .single();
+
+            if (contract) {
+              transaction.comissoes.contrato = contract;
+              
+              // Calculate parcel information for recurring contracts
+              if (contract.tipo_contrato === 'recorrente' && contract.data_inicio && contract.data_fim) {
+                const startDate = new Date(contract.data_inicio);
+                const endDate = new Date(contract.data_fim);
+                const transactionDate = new Date(transaction.data_transacao);
+                
+                // Calculate total months
+                const totalMonths = Math.max(1, 
+                  (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                  (endDate.getMonth() - startDate.getMonth()) + 1
+                );
+                
+                // Calculate current month (parcel)
+                const currentMonth = Math.max(1,
+                  (transactionDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                  (transactionDate.getMonth() - startDate.getMonth()) + 1
+                );
+                
+                // Update description with proper parcel format
+                const baseDescription = `Comissão de ${profile.name || 'Vendedor'} - ${contract.clientes?.nome || 'Cliente'}`;
+                transaction.descricao = `${baseDescription} (${Math.min(currentMonth, totalMonths)}/${totalMonths})`;
+                
+                // Store parcel info for UI usage
+                transaction.parcela_atual = Math.min(currentMonth, totalMonths);
+                transaction.parcelas = totalMonths;
+              }
+            }
           }
         }
       }
