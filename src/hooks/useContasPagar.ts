@@ -277,9 +277,9 @@ export function useUpdateContaPagar() {
     },
     onSuccess: (data) => {
       console.log('Mutação bem-sucedida:', data);
-      // Força uma invalidação mais específica para garantir atualização
-      queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
-      queryClient.refetchQueries({ queryKey: ['contas-pagar'] });
+      // Invalidação mais abrangente para garantir atualização
+      queryClient.invalidateQueries({ queryKey: ['contas-pagar'], exact: false });
+      queryClient.refetchQueries({ queryKey: ['contas-pagar'], exact: false });
       toast({
         title: "Sucesso!",
         description: "Conta a pagar atualizada com sucesso.",

@@ -22,21 +22,19 @@ export function StatusSelectorContasPagar({ conta, disabled = false, size = "md"
     switch (status) {
       case 'pendente': return 'Pendente';
       case 'confirmada': return 'Paga';
-      case 'cancelada': return 'Cancelada';
       default: return 'Pendente';
     }
   };
 
   const currentStatus = getStatusLabel(conta.status);
   
-  const handleStatusChange = async (newStatus: 'Pendente' | 'Paga' | 'Cancelada') => {
+  const handleStatusChange = async (newStatus: 'Pendente' | 'Paga') => {
     if (disabled || updateConta.isPending) return;
 
     // Don't update if it's the same status
     if (currentStatus === newStatus) return;
 
-    const statusValue = newStatus === 'Paga' ? 'confirmada' : 
-                       newStatus === 'Cancelada' ? 'cancelada' : 'pendente';
+    const statusValue = newStatus === 'Paga' ? 'confirmada' : 'pendente';
     
     try {
       console.log('Atualizando status:', { id: conta.id, from: conta.status, to: statusValue });
@@ -72,11 +70,6 @@ export function StatusSelectorContasPagar({ conta, disabled = false, size = "md"
         return {
           badge: "bg-green-100 text-green-800 border-green-200 hover:bg-green-100", 
           dot: "bg-green-600"
-        };
-      case 'Cancelada':
-        return {
-          badge: "bg-red-100 text-red-800 border-red-200 hover:bg-red-100",
-          dot: "bg-red-600"
         };
       default:
         return {
@@ -159,17 +152,6 @@ export function StatusSelectorContasPagar({ conta, disabled = false, size = "md"
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-green-600" />
             <span className="font-medium">Paga</span>
-          </div>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem 
-          onClick={() => handleStatusChange("Cancelada")}
-          className="cursor-pointer"
-          disabled={currentStatus === "Cancelada"}
-        >
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-red-600" />
-            <span className="font-medium">Cancelada</span>
           </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
