@@ -18,9 +18,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useContasReceber, useDeleteContaReceber, useMarcarComoRecebida, useCleanupOrphanReceivables } from "@/hooks/useContasReceber";
 import { ContaReceberDialog } from "@/components/ContasReceber/ContaReceberDialog";
 import { StatusSelectorContasReceber } from "@/components/ContasReceber/StatusSelectorContasReceber";
-
 export default function ContasReceber() {
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const isMobile = useIsMobile();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,21 +30,20 @@ export default function ContasReceber() {
   const [viewMode, setViewMode] = useState<"cards" | "table">(isMobile ? "cards" : "table");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [contaToDelete, setContaToDelete] = useState<string | null>(null);
-  
   const itemsPerPage = 10;
-  
-  const { data: contas, isLoading } = useContasReceber(selectedDate);
+  const {
+    data: contas,
+    isLoading
+  } = useContasReceber(selectedDate);
   const deleteContaReceber = useDeleteContaReceber();
   const marcarComoRecebida = useMarcarComoRecebida();
   const cleanupOrphanReceivables = useCleanupOrphanReceivables();
-  
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   };
-  
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pendente':
@@ -56,7 +56,6 @@ export default function ContasReceber() {
         return 'bg-gray-500/10 text-gray-700 dark:text-gray-400';
     }
   };
-  
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'pendente':
@@ -69,25 +68,20 @@ export default function ContasReceber() {
         return status;
     }
   };
-
   const getFormaPagamentoLabel = (forma: string, parcelas: number, parcelaAtual: number) => {
     if (forma === 'a_vista') return 'À Vista';
     return `${parcelaAtual}/${parcelas}x`;
   };
-
   const isContratoTransaction = (descricao: string) => {
     return descricao?.toLowerCase().includes('contrato');
   };
-
   const handleMarcarComoRecebida = (conta: any) => {
     marcarComoRecebida.mutate(conta.id);
   };
-
   const handleDeleteConta = (id: string) => {
     setContaToDelete(id);
     setDeleteDialogOpen(true);
   };
-
   const confirmDelete = () => {
     if (contaToDelete) {
       deleteContaReceber.mutate(contaToDelete);
@@ -95,7 +89,6 @@ export default function ContasReceber() {
       setContaToDelete(null);
     }
   };
-
   const handleDownloadComprovante = (url: string) => {
     window.open(url, '_blank');
   };
@@ -103,10 +96,8 @@ export default function ContasReceber() {
   // Aplicar filtros e memoização para performance
   const filteredContas = useMemo(() => {
     if (!contas) return [];
-    
     return contas.filter(conta => {
-      const matchesSearch = !searchTerm || 
-        conta.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = !searchTerm || conta.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'all' || conta.status === statusFilter;
       return matchesSearch && matchesStatus;
     }).sort((a, b) => new Date(b.data_transacao).getTime() - new Date(a.data_transacao).getTime());
@@ -126,7 +117,6 @@ export default function ContasReceber() {
     setSearchTerm(value);
     setCurrentPage(1);
   };
-
   const handleFilterChange = (filter: string) => {
     setStatusFilter(filter);
     setCurrentPage(1);
@@ -139,34 +129,24 @@ export default function ContasReceber() {
     const halfVisible = Math.floor(maxVisiblePages / 2);
     let startPage = Math.max(1, currentPage - halfVisible);
     let endPage = Math.min(totalPages, currentPage + halfVisible);
-
     if (currentPage <= halfVisible) {
       endPage = Math.min(totalPages, maxVisiblePages);
     }
     if (currentPage > totalPages - halfVisible) {
       startPage = Math.max(1, totalPages - maxVisiblePages + 1);
     }
-
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
     return pages;
   };
-
-  return (
-    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
+  return <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
       {/* Header */}
       <div className="flex flex-row justify-between items-center gap-2">
         <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl truncate">Contas a Receber</h1>
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
-            <Button
-              onClick={() => cleanupOrphanReceivables.mutate()}
-              disabled={cleanupOrphanReceivables.isPending}
-              variant="outline"
-              className="h-8 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm"
-              title="Limpar contas órfãs de contratos inativos"
-            >
+            <Button onClick={() => cleanupOrphanReceivables.mutate()} disabled={cleanupOrphanReceivables.isPending} variant="outline" className="h-8 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm" title="Limpar contas órfãs de contratos inativos">
               <Trash2 className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden lg:inline">Limpar Órfãs</span>
             </Button>
@@ -226,12 +206,7 @@ export default function ContasReceber() {
             <div className="flex flex-row gap-2 items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Buscar por nome da receita..." 
-                  className="pl-10 h-10 text-sm" 
-                  value={searchTerm} 
-                  onChange={e => handleSearchChange(e.target.value)} 
-                />
+                <Input placeholder="Buscar por nome da receita..." className="pl-10 h-10 text-sm" value={searchTerm} onChange={e => handleSearchChange(e.target.value)} />
               </div>
               
               <DropdownMenu>
@@ -241,9 +216,7 @@ export default function ContasReceber() {
                     <span className="ml-2 hidden sm:inline">
                       {statusFilter === "all" ? "Status" : getStatusLabel(statusFilter)}
                     </span>
-                    {statusFilter !== "all" && (
-                      <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>
-                    )}
+                    {statusFilter !== "all" && <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-popover border z-50">
@@ -265,81 +238,53 @@ export default function ContasReceber() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {!isMobile && (
-                <div className="flex items-center gap-2 ml-2">
-                  <Button 
-                    variant={viewMode === "cards" ? "default" : "outline"} 
-                    size="sm" 
-                    onClick={() => setViewMode("cards")}
-                  >
+              {!isMobile && <div className="flex items-center gap-2 ml-2">
+                  <Button variant={viewMode === "cards" ? "default" : "outline"} size="sm" onClick={() => setViewMode("cards")}>
                     <Grid className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant={viewMode === "table" ? "default" : "outline"} 
-                    size="sm" 
-                    onClick={() => setViewMode("table")}
-                  >
+                  <Button variant={viewMode === "table" ? "default" : "outline"} size="sm" onClick={() => setViewMode("table")}>
                     <List className="h-4 w-4" />
                   </Button>
-                </div>
-              )}
+                </div>}
             </div>
             
-            {filteredContas.length > 0 && (
-              <div className="text-sm text-muted-foreground">
+            {filteredContas.length > 0 && <div className="text-sm text-muted-foreground">
                 Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredContas.length)} de {filteredContas.length} conta(s)
-              </div>
-            )}
+              </div>}
           </div>
         </CardHeader>
         
         <CardContent className="p-4 sm:p-6">
-          {isLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="space-y-2">
+          {isLoading ? <div className="space-y-4">
+              {Array.from({
+            length: 5
+          }).map((_, i) => <div key={i} className="space-y-2">
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-3/4" />
-                </div>
-              ))}
-            </div>
-          ) : paginatedContas.length === 0 ? (
-            <div className="text-center py-12">
+                </div>)}
+            </div> : paginatedContas.length === 0 ? <div className="text-center py-12">
               <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">
-                {searchTerm || statusFilter !== "all" 
-                  ? "Nenhum resultado encontrado" 
-                  : "Nenhuma conta encontrada"}
+                {searchTerm || statusFilter !== "all" ? "Nenhum resultado encontrado" : "Nenhuma conta encontrada"}
               </h3>
               <p className="text-muted-foreground mb-4 text-sm">
-                {searchTerm || statusFilter !== "all"
-                  ? "Não encontramos contas com os filtros aplicados."
-                  : "Comece adicionando sua primeira conta a receber."}
+                {searchTerm || statusFilter !== "all" ? "Não encontramos contas com os filtros aplicados." : "Comece adicionando sua primeira conta a receber."}
               </p>
-              {!searchTerm && statusFilter === "all" && (
-                <ContaReceberDialog>
+              {!searchTerm && statusFilter === "all" && <ContaReceberDialog>
                   <Button className="gradient-premium border-0 text-background">
                     <Plus className="mr-2 h-4 w-4" />
                     Adicionar Conta
                   </Button>
-                </ContaReceberDialog>
-              )}
-            </div>
-          ) : (
-            <>
-              {viewMode === "cards" || isMobile ? (
-                // Card View
-                <div className="space-y-3">
-                  {paginatedContas.map(conta => (
-                    <Card key={conta.id} className="p-4 hover:shadow-md transition-shadow">
+                </ContaReceberDialog>}
+            </div> : <>
+              {viewMode === "cards" || isMobile ?
+          // Card View
+          <div className="space-y-3">
+                  {paginatedContas.map(conta => <Card key={conta.id} className="p-4 hover:shadow-md transition-shadow">
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            {isContratoTransaction(conta.descricao || '') ? (
-                              <Building2 className="h-4 w-4 text-blue-600 shrink-0" />
-                            ) : (
-                              <TrendingUp className="h-4 w-4 text-green-600 shrink-0" />
-                            )}
+                            {isContratoTransaction(conta.descricao || '') ? <Building2 className="h-4 w-4 text-blue-600 shrink-0" /> : <TrendingUp className="h-4 w-4 text-green-600 shrink-0" />}
                             <h3 className="font-semibold text-base truncate">
                               {conta.descricao || 'Receita sem descrição'}
                             </h3>
@@ -350,24 +295,22 @@ export default function ContasReceber() {
                         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 shrink-0" />
-                            <span>{format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}</span>
+                            <span>{format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", {
+                        locale: ptBR
+                      })}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <CreditCard className="h-4 w-4 shrink-0" />
                             <span>{getFormaPagamentoLabel(conta.forma_pagamento || 'a_vista', conta.parcelas || 1, conta.parcela_atual || 1)}</span>
                           </div>
-                          {conta.venda_id && conta.vendas?.clientes && (
-                            <div className="flex items-center gap-2">
+                          {conta.venda_id && conta.vendas?.clientes && <div className="flex items-center gap-2">
                               <ShoppingCart className="h-3 w-3 text-blue-600" />
                               <span className="text-xs">Cliente: {conta.vendas.clientes.nome}</span>
-                            </div>
-                          )}
-                          {isContratoTransaction(conta.descricao || '') && (
-                            <div className="flex items-center gap-2">
+                            </div>}
+                          {isContratoTransaction(conta.descricao || '') && <div className="flex items-center gap-2">
                               <Building2 className="h-3 w-3 text-blue-600" />
                               <span className="text-xs text-blue-600 font-medium">Receita de Contrato</span>
-                            </div>
-                          )}
+                            </div>}
                         </div>
                         
                         <div className="flex items-center justify-between">
@@ -375,54 +318,22 @@ export default function ContasReceber() {
                             {formatCurrency(Number(conta.valor))}
                           </div>
                           <div className="flex gap-1">
-                            {conta.status === 'pendente' && (
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => handleMarcarComoRecebida(conta)} 
-                                disabled={marcarComoRecebida.isPending}
-                              >
+                            {conta.status === 'pendente' && <Button variant="ghost" size="sm" onClick={() => handleMarcarComoRecebida(conta)} disabled={marcarComoRecebida.isPending}>
                                 <Check className="h-4 w-4" />
-                              </Button>
-                            )}
-                            {conta.comprovante_url && (
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
-                              >
+                              </Button>}
+                            {conta.comprovante_url && <Button variant="ghost" size="sm" onClick={() => handleDownloadComprovante(conta.comprovante_url!)}>
                                 <Download className="h-4 w-4" />
-                              </Button>
-                            )}
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => handleDeleteConta(conta.id)}
-                              disabled={deleteContaReceber.isPending}
-                              title={
-                                isContratoTransaction(conta.descricao || '') 
-                                  ? "⚠️ Esta conta está relacionada a um contrato - verifique se o contrato está ativo antes de excluir" 
-                                  : conta.venda_id 
-                                  ? "⚠️ Esta conta está relacionada a uma venda - não pode ser excluída se a venda estiver fechada" 
-                                  : "Excluir conta a receber"
-                              }
-                              className={cn(
-                                isContratoTransaction(conta.descricao || '') || conta.venda_id 
-                                  ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" 
-                                  : "text-destructive hover:text-destructive"
-                              )}
-                            >
+                              </Button>}
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteConta(conta.id)} disabled={deleteContaReceber.isPending} title={isContratoTransaction(conta.descricao || '') ? "⚠️ Esta conta está relacionada a um contrato - verifique se o contrato está ativo antes de excluir" : conta.venda_id ? "⚠️ Esta conta está relacionada a uma venda - não pode ser excluída se a venda estiver fechada" : "Excluir conta a receber"} className={cn(isContratoTransaction(conta.descricao || '') || conta.venda_id ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" : "text-destructive hover:text-destructive")}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
                       </div>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                // Table View
-                <div className="rounded-md border">
+                    </Card>)}
+                </div> :
+          // Table View
+          <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -435,21 +346,18 @@ export default function ContasReceber() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {paginatedContas.map((conta) => (
-                        <TableRow key={conta.id}>
+                      {paginatedContas.map(conta => <TableRow key={conta.id}>
                           <TableCell>
                             <StatusSelectorContasReceber conta={conta} size="sm" />
                           </TableCell>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
-                              <TrendingUp className="h-4 w-4 text-green-600 shrink-0" />
+                              
                               <div>
                                 <div className="font-semibold">{conta.descricao || 'Receita sem descrição'}</div>
-                                {conta.venda_id && conta.vendas?.clientes && (
-                                  <div className="text-xs text-muted-foreground">
+                                {conta.venda_id && conta.vendas?.clientes && <div className="text-xs text-muted-foreground">
                                     Cliente: {conta.vendas.clientes.nome}
-                                  </div>
-                                )}
+                                  </div>}
                               </div>
                             </div>
                           </TableCell>
@@ -461,7 +369,9 @@ export default function ContasReceber() {
                           </TableCell>
                           <TableCell>
                             <div className="text-sm">
-                              <div>{format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}</div>
+                              <div>{format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", {
+                          locale: ptBR
+                        })}</div>
                             </div>
                           </TableCell>
                           <TableCell>
@@ -471,57 +381,24 @@ export default function ContasReceber() {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-1">
-                              {conta.status === 'pendente' && (
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  onClick={() => handleMarcarComoRecebida(conta)}
-                                  disabled={marcarComoRecebida.isPending}
-                                >
+                              {conta.status === 'pendente' && <Button variant="ghost" size="sm" onClick={() => handleMarcarComoRecebida(conta)} disabled={marcarComoRecebida.isPending}>
                                   <Check className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {conta.comprovante_url && (
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
-                                >
+                                </Button>}
+                              {conta.comprovante_url && <Button variant="ghost" size="sm" onClick={() => handleDownloadComprovante(conta.comprovante_url!)}>
                                   <Download className="h-4 w-4" />
-                                </Button>
-                              )}
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleDeleteConta(conta.id)}
-                                disabled={deleteContaReceber.isPending}
-                                title={
-                                  isContratoTransaction(conta.descricao || '') 
-                                    ? "⚠️ Esta conta está relacionada a um contrato - verifique se o contrato está ativo" 
-                                    : conta.venda_id 
-                                    ? "⚠️ Esta conta está relacionada a uma venda - não pode ser excluída se a venda estiver fechada" 
-                                    : "Excluir conta a receber"
-                                }
-                                className={cn(
-                                  isContratoTransaction(conta.descricao || '') || conta.venda_id 
-                                    ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" 
-                                    : "text-destructive hover:text-destructive"
-                                )}
-                              >
+                                </Button>}
+                              <Button variant="ghost" size="sm" onClick={() => handleDeleteConta(conta.id)} disabled={deleteContaReceber.isPending} title={isContratoTransaction(conta.descricao || '') ? "⚠️ Esta conta está relacionada a um contrato - verifique se o contrato está ativo" : conta.venda_id ? "⚠️ Esta conta está relacionada a uma venda - não pode ser excluída se a venda estiver fechada" : "Excluir conta a receber"} className={cn(isContratoTransaction(conta.descricao || '') || conta.venda_id ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" : "text-destructive hover:text-destructive")}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
                           </TableCell>
-                        </TableRow>
-                      ))}
+                        </TableRow>)}
                     </TableBody>
                   </Table>
-                </div>
-              )}
+                </div>}
 
               {/* Paginação */}
-              {totalPages > 1 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6">
+              {totalPages > 1 && <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6">
                   <div className="text-sm text-muted-foreground order-2 sm:order-1">
                     Página {currentPage} de {totalPages}
                   </div>
@@ -529,42 +406,22 @@ export default function ContasReceber() {
                   <Pagination className="mx-0 w-fit order-1 sm:order-2">
                     <PaginationContent className="gap-0">
                       <PaginationItem>
-                        <PaginationPrevious 
-                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                          className={cn(
-                            "cursor-pointer select-none",
-                            currentPage === 1 && "opacity-50 cursor-not-allowed"
-                          )}
-                        />
+                        <PaginationPrevious onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} className={cn("cursor-pointer select-none", currentPage === 1 && "opacity-50 cursor-not-allowed")} />
                       </PaginationItem>
                       
-                      {generatePaginationNumbers().map((page) => (
-                        <PaginationItem key={page}>
-                          <PaginationLink
-                            onClick={() => setCurrentPage(page)}
-                            isActive={currentPage === page}
-                            className="cursor-pointer select-none"
-                          >
+                      {generatePaginationNumbers().map(page => <PaginationItem key={page}>
+                          <PaginationLink onClick={() => setCurrentPage(page)} isActive={currentPage === page} className="cursor-pointer select-none">
                             {page}
                           </PaginationLink>
-                        </PaginationItem>
-                      ))}
+                        </PaginationItem>)}
                       
                       <PaginationItem>
-                        <PaginationNext 
-                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                          className={cn(
-                            "cursor-pointer select-none",
-                            currentPage === totalPages && "opacity-50 cursor-not-allowed"
-                          )}
-                        />
+                        <PaginationNext onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} className={cn("cursor-pointer select-none", currentPage === totalPages && "opacity-50 cursor-not-allowed")} />
                       </PaginationItem>
                     </PaginationContent>
                   </Pagination>
-                </div>
-              )}
-            </>
-          )}
+                </div>}
+            </>}
         </CardContent>
       </Card>
 
@@ -585,15 +442,11 @@ export default function ContasReceber() {
             <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
               Cancelar
             </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  );
+    </div>;
 }
