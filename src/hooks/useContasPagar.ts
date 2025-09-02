@@ -80,76 +80,114 @@ export function useContasPagar(selectedDate: Date) {
       if (error) throw error;
       
       const transactions = (data || []) as ContaPagar[];
+      const validTransactions: ContaPagar[] = [];
 
-      // Enrich commission data with seller profile information and contract details
+      // Filter and validate transactions
       for (const transaction of transactions) {
-        if (transaction.comissoes && transaction.comissoes.vendedor_id) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('name, role')
-            .eq('user_id', transaction.comissoes.vendedor_id)
-            .single();
-          
-          if (profile) {
-            transaction.comissoes.vendedor_profile = profile;
-          }
+        let isValidTransaction = true;
 
-          // If commission is from a sale, get client name from venda
-          if (transaction.comissoes.venda_id) {
+        // If this is a commission transaction, validate it
+        if (transaction.comissoes && transaction.comissao_id) {
+          const commission = transaction.comissoes;
+          
+          // Check if commission is from a sale
+          if (commission.venda_id) {
             const { data: venda } = await supabase
               .from('vendas')
-              .select('clientes(nome)')
-              .eq('id', transaction.comissoes.venda_id)
-              .single();
+              .select('id, clientes(nome)')
+              .eq('id', commission.venda_id)
+              .maybeSingle();
             
-            if (venda?.clientes?.nome) {
+            if (!venda) {
+              // Sale doesn't exist anymore, skip this orphaned commission
+              console.log(`Skipping orphaned commission from deleted sale: ${commission.venda_id}`);
+              isValidTransaction = false;
+            } else if (venda?.clientes?.nome) {
               transaction.comissoes.cliente_nome = venda.clientes.nome;
             }
           }
 
-          // If commission is from a contract, get contract details for proper parcel calculation
-          if (transaction.comissoes.contrato_id) {
+          // Check if commission is from a contract
+          if (commission.contrato_id && isValidTransaction) {
             const { data: contract } = await supabase
               .from('contratos')
-              .select('numero_contrato, tipo_contrato, data_inicio, data_fim, cliente_id, clientes(nome)')
-              .eq('id', transaction.comissoes.contrato_id)
-              .single();
+              .select(`
+                numero_contrato, 
+                tipo_contrato, 
+                data_inicio, 
+                data_fim, 
+                cliente_id,
+                user_id,
+                clientes(nome),
+                profiles!contratos_user_id_fkey(role)
+              `)
+              .eq('id', commission.contrato_id)
+              .maybeSingle();
 
-            if (contract) {
-              transaction.comissoes.contrato = contract;
-              
-              // Calculate parcel information for recurring contracts
-              if (contract.tipo_contrato === 'recorrente' && contract.data_inicio && contract.data_fim) {
-                const startDate = new Date(contract.data_inicio);
-                const endDate = new Date(contract.data_fim);
-                const transactionDate = new Date(transaction.data_transacao);
+            if (!contract) {
+              // Contract doesn't exist anymore, skip this orphaned commission
+              console.log(`Skipping orphaned commission from deleted contract: ${commission.contrato_id}`);
+              isValidTransaction = false;
+            } else {
+              // Check if contract was created by admin - if so, skip commission
+              if (contract.profiles?.role === 'admin') {
+                console.log(`Skipping commission from admin-created contract: ${commission.contrato_id}`);
+                isValidTransaction = false;
+              } else {
+                transaction.comissoes.contrato = contract;
                 
-                // Calculate total months
-                const totalMonths = Math.max(1, 
-                  (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                  (endDate.getMonth() - startDate.getMonth()) + 1
-                );
+                // Get seller profile
+                const { data: profile } = await supabase
+                  .from('profiles')
+                  .select('name, role')
+                  .eq('user_id', commission.vendedor_id)
+                  .single();
                 
-                // Calculate current month (parcel)
-                const currentMonth = Math.max(1,
-                  (transactionDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                  (transactionDate.getMonth() - startDate.getMonth()) + 1
-                );
-                
-                // Update description with proper parcel format
-                const baseDescription = `Comissão de ${profile.name || 'Vendedor'} - ${contract.clientes?.nome || 'Cliente'}`;
-                transaction.descricao = `${baseDescription} (${Math.min(currentMonth, totalMonths)}/${totalMonths})`;
-                
-                // Store parcel info for UI usage
-                transaction.parcela_atual = Math.min(currentMonth, totalMonths);
-                transaction.parcelas = totalMonths;
+                if (profile) {
+                  transaction.comissoes.vendedor_profile = profile;
+                }
+
+                // Calculate parcel information for recurring contracts
+                if (contract.tipo_contrato === 'recorrente' && contract.data_inicio && contract.data_fim) {
+                  const startDate = new Date(contract.data_inicio);
+                  const endDate = new Date(contract.data_fim);
+                  const transactionDate = new Date(transaction.data_transacao);
+                  
+                  // Calculate total months
+                  const totalMonths = Math.max(1, 
+                    (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                    (endDate.getMonth() - startDate.getMonth()) + 1
+                  );
+                  
+                  // Calculate current month (parcel)
+                  const currentMonth = Math.max(1,
+                    (transactionDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                    (transactionDate.getMonth() - startDate.getMonth()) + 1
+                  );
+                  
+                  // Update description with proper parcel format
+                  const baseDescription = `Comissão de ${profile?.name || 'Vendedor'} - ${contract.clientes?.nome || 'Cliente'}`;
+                  transaction.descricao = `${baseDescription} (${Math.min(currentMonth, totalMonths)}/${totalMonths})`;
+                  
+                  // Store parcel info for UI usage
+                  transaction.parcela_atual = Math.min(currentMonth, totalMonths);
+                  transaction.parcelas = totalMonths;
+                }
               }
             }
           }
+        } else if (transaction.comissoes && !transaction.comissao_id) {
+          // Commission exists but transaction doesn't reference it properly, skip
+          isValidTransaction = false;
+        }
+
+        // Only add valid transactions
+        if (isValidTransaction) {
+          validTransactions.push(transaction);
         }
       }
 
-      return transactions;
+      return validTransactions;
     },
     enabled: !!user?.id,
   });
