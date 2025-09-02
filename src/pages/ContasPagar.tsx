@@ -456,24 +456,6 @@ export default function ContasPagar() {
                                   <Download className="h-4 w-4" />
                                 </Button>
                               )}
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => handleDeleteConta(conta.id)} 
-                                disabled={deleteContaPagar.isPending || !canDeleteConta(conta)}
-                                title={
-                                  !canDeleteConta(conta) 
-                                    ? "⚠️ Esta conta está relacionada a uma comissão e não pode ser excluída" 
-                                    : "Excluir conta a pagar"
-                                }
-                                className={cn(
-                                  !canDeleteConta(conta)
-                                    ? "text-gray-400 cursor-not-allowed" 
-                                    : "text-destructive hover:text-destructive"
-                                )}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
                             </div>
                           </div>
                         </div>
@@ -491,9 +473,7 @@ export default function ContasPagar() {
                         <TableHead>Descrição</TableHead>
                         <TableHead>Pagamento</TableHead>
                         <TableHead>Data</TableHead>
-                        <TableHead>Categoria</TableHead>
                         <TableHead className="text-right">Valor</TableHead>
-                        <TableHead className="w-[50px]"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -537,64 +517,8 @@ export default function ContasPagar() {
                             <TableCell>
                               {format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}
                             </TableCell>
-                            <TableCell>
-                              {conta.categorias_financeiras && (
-                                <Badge 
-                                  variant="outline" 
-                                  style={{ 
-                                    backgroundColor: conta.categorias_financeiras.cor + '20',
-                                    borderColor: conta.categorias_financeiras.cor,
-                                    color: conta.categorias_financeiras.cor
-                                  }}
-                                  className="text-xs"
-                                >
-                                  {conta.categorias_financeiras.nome}
-                                </Badge>
-                              )}
-                            </TableCell>
                             <TableCell className="text-right font-medium text-red-600">
                               {formatCurrency(Number(conta.valor))}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-1">
-                                {conta.status === 'pendente' && (
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={() => handleToggleStatus(conta)}
-                                    disabled={toggleStatusContaPagar.isPending}
-                                  >
-                                    <Check className="h-4 w-4" />
-                                  </Button>
-                                )}
-                                {conta.comprovante_url && (
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
-                                  >
-                                    <Download className="h-4 w-4" />
-                                  </Button>
-                                )}
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  onClick={() => handleDeleteConta(conta.id)} 
-                                  disabled={deleteContaPagar.isPending || !canDeleteConta(conta)}
-                                  title={
-                                    !canDeleteConta(conta) 
-                                      ? "⚠️ Esta conta está relacionada a uma comissão e não pode ser excluída" 
-                                      : "Excluir conta a pagar"
-                                  }
-                                  className={cn(
-                                    !canDeleteConta(conta)
-                                      ? "text-gray-400 cursor-not-allowed" 
-                                      : "text-destructive hover:text-destructive"
-                                  )}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
                             </TableCell>
                           </TableRow>
                         );
