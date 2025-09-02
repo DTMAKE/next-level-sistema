@@ -62,7 +62,17 @@ export function useContasPagar(selectedDate: Date) {
             venda_id,
             contrato_id,
             mes_referencia,
-            percentual
+            percentual,
+            vendedor_profile:profiles!vendedor_id (
+              name
+            ),
+            contrato:contratos!contrato_id (
+              numero_contrato,
+              clientes (
+                nome
+              )
+            ),
+            cliente_nome
           )
         `)
         .eq('tipo', 'despesa')
