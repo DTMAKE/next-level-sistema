@@ -118,8 +118,7 @@ export function useContasPagar(selectedDate: Date) {
                 data_fim, 
                 cliente_id,
                 user_id,
-                clientes(nome),
-                profiles!contratos_user_id_fkey(role)
+                clientes(nome)
               `)
               .eq('id', commission.contrato_id)
               .maybeSingle();
@@ -129,8 +128,14 @@ export function useContasPagar(selectedDate: Date) {
               console.log(`Skipping orphaned commission from deleted contract: ${commission.contrato_id}`);
               isValidTransaction = false;
             } else {
-              // Check if contract was created by admin - if so, skip commission
-              if (contract.profiles?.role === 'admin') {
+              // Check if contract was created by admin - fetch the creator's profile separately
+              const { data: contractCreatorProfile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('user_id', contract.user_id)
+                .single();
+
+              if (contractCreatorProfile?.role === 'admin') {
                 console.log(`Skipping commission from admin-created contract: ${commission.contrato_id}`);
                 isValidTransaction = false;
               } else {

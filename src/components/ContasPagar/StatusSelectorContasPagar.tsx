@@ -18,6 +18,14 @@ export function StatusSelectorContasPagar({ conta, disabled = false, size = "md"
   const updateConta = useUpdateContaPagar();
   const { toast } = useToast();
 
+  // Check if this is a valid commission that should have status controls
+  const isValidCommission = conta.comissoes && conta.comissao_id;
+  
+  // If not a valid commission, don't render status controls
+  if (!isValidCommission) {
+    return null;
+  }
+
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'pendente': return 'Pendente';
@@ -33,6 +41,16 @@ export function StatusSelectorContasPagar({ conta, disabled = false, size = "md"
 
     // Don't update if it's the same status
     if (currentStatus === newStatus) return;
+
+    // Additional validation: ensure we still have a valid commission
+    if (!conta.comissoes || !conta.comissao_id) {
+      toast({
+        title: "Erro!",
+        description: "Esta não é uma comissão válida.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const statusValue = newStatus === 'Paga' ? 'confirmada' : 'pendente';
     
