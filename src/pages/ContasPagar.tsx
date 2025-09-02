@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { TrendingDown, Search, Filter, Plus, Edit, Eye, Calendar, DollarSign, Check, Grid, List, MoreVertical, Trash2, FileText, CreditCard, Download, Building2 } from "lucide-react";
+import { TrendingDown, Search, Filter, Plus, Calendar, DollarSign, Check, Grid, List, Trash2, FileText, CreditCard, Download, ShoppingCart, UserCheck, Building2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -29,9 +29,8 @@ export default function ContasPagar() {
   const [viewMode, setViewMode] = useState<"cards" | "table">(isMobile ? "cards" : "table");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [contaToDelete, setContaToDelete] = useState<string | null>(null);
-  
   const itemsPerPage = 10;
-  
+
   const { data: contas, isLoading } = useContasPagar(selectedDate);
   const deleteContaPagar = useDeleteContaPagar();
   const toggleStatusContaPagar = useToggleStatusContaPagar();
@@ -43,7 +42,7 @@ export default function ContasPagar() {
       currency: 'BRL'
     }).format(value);
   };
-  
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pendente':
@@ -56,7 +55,7 @@ export default function ContasPagar() {
         return 'bg-gray-500/10 text-gray-700 dark:text-gray-400';
     }
   };
-  
+
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'pendente':
@@ -75,56 +74,53 @@ export default function ContasPagar() {
     return `${parcelaAtual}/${parcelas}x`;
   };
 
-  const isComissaoTransaction = (conta: any) => {
-    return !!conta.comissao_id;
+  const isComissaoTransaction = (descricao: string) => {
+    return descricao?.toLowerCase().includes('comissão');
   };
 
-  const getComissaoInfo = (conta: any) => {
-    if (!conta.comissoes) return null;
-    
-    const comissao = conta.comissoes;
-    const vendedorNome = comissao.vendedor_profile?.name || 'Vendedor';
-    
-    let clienteNome = '';
-    let tipoComissao = '';
-    let referencia = '';
-    
-    if (comissao.contratos) {
-      // Comissão de contrato recorrente
-      clienteNome = comissao.contratos.clientes?.nome || 'Cliente';
-      tipoComissao = 'Contrato Recorrente';
-      referencia = comissao.contratos.numero_contrato || comissao.contratos.titulo || 'Contrato';
-    } else if (comissao.vendas) {
-      // Comissão de venda única
-      clienteNome = comissao.vendas.clientes?.nome || 'Cliente';
-      tipoComissao = 'Venda Única';
-      referencia = 'Venda';
+  const getComissaoInfo = (conta: ContaPagar) => {
+    if (conta.comissoes) {
+      const vendedorNome = conta.comissoes.vendedor_profile?.name || 'Vendedor';
+      const clienteNome = conta.comissoes.cliente_nome || 
+                         conta.comissoes.contrato?.clientes?.nome || 
+                         'Cliente';
+      
+      if (conta.comissoes.contrato_id) {
+        return {
+          vendedor: vendedorNome,
+          cliente: clienteNome,
+          tipo: 'contrato',
+          numeroContrato: conta.comissoes.contrato?.numero_contrato
+        };
+      } else if (conta.comissoes.venda_id) {
+        return {
+          vendedor: vendedorNome,
+          cliente: clienteNome,
+          tipo: 'venda'
+        };
+      }
     }
-    
-    return {
-      vendedorNome,
-      clienteNome,
-      tipoComissao,
-      referencia,
-      percentual: comissao.percentual || 0,
-      mesReferencia: comissao.mes_referencia
-    };
+    return null;
   };
 
-  const handleToggleStatus = (conta: any) => {
+  const handleToggleStatus = (conta: ContaPagar) => {
     toggleStatusContaPagar.mutate({ 
       id: conta.id, 
       currentStatus: conta.status 
     });
   };
 
-  const canDeleteConta = (conta: any) => {
-    // Não pode deletar se for comissão ou relacionada a contrato/venda
-    return !isComissaoTransaction(conta);
+  const canDeleteConta = (conta: ContaPagar) => {
+    if (conta.comissoes?.contrato_id) return false;
+    if (conta.comissoes?.venda_id) return false;
+    return true;
   };
 
-  const handleStatusChange = (contaId: string, newStatus: 'pendente' | 'confirmada' | 'cancelada') => {
-    updateContaPagar.mutate({ id: contaId, status: newStatus });
+  const handleStatusChange = (conta: ContaPagar, novoStatus: string) => {
+    updateContaPagar.mutate({
+      id: conta.id,
+      status: novoStatus
+    });
   };
 
   const handleDeleteConta = (id: string) => {
@@ -147,10 +143,8 @@ export default function ContasPagar() {
   // Aplicar filtros e memoização para performance
   const filteredContas = useMemo(() => {
     if (!contas) return [];
-    
     return contas.filter(conta => {
-      const matchesSearch = !searchTerm || 
-        conta.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = !searchTerm || conta.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'all' || conta.status === statusFilter;
       return matchesSearch && matchesStatus;
     }).sort((a, b) => new Date(b.data_transacao).getTime() - new Date(a.data_transacao).getTime());
@@ -158,7 +152,10 @@ export default function ContasPagar() {
 
   // Paginação
   const totalPages = Math.ceil(filteredContas.length / itemsPerPage);
-  const paginatedContas = filteredContas.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedContas = filteredContas.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   // Calcular totais
   const totalContas = filteredContas.reduce((sum, d) => sum + Number(d.valor), 0);
@@ -181,19 +178,22 @@ export default function ContasPagar() {
     const pages = [];
     const maxVisiblePages = isMobile ? 3 : 5;
     const halfVisible = Math.floor(maxVisiblePages / 2);
+    
     let startPage = Math.max(1, currentPage - halfVisible);
     let endPage = Math.min(totalPages, currentPage + halfVisible);
-
+    
     if (currentPage <= halfVisible) {
       endPage = Math.min(totalPages, maxVisiblePages);
     }
+    
     if (currentPage > totalPages - halfVisible) {
       startPage = Math.max(1, totalPages - maxVisiblePages + 1);
     }
-
+    
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
+    
     return pages;
   };
 
@@ -264,7 +264,7 @@ export default function ContasPagar() {
                   placeholder="Buscar por nome da despesa..." 
                   className="pl-10 h-10 text-sm" 
                   value={searchTerm} 
-                  onChange={e => handleSearchChange(e.target.value)} 
+                  onChange={(e) => handleSearchChange(e.target.value)} 
                 />
               </div>
               
@@ -343,12 +343,14 @@ export default function ContasPagar() {
               <h3 className="text-lg font-semibold mb-2">
                 {searchTerm || statusFilter !== "all" 
                   ? "Nenhum resultado encontrado" 
-                  : "Nenhuma conta encontrada"}
+                  : "Nenhuma conta encontrada"
+                }
               </h3>
               <p className="text-muted-foreground mb-4 text-sm">
-                {searchTerm || statusFilter !== "all"
-                  ? "Não encontramos contas com os filtros aplicados."
-                  : "Comece adicionando sua primeira conta a pagar."}
+                {searchTerm || statusFilter !== "all" 
+                  ? "Não encontramos contas com os filtros aplicados." 
+                  : "Comece adicionando sua primeira conta a pagar."
+                }
               </p>
               {!searchTerm && statusFilter === "all" && (
                 <ContaPagarDialog>
@@ -362,120 +364,125 @@ export default function ContasPagar() {
           ) : (
             <>
               {viewMode === "cards" || isMobile ? (
-                // Card View (Mobile e Desktop quando cards selecionado)
+                // Card View
                 <div className="space-y-3">
-                  {paginatedContas.map(conta => (
-                    <Card key={conta.id} className="p-4 hover:shadow-md transition-shadow">
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-3">
-                            {isComissaoTransaction(conta) ? (
-                              <Building2 className="h-4 w-4 text-purple-600 shrink-0" />
-                            ) : (
-                              <DollarSign className="h-4 w-4 text-red-600 shrink-0" />
-                            )}
-                            <div className="min-w-0 flex-1">
+                  {paginatedContas.map((conta) => {
+                    const comissaoInfo = getComissaoInfo(conta);
+                    
+                    return (
+                      <Card key={conta.id} className="p-4 hover:shadow-md transition-shadow">
+                        <div className="flex flex-col gap-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              {isComissaoTransaction(conta.descricao || '') ? (
+                                <UserCheck className="h-4 w-4 text-purple-600 shrink-0" />
+                              ) : (
+                                <TrendingDown className="h-4 w-4 text-red-600 shrink-0" />
+                              )}
                               <h3 className="font-semibold text-base truncate">
                                 {conta.descricao || 'Despesa sem descrição'}
                               </h3>
-                              {isComissaoTransaction(conta) && (() => {
-                                const info = getComissaoInfo(conta);
-                                return info ? (
-                                  <p className="text-sm text-purple-600 font-medium truncate">
-                                    {info.tipoComissao} • {info.vendedorNome} • {info.clienteNome}
-                                  </p>
-                                ) : null;
-                              })()}
                             </div>
+                            <StatusSelectorContasPagar conta={conta} size="sm" />
                           </div>
-                           <StatusSelectorContasPagar conta={conta} size="sm" />
-                        </div>
-                        
-                        <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 shrink-0" />
-                            <span>{format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}</span>
-                            {conta.data_vencimento && (
-                              <span className="text-xs">
-                                • Venc: {format(parseISO(conta.data_vencimento + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <CreditCard className="h-4 w-4 shrink-0" />
-                            <span>{getFormaPagamentoLabel(conta.forma_pagamento, conta.parcelas, conta.parcela_atual)}</span>
-                          </div>
-                          {conta.comprovante_url && (
+                          
+                          <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
-                              <FileText className="h-4 w-4 shrink-0" />
-                              <span className="text-xs">Possui comprovante</span>
+                              <Calendar className="h-4 w-4 shrink-0" />
+                              <span>
+                                {format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}
+                              </span>
                             </div>
-                          )}
-                          {isComissaoTransaction(conta) && (() => {
-                            const info = getComissaoInfo(conta);
-                            return info ? (
-                              <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <CreditCard className="h-4 w-4 shrink-0" />
+                              <span>
+                                {getFormaPagamentoLabel(
+                                  conta.forma_pagamento || 'a_vista', 
+                                  conta.parcelas || 1, 
+                                  conta.parcela_atual || 1
+                                )}
+                              </span>
+                            </div>
+                            {comissaoInfo && (
+                              <>
                                 <div className="flex items-center gap-2">
-                                  <Building2 className="h-3 w-3 text-purple-600" />
-                                  <span className="text-xs text-purple-600 font-medium">
-                                    {info.tipoComissao} ({info.percentual}%)
+                                  <UserCheck className="h-3 w-3 text-purple-600" />
+                                  <span className="text-xs">Vendedor: {comissaoInfo.vendedor}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {comissaoInfo.tipo === 'contrato' ? (
+                                    <Building2 className="h-3 w-3 text-blue-600" />
+                                  ) : (
+                                    <ShoppingCart className="h-3 w-3 text-green-600" />
+                                  )}
+                                  <span className="text-xs">
+                                    {comissaoInfo.tipo === 'contrato' 
+                                      ? `Contrato: ${comissaoInfo.numeroContrato}` 
+                                      : `Cliente: ${comissaoInfo.cliente}`
+                                    }
                                   </span>
                                 </div>
-                                <div className="text-xs text-muted-foreground ml-5">
-                                  Ref: {format(new Date(info.mesReferencia + 'T00:00:00'), "MM/yyyy", { locale: ptBR })}
+                                <div className="flex items-center gap-2">
+                                  <UserCheck className="h-3 w-3 text-purple-600" />
+                                  <span className="text-xs text-purple-600 font-medium">
+                                    Comissão de {comissaoInfo.tipo === 'contrato' ? 'Contrato' : 'Venda'}
+                                  </span>
                                 </div>
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-2">
-                                <Building2 className="h-3 w-3 text-purple-600" />
-                                <span className="text-xs text-purple-600 font-medium">Comissão</span>
-                              </div>
-                            );
-                          })()}
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="font-bold text-red-600 text-lg">
-                            {formatCurrency(Number(conta.valor))}
+                              </>
+                            )}
                           </div>
-                          <div className="flex gap-1">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => handleToggleStatus(conta)} 
-                              disabled={toggleStatusContaPagar.isPending}
-                              className={conta.status === 'pendente' ? 'text-green-600 hover:text-green-700' : 'text-yellow-600 hover:text-yellow-700'}
-                              title={conta.status === 'pendente' ? 'Marcar como paga' : 'Marcar como pendente'}
-                            >
-                              <Check className="h-4 w-4" />
-                            </Button>
-                            {conta.comprovante_url && (
+                          
+                          <div className="flex items-center justify-between">
+                            <div className="font-bold text-red-600 text-lg">
+                              {formatCurrency(Number(conta.valor))}
+                            </div>
+                            <div className="flex gap-1">
+                              {conta.status === 'pendente' && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => handleToggleStatus(conta)}
+                                  disabled={toggleStatusContaPagar.isPending}
+                                >
+                                  <Check className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {conta.comprovante_url && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              )}
                               <Button 
                                 variant="ghost" 
-                                size="sm"
-                                onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
+                                size="sm" 
+                                onClick={() => handleDeleteConta(conta.id)} 
+                                disabled={deleteContaPagar.isPending || !canDeleteConta(conta)}
+                                title={
+                                  !canDeleteConta(conta) 
+                                    ? "⚠️ Esta conta está relacionada a uma comissão e não pode ser excluída" 
+                                    : "Excluir conta a pagar"
+                                }
+                                className={cn(
+                                  !canDeleteConta(conta)
+                                    ? "text-gray-400 cursor-not-allowed" 
+                                    : "text-destructive hover:text-destructive"
+                                )}
                               >
-                                <Download className="h-4 w-4" />
+                                <Trash2 className="h-4 w-4" />
                               </Button>
-                            )}
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => handleDeleteConta(conta.id)}
-                              disabled={!canDeleteConta(conta)}
-                              className={!canDeleteConta(conta) ? 'opacity-50 cursor-not-allowed' : ''}
-                              title={!canDeleteConta(conta) ? 'Não é possível excluir contas de comissão' : 'Excluir conta'}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </Card>
-                  ))}
+                      </Card>
+                    );
+                  })}
                 </div>
               ) : (
-                // Table View (Desktop apenas)
+                // Table View
                 <div className="rounded-md border">
                   <Table>
                     <TableHeader>
@@ -484,141 +491,152 @@ export default function ContasPagar() {
                         <TableHead>Descrição</TableHead>
                         <TableHead>Pagamento</TableHead>
                         <TableHead>Data</TableHead>
-                        <TableHead>Valor</TableHead>
-                        <TableHead className="w-[100px]">Ações</TableHead>
+                        <TableHead>Categoria</TableHead>
+                        <TableHead className="text-right">Valor</TableHead>
+                        <TableHead className="w-[50px]"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {paginatedContas.map(conta => (
-                        <TableRow key={conta.id}>
-                           <TableCell>
-                            <StatusSelectorContasPagar conta={conta} size="sm" />
-                           </TableCell>
-                           <TableCell className="font-medium">
+                      {paginatedContas.map((conta) => {
+                        const comissaoInfo = getComissaoInfo(conta);
+                        
+                        return (
+                          <TableRow key={conta.id}>
+                            <TableCell>
+                              <StatusSelectorContasPagar conta={conta} size="sm" />
+                            </TableCell>
+                            <TableCell>
                               <div className="flex items-center gap-2">
-                                {isComissaoTransaction(conta) ? (
-                                  <Building2 className="h-4 w-4 text-purple-600" />
+                                {isComissaoTransaction(conta.descricao || '') ? (
+                                  <UserCheck className="h-4 w-4 text-purple-600" />
                                 ) : (
-                                  <TrendingDown className="h-4 w-4 text-red-600" />
+                                  <FileText className="h-4 w-4 text-muted-foreground" />
                                 )}
                                 <div>
-                                  <div>{conta.descricao || 'Despesa sem descrição'}</div>
-                                  {conta.comprovante_url && (
-                                    <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                      <FileText className="h-3 w-3" />
-                                      Possui comprovante
+                                  <div className="font-medium">
+                                    {conta.descricao || 'Despesa sem descrição'}
+                                  </div>
+                                  {comissaoInfo && (
+                                    <div className="text-xs text-muted-foreground">
+                                      Comissão: {comissaoInfo.vendedor} - {comissaoInfo.cliente}
+                                      {comissaoInfo.tipo === 'contrato' && ` (${comissaoInfo.numeroContrato})`}
                                     </div>
                                   )}
-                                  {isComissaoTransaction(conta) && (() => {
-                                    const info = getComissaoInfo(conta);
-                                    return info ? (
-                                      <div className="text-xs text-purple-600 font-medium flex items-center gap-1">
-                                        <Building2 className="h-3 w-3" />
-                                        {info.tipoComissao} • {info.vendedorNome}
-                                      </div>
-                                    ) : (
-                                      <div className="text-xs text-purple-600 font-medium flex items-center gap-1">
-                                        <Building2 className="h-3 w-3" />
-                                        Comissão
-                                      </div>
-                                    );
-                                  })()}
                                 </div>
                               </div>
                             </TableCell>
-                          <TableCell>
-                            {getFormaPagamentoLabel(conta.forma_pagamento, conta.parcelas, conta.parcela_atual)}
-                          </TableCell>
-                          <TableCell>
-                            <div>
+                            <TableCell>
+                              <Badge variant="outline" className="text-xs">
+                                {getFormaPagamentoLabel(
+                                  conta.forma_pagamento || 'a_vista', 
+                                  conta.parcelas || 1, 
+                                  conta.parcela_atual || 1
+                                )}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
                               {format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}
-                              {conta.data_vencimento && (
-                                <div className="text-xs text-muted-foreground">
-                                  Venc: {format(parseISO(conta.data_vencimento + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}
-                                </div>
+                            </TableCell>
+                            <TableCell>
+                              {conta.categorias_financeiras && (
+                                <Badge 
+                                  variant="outline" 
+                                  style={{ 
+                                    backgroundColor: conta.categorias_financeiras.cor + '20',
+                                    borderColor: conta.categorias_financeiras.cor,
+                                    color: conta.categorias_financeiras.cor
+                                  }}
+                                  className="text-xs"
+                                >
+                                  {conta.categorias_financeiras.nome}
+                                </Badge>
                               )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-bold text-red-600">
-                            {formatCurrency(Number(conta.valor))}
-                          </TableCell>
-                           <TableCell>
-                             <div className="flex items-center gap-1">
-                             <Button 
-                               size="sm" 
-                               onClick={() => handleToggleStatus(conta)}
-                               disabled={toggleStatusContaPagar.isPending}
-                               variant={conta.status === 'pendente' ? 'default' : 'secondary'}
-                               className={conta.status === 'pendente' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-yellow-600 hover:bg-yellow-700 text-white'}
-                               title={conta.status === 'pendente' ? 'Marcar como paga' : 'Marcar como pendente'}
-                             >
-                               {conta.status === 'pendente' ? 'Pagar' : 'Pendente'}
-                             </Button>
-                               <DropdownMenu>
-                                 <DropdownMenuTrigger asChild>
-                                   <Button variant="ghost" size="sm">
-                                     <MoreVertical className="h-4 w-4" />
-                                   </Button>
-                                 </DropdownMenuTrigger>
-                                 <DropdownMenuContent align="end" className="bg-popover border z-50">
-                                   {conta.comprovante_url && (
-                                     <DropdownMenuItem onClick={() => handleDownloadComprovante(conta.comprovante_url!)}>
-                                       <Download className="h-4 w-4 mr-2" />
-                                       Baixar Comprovante
-                                     </DropdownMenuItem>
-                                   )}
-                                   <DropdownMenuItem 
-                                     onClick={() => handleDeleteConta(conta.id)}
-                                     disabled={!canDeleteConta(conta)}
-                                     className={!canDeleteConta(conta) ? 'opacity-50 cursor-not-allowed' : ''}
-                                   >
-                                     <Trash2 className="h-4 w-4 mr-2" />
-                                     {canDeleteConta(conta) ? 'Excluir' : 'Não pode excluir (comissão)'}
-                                   </DropdownMenuItem>
-                                 </DropdownMenuContent>
-                               </DropdownMenu>
-                             </div>
-                           </TableCell>
-                        </TableRow>
-                      ))}
+                            </TableCell>
+                            <TableCell className="text-right font-medium text-red-600">
+                              {formatCurrency(Number(conta.valor))}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                {conta.status === 'pendente' && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => handleToggleStatus(conta)}
+                                    disabled={toggleStatusContaPagar.isPending}
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                {conta.comprovante_url && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
+                                  >
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => handleDeleteConta(conta.id)} 
+                                  disabled={deleteContaPagar.isPending || !canDeleteConta(conta)}
+                                  title={
+                                    !canDeleteConta(conta) 
+                                      ? "⚠️ Esta conta está relacionada a uma comissão e não pode ser excluída" 
+                                      : "Excluir conta a pagar"
+                                  }
+                                  className={cn(
+                                    !canDeleteConta(conta)
+                                      ? "text-gray-400 cursor-not-allowed" 
+                                      : "text-destructive hover:text-destructive"
+                                  )}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>
               )}
-
+              
+              {/* Paginação */}
               {totalPages > 1 && (
-                <div className="mt-6">
+                <div className="flex items-center justify-between pt-4">
+                  <div className="text-sm text-muted-foreground">
+                    Página {currentPage} de {totalPages}
+                  </div>
                   <Pagination>
                     <PaginationContent>
-                      {currentPage > 1 && (
-                        <PaginationItem>
-                          <PaginationPrevious 
-                            onClick={() => setCurrentPage(currentPage - 1)} 
-                            className="cursor-pointer" 
-                          />
-                        </PaginationItem>
-                      )}
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        />
+                      </PaginationItem>
                       
-                      {generatePaginationNumbers().map(pageNum => (
-                        <PaginationItem key={pageNum}>
-                          <PaginationLink 
-                            onClick={() => setCurrentPage(pageNum)} 
-                            isActive={pageNum === currentPage} 
+                      {generatePaginationNumbers().map((page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(page)}
+                            isActive={currentPage === page}
                             className="cursor-pointer"
                           >
-                            {pageNum}
+                            {page}
                           </PaginationLink>
                         </PaginationItem>
                       ))}
                       
-                      {currentPage < totalPages && (
-                        <PaginationItem>
-                          <PaginationNext 
-                            onClick={() => setCurrentPage(currentPage + 1)} 
-                            className="cursor-pointer" 
-                          />
-                        </PaginationItem>
-                      )}
+                      <PaginationItem>
+                        <PaginationNext 
+                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                          className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        />
+                      </PaginationItem>
                     </PaginationContent>
                   </Pagination>
                 </div>
@@ -628,7 +646,7 @@ export default function ContasPagar() {
         </CardContent>
       </Card>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Dialog de Confirmação de Exclusão */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -639,7 +657,10 @@ export default function ContasPagar() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
