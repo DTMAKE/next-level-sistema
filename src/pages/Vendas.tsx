@@ -22,6 +22,7 @@ import { QuickStatusChanger } from "@/components/Vendas/QuickStatusChanger";
 import { ComissaoIndicator } from "@/components/Vendas/ComissaoIndicator";
 import { ComissaoCard } from "@/components/Vendas/ComissaoCard";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
+import { SalesDataHealthCheck } from "@/components/Vendas/SalesDataHealthCheck";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 const getStatusColor = (status: string) => {
@@ -233,6 +234,11 @@ export default function Vendas() {
             </div>
           </Card>}
       </div>
+
+      {/* Data Health Check - Admin only */}
+      {user?.role === 'admin' && (
+        <SalesDataHealthCheck />
+      )}
 
       <Card>
         <CardHeader className="p-4 sm:p-6">
