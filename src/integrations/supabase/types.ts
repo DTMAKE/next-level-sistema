@@ -1137,6 +1137,16 @@ export type Database = {
         Args: { projeto_id: string; user_id: string }
         Returns: undefined
       }
+      fix_contract_types_and_generate_missing_installments: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          action_taken: string
+          contrato_id: string
+          installments_created: number
+          months_duration: number
+          numero_contrato: string
+        }[]
+      }
       fix_sales_financial_transactions: {
         Args: Record<PropertyKey, never>
         Returns: {
