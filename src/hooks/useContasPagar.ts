@@ -262,14 +262,21 @@ export function useUpdateContaPagar() {
 
   return useMutation({
     mutationFn: async ({ id, ...data }: Partial<ContaPagar> & { id: string }) => {
-      const { error } = await supabase
+      console.log('Executando mutação update:', { id, data });
+      
+      const { data: result, error } = await supabase
         .from('transacoes_financeiras')
         .update(data)
-        .eq('id', id);
+        .eq('id', id)
+        .select();
+
+      console.log('Resultado da mutação:', { result, error });
 
       if (error) throw error;
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Mutação bem-sucedida:', data);
       queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
       toast({
         title: "Sucesso!",
