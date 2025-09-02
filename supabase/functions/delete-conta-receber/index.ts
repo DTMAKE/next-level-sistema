@@ -64,12 +64,13 @@ Deno.serve(async (req) => {
       if (contractMatch) {
         const contractIdentifier = contractMatch[1].trim();
         
+        // Only check by numero_contrato since contractIdentifier is a string, not UUID
         const { data: activeContract } = await supabaseClient
           .from('contratos')
           .select('id, status')
-          .or(`numero_contrato.eq.${contractIdentifier},id.eq.${contractIdentifier}`)
+          .eq('numero_contrato', contractIdentifier)
           .eq('status', 'ativo')
-          .single();
+          .maybeSingle();
 
         if (activeContract) {
           canDelete = false;
@@ -85,12 +86,19 @@ Deno.serve(async (req) => {
         .select('id, status')
         .eq('id', conta.venda_id)
         .eq('status', 'fechada')
-        .single();
+        .maybeSingle();
 
       if (closedSale) {
         canDelete = false;
         errorMessage = 'Não é possível excluir: existe venda relacionada';
       }
+    }
+
+    // Allow deletion of accounts receivable without origin (venda_id = null)
+    // These are considered orphan records that can be cleaned up
+    if (!conta.venda_id) {
+      console.log('Allowing deletion of orphan receivable without venda_id');
+      canDelete = true;
     }
 
     if (!canDelete) {
