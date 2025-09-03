@@ -102,7 +102,12 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
   }, [venda, open]);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    console.log(`VendaDialog: Campo ${field} alterado para:`, value);
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      console.log('VendaDialog: FormData após alteração:', newData);
+      return newData;
+    });
   };
 
   const handleDialogClose = (isOpen: boolean) => {
@@ -147,7 +152,8 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
         servicos: servicos, // Incluir serviços
       };
 
-      console.log('Dados da venda sendo enviados:', vendaData);
+      console.log('VendaDialog: Dados completos da venda sendo enviados:', vendaData);
+      console.log('VendaDialog: vendedor_id específico:', formData.vendedor_id);
 
       if (venda) {
         await updateVenda.mutateAsync({ id: venda.id, ...vendaData });
