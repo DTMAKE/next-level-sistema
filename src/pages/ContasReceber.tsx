@@ -345,7 +345,7 @@ export default function ContasReceber() {
                             <div className="flex items-center gap-2">
                               <ShoppingCart className="h-3 w-3 text-green-600" />
                               <span className="text-xs text-green-600 font-medium">
-                                Venda: {conta.vendas.numero_venda || `VENDA-${conta.venda_id.slice(0, 8)}`}
+                                Venda: {conta.vendas.numero_venda ?? `VENDA-${conta.venda_id.slice(0, 8)}`}
                                 {conta.vendas.vendedor_id && ` | Vendedor: ${getSellerName(conta.vendas.vendedor_id)}`}
                               </span>
                             </div>
@@ -354,7 +354,7 @@ export default function ContasReceber() {
                             <div className="flex items-center gap-2">
                               <Building2 className="h-3 w-3 text-blue-600" />
                               <span className="text-xs text-blue-600 font-medium">
-                                {conta.contratos.numero_contrato || `CONTRATO-${conta.contrato_id.slice(0, 8)}`}
+                                 {conta.contratos.numero_contrato ?? `CONTRATO-${conta.contrato_id.slice(0, 8)}`}
                               </span>
                             </div>
                           )}
@@ -435,14 +435,14 @@ export default function ContasReceber() {
                                   <div className="flex items-center gap-1">
                                     <ShoppingCart className="h-3 w-3 text-green-600" />
                                     <span className="text-green-600 font-medium">
-                                      {conta.vendas.numero_venda || `VENDA-${conta.venda_id.slice(0, 8)}`}
+                                      {conta.vendas.numero_venda ?? `VENDA-${conta.venda_id.slice(0, 8)}`}
                                     </span>
                                   </div>
                                 ) : conta.contrato_id && conta.contratos ? (
                                   <div className="flex items-center gap-1">
                                     <Building2 className="h-3 w-3 text-blue-600" />
                                     <span className="text-blue-600 font-medium">
-                                      {conta.contratos.numero_contrato || `CONTRATO-${conta.contrato_id.slice(0, 8)}`}
+                                      {conta.contratos.numero_contrato ?? `CONTRATO-${conta.contrato_id.slice(0, 8)}`}
                                     </span>
                                   </div>
                                 ) : '-'}

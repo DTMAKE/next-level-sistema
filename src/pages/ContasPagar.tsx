@@ -87,14 +87,14 @@ export default function ContasPagar() {
           vendedor: vendedorNome,
           cliente: clienteNome,
           tipo: 'contrato' as const,
-          numeroContrato: `CONTRATO-${conta.comissoes.contrato_id.slice(0, 8)}`
+          numeroContrato: conta.comissoes.contratos?.[0]?.numero_contrato ?? `CONTRATO-${conta.comissoes.contrato_id.slice(0, 8)}`
         };
       } else if (conta.comissoes.venda_id) {
         return {
           vendedor: vendedorNome,
           cliente: clienteNome,
           tipo: 'venda' as const,
-          numeroVenda: `VENDA-${conta.comissoes.venda_id.slice(0, 8)}`
+          numeroVenda: conta.comissoes.vendas?.[0]?.numero_venda ?? `VENDA-${conta.comissoes.venda_id.slice(0, 8)}`
         };
       }
     }
