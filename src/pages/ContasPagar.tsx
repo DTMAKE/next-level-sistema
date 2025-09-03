@@ -20,7 +20,7 @@ import { ContaPagarDialog } from "@/components/ContasPagar/ContaPagarDialog";
 import { StatusSelectorContasPagar } from "@/components/ContasPagar/StatusSelectorContasPagar";
 import { PaymentMethodSelector } from "@/components/ContasPagar/PaymentMethodSelector";
 import { ComissaoInfo } from "@/components/ContasPagar/ComissaoInfo";
-import { SyncComissoesButton } from "@/components/ContasPagar/SyncComissoesButton";
+
 
 export default function ContasPagar() {
   const { user } = useAuth();
@@ -193,7 +193,7 @@ export default function ContasPagar() {
         <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl truncate">Contas a Pagar</h1>
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
-          <SyncComissoesButton />
+          
           <ContaPagarDialog>
             <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm">
               <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
