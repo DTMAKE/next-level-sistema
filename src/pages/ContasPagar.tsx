@@ -18,6 +18,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useContasPagar, useDeleteContaPagar, useToggleStatusContaPagar, type ContaPagar } from "@/hooks/useContasPagar";
 import { ContaPagarDialog } from "@/components/ContasPagar/ContaPagarDialog";
 import { StatusSelectorContasPagar } from "@/components/ContasPagar/StatusSelectorContasPagar";
+import { useVendaById } from "@/hooks/useVendaById";
+import { useContratoById } from "@/hooks/useContratoById";
+import { OrigemInfo } from "@/components/ContasPagar/OrigemInfo";
 
 export default function ContasPagar() {
   const { user } = useAuth();
@@ -88,14 +91,16 @@ export default function ContasPagar() {
           vendedor: vendedorNome,
           cliente: clienteNome,
           tipo: 'contrato' as const,
-          numeroContrato: `CONTRATO-${conta.comissoes.contrato_id.slice(0, 8)}`
+          numeroContrato: `CONTRATO-${conta.comissoes.contrato_id.slice(0, 8)}`,
+          contratoId: conta.comissoes.contrato_id
         };
       } else if (conta.comissoes.venda_id) {
         return {
           vendedor: vendedorNome,
           cliente: clienteNome,
           tipo: 'venda' as const,
-          numeroVenda: `VENDA-${conta.comissoes.venda_id.slice(0, 8)}`
+          numeroVenda: `VENDA-${conta.comissoes.venda_id.slice(0, 8)}`,
+          vendaId: conta.comissoes.venda_id
         };
       }
     }
@@ -392,22 +397,15 @@ export default function ContasPagar() {
                                 )}
                               </span>
                             </div>
-                             {isComissaoTransaction(conta.descricao || '') && (
-                               <div className="flex items-center gap-2">
-                                 <UserCheck className="h-3 w-3 text-purple-600" />
-                                 <span className="text-xs text-purple-600 font-medium">
-                                   {(() => {
-                                     const info = getComissaoInfo(conta);
-                                     if (info?.tipo === 'venda') {
-                                       return `Venda: ${info.numeroVenda}`;
-                                     } else if (info?.tipo === 'contrato') {
-                                       return `${info.numeroContrato}`;
-                                     }
-                                     return 'Comissão';
-                                   })()}
-                                 </span>
-                               </div>
-                             )}
+                              {isComissaoTransaction(conta.descricao || '') && (
+                                <div className="flex items-center gap-2">
+                                  <OrigemInfo 
+                                    tipo={comissaoInfo?.tipo || 'venda'}
+                                    vendaId={comissaoInfo?.vendaId}
+                                    contratoId={comissaoInfo?.contratoId}
+                                  />
+                                </div>
+                              )}
                           </div>
                           
                            <div className="flex items-center justify-between pt-1 sm:pt-0">
@@ -496,29 +494,23 @@ export default function ContasPagar() {
                                 </span>
                               </div>
                             </TableCell>
-                            <TableCell>
-                              <div className="text-sm">
-                                {(() => {
-                                  const info = getComissaoInfo(conta);
-                                  if (info?.tipo === 'venda') {
-                                    return (
-                                      <div className="flex items-center gap-1">
-                                        <ShoppingCart className="h-3 w-3 text-green-600" />
-                                        <span className="text-green-600 font-medium">{info.numeroVenda}</span>
-                                      </div>
-                                    );
-                                  } else if (info?.tipo === 'contrato') {
-                                    return (
-                                      <div className="flex items-center gap-1">
-                                        <Building2 className="h-3 w-3 text-blue-600" />
-                                        <span className="text-blue-600 font-medium">{info.numeroContrato}</span>
-                                      </div>
-                                    );
-                                  }
-                                  return '-';
-                                })()}
-                              </div>
-                            </TableCell>
+                             <TableCell>
+                               <div className="text-sm">
+                                 {(() => {
+                                   const info = getComissaoInfo(conta);
+                                   if (info?.tipo === 'venda' || info?.tipo === 'contrato') {
+                                     return (
+                                       <OrigemInfo 
+                                         tipo={info.tipo}
+                                         vendaId={info.vendaId}
+                                         contratoId={info.contratoId}
+                                       />
+                                     );
+                                   }
+                                   return '-';
+                                 })()}
+                               </div>
+                             </TableCell>
                             <TableCell>
                               {format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}
                             </TableCell>
