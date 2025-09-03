@@ -5,11 +5,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, DollarSign, Calendar, Building2, FileText, Edit, Trash2, CreditCard, Hash, Phone, Mail, MapPin, Package, User } from "lucide-react";
 import { useVenda } from "@/hooks/useVendas";
+import { useProfiles } from "@/hooks/useProfiles";
 import { VendaDialog } from "@/components/Vendas/VendaDialog";
 import { DeleteVendaDialog } from "@/components/Vendas/DeleteVendaDialog";
 import { QuickStatusChanger } from "@/components/Vendas/QuickStatusChanger";
 import { formatDateToBrazilian } from "@/utils/dateUtils";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 const getStatusColor = (status: string) => {
   return "bg-black text-white";
@@ -37,6 +38,14 @@ export default function VendaDetalhes() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const { data: venda, isLoading, error } = useVenda(id!);
+  
+  // Buscar dados do vendedor se existe vendedor_id
+  const vendedorIds = useMemo(() => {
+    return venda?.vendedor_id ? [venda.vendedor_id] : [];
+  }, [venda?.vendedor_id]);
+  
+  const { data: profiles } = useProfiles(vendedorIds);
+  const vendedor = profiles?.[0];
 
   const handleEditVenda = () => {
     setDialogOpen(true);
@@ -302,11 +311,29 @@ export default function VendaDetalhes() {
 
           {/* Sidebar */}
           <div className="space-y-3 sm:space-y-8">
+            {/* Vendedor */}
+            {vendedor && (
+              <Card className="shadow-premium border-0 bg-card/50 backdrop-blur-sm">
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-lg sm:text-2xl flex items-center gap-2 sm:gap-3">
+                    <User className="h-4 w-4 sm:h-6 sm:w-6" />
+                    Vendedor Responsável
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 sm:p-6 pt-0 space-y-3 sm:space-y-5">
+                  <div>
+                    <h3 className="font-semibold text-base sm:text-xl break-words">{vendedor.name}</h3>
+                    <p className="text-sm text-muted-foreground capitalize">{vendedor.role}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Cliente */}
             <Card className="shadow-premium border-0 bg-card/50 backdrop-blur-sm">
               <CardHeader className="p-3 sm:p-6">
                 <CardTitle className="text-lg sm:text-2xl flex items-center gap-2 sm:gap-3">
-                  <User className="h-4 w-4 sm:h-6 sm:w-6" />
+                  <Building2 className="h-4 w-4 sm:h-6 sm:w-6" />
                   Cliente
                 </CardTitle>
               </CardHeader>
