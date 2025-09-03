@@ -13,7 +13,6 @@ import { useContratos, type Contrato } from "@/hooks/useContratos";
 import { ContratoDialog } from "@/components/Contratos/ContratoDialog";
 import { DeleteContratoDialog } from "@/components/Contratos/DeleteContratoDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
-
 export default function Contratos() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -23,8 +22,11 @@ export default function Contratos() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedContrato, setSelectedContrato] = useState<Contrato | undefined>();
-
-  const { data: contratosData = [], isLoading, error } = useContratos(searchTerm);
+  const {
+    data: contratosData = [],
+    isLoading,
+    error
+  } = useContratos(searchTerm);
 
   // Client-side pagination
   const filteredContratos = useMemo(() => {
@@ -63,62 +65,59 @@ export default function Contratos() {
     }
     return pages;
   };
-
   const handleEditContrato = (contrato: Contrato) => {
     setSelectedContrato(contrato);
     setDialogOpen(true);
   };
-
   const handleDeleteContrato = (contrato: Contrato) => {
     setSelectedContrato(contrato);
     setDeleteDialogOpen(true);
   };
-
   const handleNewContrato = () => {
     navigate("/contratos/novo");
   };
-
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ativo': return 'bg-green-100 text-green-800 hover:bg-green-200';
-      case 'suspenso': return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
-      case 'cancelado': return 'bg-red-100 text-red-800 hover:bg-red-200';
-      case 'finalizado': return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
-      default: return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+      case 'ativo':
+        return 'bg-green-100 text-green-800 hover:bg-green-200';
+      case 'suspenso':
+        return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+      case 'cancelado':
+        return 'bg-red-100 text-red-800 hover:bg-red-200';
+      case 'finalizado':
+        return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
+      default:
+        return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
     }
   };
-
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'ativo': return 'Ativo';
-      case 'suspenso': return 'Suspenso';
-      case 'cancelado': return 'Cancelado';
-      case 'finalizado': return 'Finalizado';
-      default: return status;
+      case 'ativo':
+        return 'Ativo';
+      case 'suspenso':
+        return 'Suspenso';
+      case 'cancelado':
+        return 'Cancelado';
+      case 'finalizado':
+        return 'Finalizado';
+      default:
+        return status;
     }
   };
-
   if (error) {
-    return (
-      <div className="px-4 sm:px-6 lg:px-0 space-y-6">
+    return <div className="px-4 sm:px-6 lg:px-0 space-y-6">
         <h1 className="text-3xl font-bold">Contratos</h1>
         <Card>
           <CardContent className="p-6">
             <p className="text-destructive">Erro ao carregar contratos: {error.message}</p>
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="space-y-6 p-4 sm:p-6">
+  return <div className="space-y-6 p-4 sm:p-6">
       <div className="flex flex-row justify-between items-center gap-4">
         <h1 className="font-bold mx-0 py-0 text-3xl">Contratos</h1>
-        <Button 
-          className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0"
-          onClick={handleNewContrato}
-        >
+        <Button className="gradient-premium border-0 text-background h-10 px-4 text-sm shrink-0" onClick={handleNewContrato}>
           <Plus className="mr-2 h-4 w-4" />
           Novo Contrato
         </Button>
@@ -130,88 +129,53 @@ export default function Contratos() {
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar contratos..."
-                  className="pl-10 h-10 text-sm"
-                  value={searchTerm}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                />
+                <Input placeholder="Buscar contratos..." className="pl-10 h-10 text-sm" value={searchTerm} onChange={e => handleSearchChange(e.target.value)} />
               </div>
-              {!isMobile && (
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant={viewMode === "cards" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode("cards")}
-                  >
+              {!isMobile && <div className="flex items-center gap-2">
+                  <Button variant={viewMode === "cards" ? "default" : "outline"} size="sm" onClick={() => setViewMode("cards")}>
                     <Grid className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant={viewMode === "table" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode("table")}
-                  >
+                  <Button variant={viewMode === "table" ? "default" : "outline"} size="sm" onClick={() => setViewMode("table")}>
                     <List className="h-4 w-4" />
                   </Button>
-                </div>
-              )}
+                </div>}
             </div>
             
-            {total > 0 && (
-              <div className="text-sm text-muted-foreground">
+            {total > 0 && <div className="text-sm text-muted-foreground">
                 Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, total)} de {total} contratos
-              </div>
-            )}
+              </div>}
           </div>
         </CardHeader>
         
         <CardContent className="p-4 sm:p-6">
-          {isLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="space-y-2">
+          {isLoading ? <div className="space-y-4">
+              {Array.from({
+            length: 5
+          }).map((_, i) => <div key={i} className="space-y-2">
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-3/4" />
-                </div>
-              ))}
-            </div>
-          ) : paginatedData.length === 0 ? (
-            <div className="text-center py-12">
+                </div>)}
+            </div> : paginatedData.length === 0 ? <div className="text-center py-12">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">Nenhum contrato encontrado</h3>
               <p className="text-muted-foreground mb-4 text-sm">
-                {searchTerm 
-                  ? "Não encontramos contratos com os termos buscados." 
-                  : "Comece adicionando seu primeiro contrato."
-                }
+                {searchTerm ? "Não encontramos contratos com os termos buscados." : "Comece adicionando seu primeiro contrato."}
               </p>
-              {!searchTerm && (
-                <Button 
-                  className="gradient-premium border-0 text-background"
-                  onClick={handleNewContrato}
-                >
+              {!searchTerm && <Button className="gradient-premium border-0 text-background" onClick={handleNewContrato}>
                   <Plus className="mr-2 h-4 w-4" />
                   Adicionar Contrato
-                </Button>
-              )}
-            </div>
-          ) : (
-            <>
-              {viewMode === "cards" || isMobile ? (
-                // Card View (Mobile and Desktop when cards selected)
-                <div className="space-y-3">
-                  {paginatedData.map((contrato) => (
-                    <Card 
-                      key={contrato.id} 
-                      className="p-4 hover:shadow-md transition-shadow cursor-pointer"
-                      onClick={() => navigate(`/contratos/${contrato.id}`)}
-                    >
+                </Button>}
+            </div> : <>
+              {viewMode === "cards" || isMobile ?
+          // Card View (Mobile and Desktop when cards selected)
+          <div className="space-y-3">
+                  {paginatedData.map(contrato => <Card key={contrato.id} className="p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/contratos/${contrato.id}`)}>
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-3">
                             <FileText className="h-4 w-4 text-accent shrink-0" />
                             <h3 className="font-semibold text-base truncate">
-                              {contrato.numero_contrato || 'CONTRATO-###'}
+                              {contrato.numero_contrato || 'Contrato'}
                             </h3>
                           </div>
                           <Badge className={getStatusColor(contrato.status)}>
@@ -235,40 +199,28 @@ export default function Contratos() {
                             <DollarSign className="h-4 w-4 shrink-0" />
                             <span>
                               {new Intl.NumberFormat('pt-BR', {
-                                style: 'currency',
-                                currency: 'BRL'
-                              }).format(contrato.valor)}
+                        style: 'currency',
+                        currency: 'BRL'
+                      }).format(contrato.valor)}
                             </span>
                           </div>
                         </div>
                         
-                        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="flex-1"
-                            onClick={() => handleEditContrato(contrato)}
-                          >
+                        <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                          <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEditContrato(contrato)}>
                             <Edit className="h-3 w-3 mr-1" />
                             Editar
                           </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="flex-1"
-                            onClick={() => handleDeleteContrato(contrato)}
-                          >
+                          <Button variant="outline" size="sm" className="flex-1" onClick={() => handleDeleteContrato(contrato)}>
                             <Trash2 className="h-3 w-3 mr-1" />
                             Excluir
                           </Button>
                         </div>
                       </div>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                // Table View (Desktop only)
-                <div className="rounded-md border">
+                    </Card>)}
+                </div> :
+          // Table View (Desktop only)
+          <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -281,12 +233,7 @@ export default function Contratos() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {paginatedData.map((contrato) => (
-                        <TableRow 
-                          key={contrato.id} 
-                          className="cursor-pointer hover:bg-muted/50"
-                          onClick={() => navigate(`/contratos/${contrato.id}`)}
-                        >
+                      {paginatedData.map(contrato => <TableRow key={contrato.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/contratos/${contrato.id}`)}>
                           <TableCell>
                             <Badge className={getStatusColor(contrato.status)} variant="secondary">
                               {getStatusLabel(contrato.status)}
@@ -294,8 +241,8 @@ export default function Contratos() {
                           </TableCell>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
-                              <FileText className="h-4 w-4 text-accent" />
-                              {contrato.numero_contrato || 'CONTRATO-###'}
+                              
+                              {contrato.numero_contrato || 'Contrato'}
                             </div>
                           </TableCell>
                           <TableCell>{contrato.cliente?.nome || 'Cliente não encontrado'}</TableCell>
@@ -305,12 +252,12 @@ export default function Contratos() {
                           </TableCell>
                           <TableCell>
                             {new Intl.NumberFormat('pt-BR', {
-                              style: 'currency',
-                              currency: 'BRL'
-                            }).format(contrato.valor)}
+                      style: 'currency',
+                      currency: 'BRL'
+                    }).format(contrato.valor)}
                           </TableCell>
                           <TableCell>
-                            <div onClick={(e) => e.stopPropagation()}>
+                            <div onClick={e => e.stopPropagation()}>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button variant="ghost" size="sm">
@@ -322,10 +269,7 @@ export default function Contratos() {
                                     <Edit className="h-4 w-4 mr-2" />
                                     Editar
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => handleDeleteContrato(contrato)} 
-                                    className="text-destructive"
-                                  >
+                                  <DropdownMenuItem onClick={() => handleDeleteContrato(contrato)} className="text-destructive">
                                     <Trash2 className="h-4 w-4 mr-2" />
                                     Excluir
                                   </DropdownMenuItem>
@@ -333,12 +277,10 @@ export default function Contratos() {
                               </DropdownMenu>
                             </div>
                           </TableCell>
-                        </TableRow>
-                      ))}
+                        </TableRow>)}
                     </TableBody>
                   </Table>
-                </div>
-              )}
+                </div>}
 
               {totalPages > 1 && <div className="mt-6">
                   <Pagination>
@@ -359,22 +301,12 @@ export default function Contratos() {
                     </PaginationContent>
                   </Pagination>
                 </div>}
-            </>
-          )}
+            </>}
         </CardContent>
       </Card>
 
-      <ContratoDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        contrato={selectedContrato}
-      />
+      <ContratoDialog open={dialogOpen} onOpenChange={setDialogOpen} contrato={selectedContrato} />
 
-      <DeleteContratoDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        contrato={selectedContrato}
-      />
-    </div>
-  );
+      <DeleteContratoDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} contrato={selectedContrato} />
+    </div>;
 }
