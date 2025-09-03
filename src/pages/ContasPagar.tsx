@@ -466,12 +466,8 @@ export default function ContasPagar() {
                               <StatusSelectorContasPagar conta={conta} size="sm" />
                             </TableCell>
                             <TableCell>
-                              <div className="flex items-center gap-2">
-                                {isComissaoTransaction(conta.descricao || '') ? (
-                                  <UserCheck className="h-4 w-4 text-purple-600" />
-                                ) : (
-                                  <FileText className="h-4 w-4 text-muted-foreground" />
-                                )}
+                               <div className="flex items-center gap-2">
+                                 <FileText className="h-4 w-4 text-muted-foreground" />
                                 <div>
                                   <div className="font-medium">
                                     {conta.descricao || 'Despesa sem descrição'}
