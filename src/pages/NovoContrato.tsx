@@ -23,6 +23,8 @@ export default function NovoContrato() {
     data_inicio: "",
     data_fim: "",
     status: "ativo" as "ativo" | "suspenso" | "cancelado" | "finalizado",
+    tipo_contrato: "unico" as "unico" | "recorrente",
+    dia_vencimento: 1,
     cliente_id: "",
     vendedor_id: "",
   });
@@ -30,7 +32,30 @@ export default function NovoContrato() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'dia_vencimento') {
+      setFormData(prev => ({ ...prev, [field]: parseInt(value) }));
+    } else {
+      setFormData(prev => {
+        const updated = { ...prev, [field]: value };
+        
+        // Auto-detectar contrato recorrente baseado nas datas
+        if ((field === 'data_inicio' || field === 'data_fim') && updated.data_inicio && updated.data_fim) {
+          const startDate = new Date(updated.data_inicio);
+          const endDate = new Date(updated.data_fim);
+          const diffMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
+          
+          // Se a duração do contrato é maior que 0 meses, sugerir tipo recorrente
+          if (diffMonths > 0) {
+            updated.tipo_contrato = 'recorrente';
+            toast.info(`Contrato detectado como recorrente (${diffMonths + 1} meses de duração)`);
+          } else {
+            updated.tipo_contrato = 'unico';
+          }
+        }
+        
+        return updated;
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,10 +68,17 @@ export default function NovoContrato() {
 
     const valorTotalServicos = servicosSelecionados.reduce((total, servico) => total + servico.valor_total, 0);
 
+    if (formData.tipo_contrato === 'recorrente' && !formData.data_fim) {
+      toast.error("Para contratos recorrentes, a data de fim é obrigatória");
+      return;
+    }
+
     const contratoData = {
       data_inicio: formData.data_inicio,
       data_fim: formData.data_fim || undefined,
       status: formData.status,
+      tipo_contrato: formData.tipo_contrato,
+      dia_vencimento: formData.dia_vencimento,
       cliente_id: formData.cliente_id,
       vendedor_id: formData.vendedor_id || undefined,
       valor: valorTotalServicos,
@@ -147,21 +179,58 @@ export default function NovoContrato() {
                   </div>
                 </div>
 
-                {/* Status */}
-                <div className="space-y-2">
-                  <Label htmlFor="status" className="text-base font-medium">Status</Label>
-                  <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
-                    <SelectTrigger className="h-12 text-base">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ativo">Ativo</SelectItem>
-                      <SelectItem value="suspenso">Suspenso</SelectItem>
-                      <SelectItem value="cancelado">Cancelado</SelectItem>
-                      <SelectItem value="finalizado">Finalizado</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/* Status e Tipo */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="status" className="text-base font-medium">Status</Label>
+                    <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
+                      <SelectTrigger className="h-12 text-base">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ativo">Ativo</SelectItem>
+                        <SelectItem value="suspenso">Suspenso</SelectItem>
+                        <SelectItem value="cancelado">Cancelado</SelectItem>
+                        <SelectItem value="finalizado">Finalizado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="tipo_contrato" className="text-base font-medium">Tipo de Contrato</Label>
+                    <Select value={formData.tipo_contrato} onValueChange={(value) => handleInputChange("tipo_contrato", value)}>
+                      <SelectTrigger className="h-12 text-base">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unico">Único</SelectItem>
+                        <SelectItem value="recorrente">Recorrente</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
+
+                {/* Dia de Vencimento para contratos recorrentes */}
+                {formData.tipo_contrato === 'recorrente' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="dia_vencimento" className="text-base font-medium">Dia de Vencimento</Label>
+                    <Select 
+                      value={formData.dia_vencimento.toString()} 
+                      onValueChange={(value) => handleInputChange("dia_vencimento", value)}
+                    >
+                      <SelectTrigger className="h-12 text-base">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 28 }, (_, i) => i + 1).map(day => (
+                          <SelectItem key={day} value={day.toString()}>
+                            Dia {day}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 {/* Serviços */}
                 <ServicosSelector
