@@ -292,7 +292,7 @@ export function useDeleteContaPagar() {
         `)
         .eq('id', id)
         .eq('tipo', 'despesa')
-        .single();
+        .maybeSingle();
 
       if (fetchError && fetchError.code !== 'PGRST116') {
         throw fetchError;
@@ -308,7 +308,7 @@ export function useDeleteContaPagar() {
             .from('vendas')
             .select('status')
             .eq('id', comissao.venda_id)
-            .single();
+            .maybeSingle();
             
           if (venda?.status === 'fechada') {
             throw new Error('Não é possível excluir: existe venda relacionada. Exclua a venda primeiro.');
@@ -321,7 +321,7 @@ export function useDeleteContaPagar() {
             .from('contratos')
             .select('status')
             .eq('id', comissao.contrato_id)
-            .single();
+            .maybeSingle();
             
           if (contrato?.status === 'ativo') {
             throw new Error('Não é possível excluir: existe contrato ativo relacionado. Exclua o contrato primeiro.');

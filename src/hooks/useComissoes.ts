@@ -32,9 +32,9 @@ export function useCreateComissao() {
           status: 'pendente'
         })
         .select()
-        .single();
+        .maybeSingle();
 
-      if (comissaoError) throw comissaoError;
+      if (comissaoError || !comissao) throw new Error('Erro ao criar comissão ou comissão não encontrada');
 
       // 2. Buscar informações do admin para criar a conta a pagar
       const { data: adminUser, error: adminError } = await supabase
@@ -43,7 +43,7 @@ export function useCreateComissao() {
         .eq('role', 'admin')
         .order('created_at', { ascending: true })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (adminError) {
         console.error('Admin não encontrado, usando usuário atual para conta a pagar');
@@ -60,7 +60,7 @@ export function useCreateComissao() {
         .eq('tipo', 'despesa')
         .order('created_at', { ascending: true })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (!categoria) {
         const { data: novaCategoria, error: categoriaError } = await supabase
@@ -73,18 +73,20 @@ export function useCreateComissao() {
             ativo: true
           })
           .select()
-          .single();
+          .maybeSingle();
 
-        if (categoriaError) throw categoriaError;
+        if (categoriaError || !novaCategoria) throw new Error('Erro ao criar categoria de comissões');
         categoria = novaCategoria;
       }
+
+      if (!categoria?.id) throw new Error('Categoria de comissões não encontrada');
 
       // 4. Buscar nome do vendedor
       const { data: vendedor } = await supabase
         .from('profiles')
         .select('name')
         .eq('user_id', comissaoData.vendedor_id)
-        .single();
+        .maybeSingle();
 
       const vendedorNome = vendedor?.name || 'Vendedor';
 

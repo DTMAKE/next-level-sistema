@@ -17,21 +17,27 @@ export function useSyncComissoes() {
 
       console.log('Iniciando sincronização de comissões...');
 
-      // Buscar vendas fechadas que não têm comissões
-      const { data: vendasSemComissao, error: vendasError } = await supabase
+      // Buscar todas as vendas fechadas
+      const { data: todasVendas, error: vendasError } = await supabase
         .from('vendas')
         .select(`
           *,
           clientes(nome)
         `)
-        .eq('status', 'fechada')
-        .not('id', 'in', `(
-          SELECT venda_id 
-          FROM comissoes 
-          WHERE venda_id IS NOT NULL
-        )`);
+        .eq('status', 'fechada');
 
       if (vendasError) throw vendasError;
+
+      // Buscar vendas que já têm comissão
+      const { data: vendasComComissao } = await supabase
+        .from('comissoes')
+        .select('venda_id')
+        .not('venda_id', 'is', null);
+
+      // Filtrar vendas que não têm comissão
+      const idsComComissao = new Set(vendasComComissao?.map(c => c.venda_id) || []);
+      const vendasSemComissao = todasVendas?.filter(v => !idsComComissao.has(v.id)) || [];
+
 
       console.log(`Encontradas ${vendasSemComissao?.length || 0} vendas sem comissão`);
 
@@ -45,7 +51,7 @@ export function useSyncComissoes() {
             .from('profiles')
             .select('role, percentual_comissao, name')
             .eq('user_id', venda.user_id)
-            .single();
+            .maybeSingle();
           
           // Só criar comissão se for vendedor ou admin com percentual configurado
           if (profile && (profile.role === 'vendedor' || (profile.role === 'admin' && profile.percentual_comissao > 0))) {
