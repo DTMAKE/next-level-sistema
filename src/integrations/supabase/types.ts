@@ -1196,6 +1196,10 @@ export type Database = {
         Args: { client_id: string; client_name: string }
         Returns: string
       }
+      generate_contract_sequential_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_future_contract_commissions: {
         Args: { p_contrato_id: string }
         Returns: undefined

@@ -211,7 +211,7 @@ export default function Contratos() {
                           <div className="flex items-center gap-3">
                             <FileText className="h-4 w-4 text-accent shrink-0" />
                             <h3 className="font-semibold text-base truncate">
-                              {contrato.numero_contrato || 'Contrato'}
+                              {contrato.numero_contrato || 'CONTRATO-###'}
                             </h3>
                           </div>
                           <Badge className={getStatusColor(contrato.status)}>
@@ -295,7 +295,7 @@ export default function Contratos() {
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
                               <FileText className="h-4 w-4 text-accent" />
-                              {contrato.numero_contrato || 'Contrato'}
+                              {contrato.numero_contrato || 'CONTRATO-###'}
                             </div>
                           </TableCell>
                           <TableCell>{contrato.cliente?.nome || 'Cliente não encontrado'}</TableCell>
