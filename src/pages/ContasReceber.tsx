@@ -16,7 +16,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useContasReceber, useDeleteContaReceber, useMarcarComoRecebida, useCleanupOrphanReceivables } from "@/hooks/useContasReceber";
-import { useProfiles } from "@/hooks/useProfiles";
 import { ContaReceberDialog } from "@/components/ContasReceber/ContaReceberDialog";
 import { StatusSelectorContasReceber } from "@/components/ContasReceber/StatusSelectorContasReceber";
 export default function ContasReceber() {
@@ -39,24 +38,6 @@ export default function ContasReceber() {
   const deleteContaReceber = useDeleteContaReceber();
   const marcarComoRecebida = useMarcarComoRecebida();
   const cleanupOrphanReceivables = useCleanupOrphanReceivables();
-  
-  // Extract unique seller user_ids from sales
-  const sellerIds = useMemo(() => {
-    if (!contas) return [];
-    const ids = contas
-      .filter(conta => conta.venda_id && conta.vendas?.vendedor_id)
-      .map(conta => conta.vendas!.vendedor_id!);
-    return [...new Set(ids)];
-  }, [contas]);
-  
-  // Fetch seller profiles
-  const { data: profiles } = useProfiles(sellerIds);
-  
-  // Helper function to get seller name
-  const getSellerName = (userId: string) => {
-    const profile = profiles?.find(p => p.user_id === userId);
-    return profile?.name || 'Vendedor';
-  };
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -318,9 +299,9 @@ export default function ContasReceber() {
                             <CreditCard className="h-4 w-4 shrink-0" />
                             <span>{getFormaPagamentoLabel(conta.forma_pagamento || 'a_vista', conta.parcelas || 1, conta.parcela_atual || 1)}</span>
                           </div>
-                          {conta.venda_id && conta.vendas?.vendedor_id && <div className="flex items-center gap-2">
-                              <UserCheck className="h-3 w-3 text-purple-600" />
-                              <span className="text-xs">Vendedor: {getSellerName(conta.vendas.vendedor_id)}</span>
+                          {conta.venda_id && conta.vendas?.clientes && <div className="flex items-center gap-2">
+                              
+                              <span className="text-xs">Cliente: {conta.vendas.clientes.nome}</span>
                             </div>}
                           {isContratoTransaction(conta.descricao || '') && <div className="flex items-center gap-2">
                               <Building2 className="h-3 w-3 text-blue-600" />
@@ -370,8 +351,8 @@ export default function ContasReceber() {
                               
                               <div>
                                 <div className="font-semibold">{conta.descricao || 'Receita sem descrição'}</div>
-                                {conta.venda_id && conta.vendas?.vendedor_id && <div className="text-xs text-muted-foreground">
-                                    Vendedor: {getSellerName(conta.vendas.vendedor_id)}
+                                {conta.venda_id && conta.vendas?.clientes && <div className="text-xs text-muted-foreground">
+                                    Cliente: {conta.vendas.clientes.nome}
                                   </div>}
                               </div>
                             </div>

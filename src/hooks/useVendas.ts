@@ -12,7 +12,6 @@ export interface Venda {
   descricao?: string;
   data_venda: string;
   user_id: string;
-  vendedor_id?: string;
   created_at: string;
   updated_at: string;
   forma_pagamento?: string;

@@ -101,7 +101,7 @@ export function useCreateComissao() {
           tipo: 'despesa',
           data_transacao: comissaoData.mes_referencia,
           data_vencimento: dataVencimento.toISOString().split('T')[0],
-          descricao: `${comissaoData.observacoes || 'Comissão de venda'}`,
+          descricao: `Comissão de ${vendedorNome} - ${comissaoData.observacoes || 'Comissão de venda'}`,
           valor: comissaoData.valor_comissao,
           categoria_id: categoria.id,
           comissao_id: comissao.id,
