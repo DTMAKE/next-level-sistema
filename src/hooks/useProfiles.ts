@@ -13,10 +13,15 @@ export function useProfiles(userIds: string[]) {
     queryFn: async (): Promise<Profile[]> => {
       if (userIds.length === 0) return [];
       
+      // Filter out null/undefined/empty userIds
+      const validUserIds = userIds.filter(id => id && id.trim());
+      
+      if (validUserIds.length === 0) return [];
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('user_id, name, role')
-        .in('user_id', userIds);
+        .in('user_id', validUserIds);
       
       if (error) throw error;
       

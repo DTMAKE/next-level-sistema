@@ -312,22 +312,36 @@ export default function VendaDetalhes() {
           {/* Sidebar */}
           <div className="space-y-3 sm:space-y-8">
             {/* Vendedor */}
-            {vendedor && (
-              <Card className="shadow-premium border-0 bg-card/50 backdrop-blur-sm">
-                <CardHeader className="p-3 sm:p-6">
-                  <CardTitle className="text-lg sm:text-2xl flex items-center gap-2 sm:gap-3">
-                    <User className="h-4 w-4 sm:h-6 sm:w-6" />
-                    Vendedor Responsável
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 sm:p-6 pt-0 space-y-3 sm:space-y-5">
+            <Card className="shadow-premium border-0 bg-card/50 backdrop-blur-sm">
+              <CardHeader className="p-3 sm:p-6">
+                <CardTitle className="text-lg sm:text-2xl flex items-center gap-2 sm:gap-3">
+                  <User className="h-4 w-4 sm:h-6 sm:w-6" />
+                  Vendedor Responsável
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-3 sm:p-6 pt-0 space-y-3 sm:space-y-5">
+                {vendedor ? (
                   <div>
                     <h3 className="font-semibold text-base sm:text-xl break-words">{vendedor.name}</h3>
                     <p className="text-sm text-muted-foreground capitalize">{vendedor.role}</p>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                ) : (
+                  <div>
+                    <h3 className="font-semibold text-base sm:text-xl text-muted-foreground">Não definido</h3>
+                    <p className="text-sm text-muted-foreground">Nenhum vendedor responsável definido</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleEditVenda}
+                      className="mt-2"
+                    >
+                      <Edit className="h-3 w-3 mr-1" />
+                      Definir vendedor
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Cliente */}
             <Card className="shadow-premium border-0 bg-card/50 backdrop-blur-sm">

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, UserCheck, X } from "lucide-react";
@@ -11,9 +12,10 @@ import { useAuth } from "@/contexts/AuthContext";
 interface VendedorSelectorProps {
   vendedorId: string;
   onVendedorChange: (vendedorId: string) => void;
+  required?: boolean;
 }
 
-export function VendedorSelector({ vendedorId, onVendedorChange }: VendedorSelectorProps) {
+export function VendedorSelector({ vendedorId, onVendedorChange, required = false }: VendedorSelectorProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const { user } = useAuth();
@@ -53,7 +55,10 @@ export function VendedorSelector({ vendedorId, onVendedorChange }: VendedorSelec
   // If user is a seller, show a simplified view (no selection needed)
   if (isVendedor) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-2">
+        <Label className="text-base font-medium">
+          Vendedor Responsável {required && "*"}
+        </Label>
         <Card className="bg-muted/30">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -71,7 +76,10 @@ export function VendedorSelector({ vendedorId, onVendedorChange }: VendedorSelec
 
   // Admin view - full selection interface
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
+      <Label className="text-base font-medium">
+        Vendedor Responsável {required && "*"}
+      </Label>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger asChild>
           <Button 

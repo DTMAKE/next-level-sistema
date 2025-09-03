@@ -177,10 +177,16 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
           </div>
 
           {/* Vendedor */}
-          <VendedorSelector
-            vendedorId={formData.vendedor_id}
-            onVendedorChange={(value) => handleInputChange("vendedor_id", value)}
-          />
+          <div className="space-y-2">
+            <VendedorSelector
+              vendedorId={formData.vendedor_id}
+              onVendedorChange={(value) => handleInputChange("vendedor_id", value)}
+              required={true}
+            />
+            {!formData.vendedor_id && (
+              <p className="text-sm text-destructive">Vendedor responsável é obrigatório</p>
+            )}
+          </div>
 
           {/* Serviços */}
           <ServicosSelector 
