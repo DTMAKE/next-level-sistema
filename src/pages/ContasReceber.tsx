@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useContasReceber, useDeleteContaReceber, useMarcarComoRecebida, useCleanupOrphanReceivables, useCleanupOrphanContractReceivables } from "@/hooks/useContasReceber";
+import { useContasReceber, useDeleteContaReceber, useMarcarComoRecebida, useCleanupOrphanReceivables } from "@/hooks/useContasReceber";
 import { ContaReceberDialog } from "@/components/ContasReceber/ContaReceberDialog";
 import { StatusSelectorContasReceber } from "@/components/ContasReceber/StatusSelectorContasReceber";
 export default function ContasReceber() {
@@ -38,7 +38,6 @@ export default function ContasReceber() {
   const deleteContaReceber = useDeleteContaReceber();
   const marcarComoRecebida = useMarcarComoRecebida();
   const cleanupOrphanReceivables = useCleanupOrphanReceivables();
-  const cleanupOrphanContractReceivables = useCleanupOrphanContractReceivables();
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -73,21 +72,8 @@ export default function ContasReceber() {
     if (forma === 'a_vista') return 'À Vista';
     return `${parcelaAtual}/${parcelas}x`;
   };
-  const isContratoTransaction = (conta: any) => {
-    return conta.contrato_id || conta.descricao?.toLowerCase().includes('contrato');
-  };
-
-  const getOrigemTransacao = (conta: any) => {
-    if (conta.contrato_id) {
-      const numeroContrato = conta.contratos?.numero_contrato || 'N/A';
-      const clienteNome = conta.contratos?.clientes?.nome || 'Cliente não informado';
-      return { tipo: 'contrato', origem: numeroContrato, cliente: clienteNome };
-    }
-    if (conta.venda_id) {
-      const clienteNome = conta.vendas?.clientes?.nome || 'Cliente não informado';
-      return { tipo: 'venda', origem: 'Venda', cliente: clienteNome };
-    }
-    return { tipo: 'manual', origem: 'Receita Manual', cliente: null };
+  const isContratoTransaction = (descricao: string) => {
+    return descricao?.toLowerCase().includes('contrato');
   };
   const handleMarcarComoRecebida = (conta: any) => {
     marcarComoRecebida.mutate(conta.id);
@@ -160,14 +146,13 @@ export default function ContasReceber() {
         <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl truncate">Contas a Receber</h1>
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
-          
-          <ContaReceberDialog>
-            <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm">
-              <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Nova Receita</span>
-              <span className="sm:hidden">Nova</span>
-            </Button>
-          </ContaReceberDialog>
+            <ContaReceberDialog>
+              <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm">
+                <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Nova Receita</span>
+                <span className="sm:hidden">Nova</span>
+              </Button>
+            </ContaReceberDialog>
         </div>
       </div>
 
@@ -292,47 +277,18 @@ export default function ContasReceber() {
           // Card View
           <div className="space-y-3">
                   {paginatedContas.map(conta => <Card key={conta.id} className="p-4 hover:shadow-md transition-shadow">
-                      <div className="flex flex-col gap-2 sm:gap-3">
-                        <div className="flex items-start sm:items-center justify-between gap-2 sm:gap-3">
-                          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                            {(() => {
-                              const origem = getOrigemTransacao(conta);
-                              if (origem.tipo === 'contrato') {
-                                return <Building2 className="h-4 w-4 text-blue-600 shrink-0" />;
-                              } else if (origem.tipo === 'venda') {
-                                return <ShoppingCart className="h-4 w-4 text-green-600 shrink-0" />;
-                              } else {
-                                return <TrendingUp className="h-4 w-4 text-purple-600 shrink-0" />;
-                              }
-                            })()}
-                            <div className="min-w-0 flex-1">
-                              <h3 className="font-semibold text-sm sm:text-base truncate">
-                                {conta.descricao || 'Receita sem descrição'}
-                              </h3>
-                              {(() => {
-                                const origem = getOrigemTransacao(conta);
-                                return (
-                                  <p className="text-xs text-muted-foreground truncate">
-                                    {origem.tipo === 'contrato' && (
-                                      `Contrato: ${origem.origem} - ${origem.cliente}`
-                                    )}
-                                    {origem.tipo === 'venda' && (
-                                      `Venda - Cliente: ${origem.cliente}`
-                                    )}
-                                    {origem.tipo === 'manual' && (
-                                      'Receita manual'
-                                    )}
-                                  </p>
-                                );
-                              })()}
-                            </div>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            {isContratoTransaction(conta.descricao || '') ? <Building2 className="h-4 w-4 text-blue-600 shrink-0" /> : <TrendingUp className="h-4 w-4 text-green-600 shrink-0" />}
+                            <h3 className="font-semibold text-base truncate">
+                              {conta.descricao || 'Receita sem descrição'}
+                            </h3>
                           </div>
-                          <div className="shrink-0">
-                            <StatusSelectorContasReceber conta={conta} size="sm" />
-                          </div>
+                          <StatusSelectorContasReceber conta={conta} size="sm" />
                         </div>
                         
-                        <div className="flex flex-col gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
+                        <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 shrink-0" />
                             <span>{format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", {
@@ -343,47 +299,28 @@ export default function ContasReceber() {
                             <CreditCard className="h-4 w-4 shrink-0" />
                             <span>{getFormaPagamentoLabel(conta.forma_pagamento || 'a_vista', conta.parcelas || 1, conta.parcela_atual || 1)}</span>
                           </div>
+                          {conta.venda_id && conta.vendas?.clientes && <div className="flex items-center gap-2">
+                              
+                              <span className="text-xs">Cliente: {conta.vendas.clientes.nome}</span>
+                            </div>}
+                          {isContratoTransaction(conta.descricao || '') && <div className="flex items-center gap-2">
+                              <Building2 className="h-3 w-3 text-blue-600" />
+                              <span className="text-xs text-blue-600 font-medium">Receita de Contrato</span>
+                            </div>}
                         </div>
                         
-                        <div className="flex items-center justify-between pt-1 sm:pt-0">
-                          <div className="font-bold text-green-600 text-base sm:text-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="font-bold text-green-600 text-lg">
                             {formatCurrency(Number(conta.valor))}
                           </div>
-                          <div className="flex gap-1 shrink-0">
+                          <div className="flex gap-1">
                             {conta.status === 'pendente' && <Button variant="ghost" size="sm" onClick={() => handleMarcarComoRecebida(conta)} disabled={marcarComoRecebida.isPending}>
                                 <Check className="h-4 w-4" />
                               </Button>}
                             {conta.comprovante_url && <Button variant="ghost" size="sm" onClick={() => handleDownloadComprovante(conta.comprovante_url!)}>
                                 <Download className="h-4 w-4" />
                               </Button>}
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => handleDeleteConta(conta.id)} 
-                              disabled={deleteContaReceber.isPending || isContratoTransaction(conta)} 
-                              title={(() => {
-                                const origem = getOrigemTransacao(conta);
-                                if (origem.tipo === 'contrato') {
-                                  return "⚠️ Esta conta faz parte de um contrato. Para cancelar, desative o contrato completo.";
-                                } else if (origem.tipo === 'venda') {
-                                  return "⚠️ Esta conta está relacionada a uma venda - não pode ser excluída se a venda estiver fechada";
-                                } else {
-                                  return "Excluir conta a receber";
-                                }
-                              })()} 
-                              className={cn(
-                                (() => {
-                                  const origem = getOrigemTransacao(conta);
-                                  if (origem.tipo === 'contrato') {
-                                    return "text-gray-400 cursor-not-allowed";
-                                  } else if (origem.tipo === 'venda') {
-                                    return "text-orange-600 hover:text-orange-700 hover:bg-orange-50";
-                                  } else {
-                                    return "text-destructive hover:text-destructive";
-                                  }
-                                })()
-                              )}
-                            >
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteConta(conta.id)} disabled={deleteContaReceber.isPending || isContratoTransaction(conta.descricao || '')} title={isContratoTransaction(conta.descricao || '') ? "⚠️ Esta conta faz parte de um contrato. Para cancelar, desative o contrato completo." : conta.venda_id ? "⚠️ Esta conta está relacionada a uma venda - não pode ser excluída se a venda estiver fechada" : "Excluir conta a receber"} className={cn(isContratoTransaction(conta.descricao || '') ? "text-gray-400 cursor-not-allowed" : conta.venda_id ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" : "text-destructive hover:text-destructive")}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
@@ -409,39 +346,17 @@ export default function ContasReceber() {
                           <TableCell>
                             <StatusSelectorContasReceber conta={conta} size="sm" />
                           </TableCell>
-                           <TableCell className="font-medium">
-                             <div className="flex items-center gap-2">
-                               {(() => {
-                                 const origem = getOrigemTransacao(conta);
-                                 if (origem.tipo === 'contrato') {
-                                   return <Building2 className="h-4 w-4 text-blue-600 shrink-0" />;
-                                 } else if (origem.tipo === 'venda') {
-                                   return <ShoppingCart className="h-4 w-4 text-green-600 shrink-0" />;
-                                 } else {
-                                   return <TrendingUp className="h-4 w-4 text-purple-600 shrink-0" />;
-                                 }
-                               })()}
-                               <div>
-                                 <div className="font-semibold">{conta.descricao || 'Receita sem descrição'}</div>
-                                 {(() => {
-                                   const origem = getOrigemTransacao(conta);
-                                   return (
-                                     <div className="text-xs text-muted-foreground">
-                                       {origem.tipo === 'contrato' && (
-                                         `Contrato: ${origem.origem} - ${origem.cliente}`
-                                       )}
-                                       {origem.tipo === 'venda' && (
-                                         `Venda - Cliente: ${origem.cliente}`
-                                       )}
-                                       {origem.tipo === 'manual' && (
-                                         'Receita manual'
-                                       )}
-                                     </div>
-                                   );
-                                 })()}
-                               </div>
-                             </div>
-                           </TableCell>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              
+                              <div>
+                                <div className="font-semibold">{conta.descricao || 'Receita sem descrição'}</div>
+                                {conta.venda_id && conta.vendas?.clientes && <div className="text-xs text-muted-foreground">
+                                    Cliente: {conta.vendas.clientes.nome}
+                                  </div>}
+                              </div>
+                            </div>
+                          </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <CreditCard className="h-4 w-4 text-muted-foreground" />
@@ -468,34 +383,7 @@ export default function ContasReceber() {
                               {conta.comprovante_url && <Button variant="ghost" size="sm" onClick={() => handleDownloadComprovante(conta.comprovante_url!)}>
                                   <Download className="h-4 w-4" />
                                 </Button>}
-                               <Button 
-                                 variant="ghost" 
-                                 size="sm" 
-                                 onClick={() => handleDeleteConta(conta.id)} 
-                                 disabled={deleteContaReceber.isPending || isContratoTransaction(conta)} 
-                                 title={(() => {
-                                   const origem = getOrigemTransacao(conta);
-                                   if (origem.tipo === 'contrato') {
-                                     return "⚠️ Esta conta faz parte de um contrato. Para cancelar, desative o contrato completo.";
-                                   } else if (origem.tipo === 'venda') {
-                                     return "⚠️ Esta conta está relacionada a uma venda - não pode ser excluída se a venda estiver fechada";
-                                   } else {
-                                     return "Excluir conta a receber";
-                                   }
-                                 })()} 
-                                 className={cn(
-                                   (() => {
-                                     const origem = getOrigemTransacao(conta);
-                                     if (origem.tipo === 'contrato') {
-                                       return "text-gray-400 cursor-not-allowed";
-                                     } else if (origem.tipo === 'venda') {
-                                       return "text-orange-600 hover:text-orange-700 hover:bg-orange-50";
-                                     } else {
-                                       return "text-destructive hover:text-destructive";
-                                     }
-                                   })()
-                                 )}
-                               >
+                              <Button variant="ghost" size="sm" onClick={() => handleDeleteConta(conta.id)} disabled={deleteContaReceber.isPending} title={isContratoTransaction(conta.descricao || '') ? "⚠️ Esta conta está relacionada a um contrato - verifique se o contrato está ativo" : conta.venda_id ? "⚠️ Esta conta está relacionada a uma venda - não pode ser excluída se a venda estiver fechada" : "Excluir conta a receber"} className={cn(isContratoTransaction(conta.descricao || '') || conta.venda_id ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" : "text-destructive hover:text-destructive")}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
