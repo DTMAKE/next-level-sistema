@@ -41,11 +41,18 @@ export default function VendaDetalhes() {
   
   // Buscar dados do vendedor se existe vendedor_id
   const vendedorIds = useMemo(() => {
+    console.log('VendaDetalhes: Memoizing vendedorIds', { 
+      vendaId: venda?.id,
+      vendedorId: venda?.vendedor_id,
+      hasVenda: !!venda
+    });
     return venda?.vendedor_id ? [venda.vendedor_id] : [];
   }, [venda?.vendedor_id]);
   
   const { data: profiles } = useProfiles(vendedorIds);
+  console.log('VendaDetalhes: Profiles data', { profiles, vendedorIds });
   const vendedor = profiles?.[0];
+  console.log('VendaDetalhes: Selected vendedor', { vendedor });
 
   const handleEditVenda = () => {
     setDialogOpen(true);
