@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { TrendingDown, Search, Filter, Plus, Calendar, DollarSign, Check, Grid, List, Trash2, FileText, CreditCard, Download, ShoppingCart, UserCheck, Building2, RefreshCw } from "lucide-react";
+import { TrendingDown, Search, Filter, Plus, Calendar, DollarSign, Check, Grid, List, Trash2, FileText, CreditCard, Download, ShoppingCart, UserCheck, Building2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useContasPagar, useDeleteContaPagar, useToggleStatusContaPagar, type ContaPagar } from "@/hooks/useContasPagar";
 import { ContaPagarDialog } from "@/components/ContasPagar/ContaPagarDialog";
 import { StatusSelectorContasPagar } from "@/components/ContasPagar/StatusSelectorContasPagar";
-import { useGenerateContractCommissions } from "@/hooks/useGenerateContractCommissions";
 
 export default function ContasPagar() {
   const { user } = useAuth();
@@ -35,7 +34,6 @@ export default function ContasPagar() {
   const { data: contas, isLoading } = useContasPagar(selectedDate);
   const deleteContaPagar = useDeleteContaPagar();
   const toggleStatusContaPagar = useToggleStatusContaPagar();
-  const generateCommissionsMutation = useGenerateContractCommissions();
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -161,10 +159,6 @@ export default function ContasPagar() {
     setCurrentPage(1);
   };
 
-  const handleGenerateCommissions = () => {
-    generateCommissionsMutation.mutate();
-  };
-
   // Geração de números da paginação
   const generatePaginationNumbers = () => {
     const pages = [];
@@ -204,21 +198,6 @@ export default function ContasPagar() {
               <span className="sm:hidden">Nova</span>
             </Button>
           </ContaPagarDialog>
-          
-          <Button 
-            onClick={handleGenerateCommissions}
-            disabled={generateCommissionsMutation.isPending}
-            variant="outline"
-            className="h-8 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm"
-          >
-            <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 ${generateCommissionsMutation.isPending ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">
-              {generateCommissionsMutation.isPending ? 'Gerando...' : 'Gerar Comissões'}
-            </span>
-            <span className="sm:hidden">
-              {generateCommissionsMutation.isPending ? '...' : 'Comissões'}
-            </span>
-          </Button>
         </div>
       </div>
 
