@@ -47,7 +47,7 @@ export function ComissaoInfo({
   return <div className={`space-y-2 ${isSmall ? 'space-y-1' : ''}`}>
       {/* Vendedor */}
       <div className="flex items-center gap-2">
-        <User className={`${iconSize} text-purple-600`} />
+        
         <span className={`${textSize} font-medium`}>
           Vendedor: <span className="text-purple-600">{comissaoInfo.vendedor}</span>
         </span>
