@@ -70,19 +70,28 @@ export function ContratoDialog({ open, onOpenChange, contrato }: ContratoDialogP
       setFormData(prev => {
         const updated = { ...prev, [field]: value };
         
-        // Auto-detect recurring contracts based on duration
-        if ((field === 'data_inicio' || field === 'data_fim') && updated.data_inicio && updated.data_fim) {
-          const startDate = new Date(updated.data_inicio);
-          const endDate = new Date(updated.data_fim);
-          const diffMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
-          
-          // If contract duration is more than 1 month, suggest recurring type
-          if (diffMonths > 0) {
+        // Auto-detect recurring contracts based on end date
+        if (field === 'data_fim') {
+          if (updated.data_fim) {
+            // If setting an end date, make it recurring
             updated.tipo_contrato = 'recorrente';
-            toast.info(`Contrato detectado como recorrente (${diffMonths + 1} meses de duração)`);
+            if (updated.data_inicio) {
+              const startDate = new Date(updated.data_inicio);
+              const endDate = new Date(updated.data_fim);
+              const diffMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()) + 1;
+              toast.info(`Contrato recorrente - ${diffMonths} meses de duração`);
+            }
           } else {
+            // If removing end date, make it single
             updated.tipo_contrato = 'unico';
           }
+        } else if (field === 'data_inicio' && updated.data_inicio && updated.data_fim) {
+          // Recalculate duration when start date changes
+          const startDate = new Date(updated.data_inicio);
+          const endDate = new Date(updated.data_fim);
+          const diffMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()) + 1;
+          updated.tipo_contrato = 'recorrente';
+          toast.info(`Contrato recorrente - ${diffMonths} meses de duração`);
         }
         
         return updated;
