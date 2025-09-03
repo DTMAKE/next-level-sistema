@@ -30,18 +30,6 @@ export interface ContaPagar {
     contrato_id: string | null;
     mes_referencia: string;
     percentual: number;
-    vendas?: {
-      numero_venda: string | null;
-      clientes?: {
-        nome: string;
-      } | null;
-    } | null;
-    contratos?: {
-      numero_contrato: string | null;
-      clientes?: {
-        nome: string;
-      } | null;
-    } | null;
   } | null;
 }
 
@@ -81,19 +69,7 @@ export function useContasPagar(selectedDate: Date) {
             venda_id,
             contrato_id,
             mes_referencia,
-            percentual,
-            vendas:vendas(
-              numero_venda,
-              clientes (
-                nome
-              )
-            ),
-            contratos (
-              numero_contrato,
-              clientes (
-                nome
-              )
-            )
+            percentual
           )
         `)
         .eq('tipo', 'despesa')
