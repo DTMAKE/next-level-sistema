@@ -58,7 +58,7 @@ export function ComissaoInfo({
 
       {/* Tipo da Comissão */}
       <div className="flex items-center gap-2">
-        <UserCheck className={`${iconSize} text-orange-600`} />
+        
         <Badge variant="outline" className={`${isSmall ? 'text-xs px-2 py-0.5' : 'text-sm'} bg-orange-50 text-orange-700 border-orange-200`}>
           Comissão de {comissaoInfo.tipo === 'contrato' ? 'Contrato' : 'Venda'}
         </Badge>
