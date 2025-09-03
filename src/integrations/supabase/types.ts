@@ -1080,6 +1080,7 @@ export type Database = {
           descricao: string | null
           forma_pagamento: string | null
           id: string
+          numero_venda: string | null
           parcelas: number | null
           status: string
           updated_at: string
@@ -1094,6 +1095,7 @@ export type Database = {
           descricao?: string | null
           forma_pagamento?: string | null
           id?: string
+          numero_venda?: string | null
           parcelas?: number | null
           status: string
           updated_at?: string
@@ -1108,6 +1110,7 @@ export type Database = {
           descricao?: string | null
           forma_pagamento?: string | null
           id?: string
+          numero_venda?: string | null
           parcelas?: number | null
           status?: string
           updated_at?: string
@@ -1201,6 +1204,10 @@ export type Database = {
         Args: { p_contrato_id: string }
         Returns: undefined
       }
+      generate_sale_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1227,6 +1234,10 @@ export type Database = {
       }
       sync_commissions_to_financial: {
         Args: { p_user_id: string }
+        Returns: undefined
+      }
+      update_existing_sales_numbers: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       validate_delete_conta_receber: {

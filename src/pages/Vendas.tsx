@@ -283,10 +283,15 @@ export default function Vendas() {
           <div className="space-y-3">
                   {vendas.map(venda => <Card key={venda.id} className="p-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/vendas/${venda.id}`)}>
                       <div className="flex flex-col gap-3">
-                        <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <Building2 className="h-4 w-4 text-accent shrink-0" />
-                            <h3 className="font-semibold text-base truncate">{venda.cliente?.nome}</h3>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-semibold text-base truncate">{venda.cliente?.nome}</h3>
+                              {venda.numero_venda && (
+                                <p className="text-xs text-muted-foreground">{venda.numero_venda}</p>
+                              )}
+                            </div>
                           </div>
                           <div onClick={e => e.stopPropagation()}>
                             <QuickStatusChanger venda={venda} size="sm" />
@@ -327,6 +332,7 @@ export default function Vendas() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead>Número</TableHead>
                         <TableHead>Cliente</TableHead>
                         <TableHead>Valor</TableHead>
                         <TableHead>Data</TableHead>
@@ -336,6 +342,9 @@ export default function Vendas() {
                     </TableHeader>
                     <TableBody>
                       {vendas.map(venda => <TableRow key={venda.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/vendas/${venda.id}`)}>
+                          <TableCell className="font-mono text-sm">
+                            {venda.numero_venda || '-'}
+                          </TableCell>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
                               <Building2 className="h-4 w-4 text-accent" />

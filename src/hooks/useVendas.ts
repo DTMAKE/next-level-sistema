@@ -6,6 +6,7 @@ import { useCreateComissao } from '@/hooks/useComissoes';
 
 export interface Venda {
   id: string;
+  numero_venda?: string;
   cliente_id: string;
   valor: number;
   status: 'proposta' | 'negociacao' | 'fechada' | 'perdida';
