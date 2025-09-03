@@ -140,25 +140,25 @@ export default function ContasReceber() {
     }
     return pages;
   };
-  return <div className="space-y-3 sm:space-y-4 lg:space-y-6 p-2 sm:p-3 lg:p-6">
+  return <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-2">
-        <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl">Contas a Receber</h1>
-        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+      <div className="flex flex-row justify-between items-center gap-2">
+        <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl truncate">Contas a Receber</h1>
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
-            <ContaReceberDialog>
-              <Button className="gradient-premium border-0 text-background h-9 sm:h-10 px-3 sm:px-4 text-sm min-w-0">
-                <Plus className="mr-1 sm:mr-2 h-4 w-4" />
-                <span className="hidden xs:inline sm:hidden">Novo</span>
-                <span className="hidden sm:inline">Nova Receita</span>
-                <span className="xs:hidden">+</span>
-              </Button>
-            </ContaReceberDialog>
+          
+          <ContaReceberDialog>
+            <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm">
+              <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Nova Receita</span>
+              <span className="sm:hidden">Nova</span>
+            </Button>
+          </ContaReceberDialog>
         </div>
       </div>
 
       {/* Cards de Resumo */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
             <CardTitle className="text-xs sm:text-sm font-medium">Total a Receber</CardTitle>
@@ -183,7 +183,7 @@ export default function ContasReceber() {
           </CardContent>
         </Card>
 
-        <Card className="col-span-1 sm:col-span-2 lg:col-span-1">
+        <Card className="col-span-2 lg:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
             <CardTitle className="text-xs sm:text-sm font-medium">Recebidas</CardTitle>
             <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
@@ -216,7 +216,7 @@ export default function ContasReceber() {
                     {statusFilter !== "all" && <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-background/95 backdrop-blur-sm border shadow-lg z-50">
+                <DropdownMenuContent align="end" className="bg-popover border z-50">
                   <DropdownMenuItem onClick={() => handleFilterChange("all")}>
                     Todos os status
                   </DropdownMenuItem>
@@ -277,7 +277,7 @@ export default function ContasReceber() {
               {viewMode === "cards" || isMobile ?
           // Card View
           <div className="space-y-3">
-                  {paginatedContas.map(conta => <Card key={conta.id} className="p-3 sm:p-4 hover:shadow-md transition-shadow">
+                  {paginatedContas.map(conta => <Card key={conta.id} className="p-4 hover:shadow-md transition-shadow">
                       <div className="flex flex-col gap-2 sm:gap-3">
                         <div className="flex items-start sm:items-center justify-between gap-2 sm:gap-3">
                           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
