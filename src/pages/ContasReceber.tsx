@@ -40,7 +40,7 @@ export default function ContasReceber() {
   const marcarComoRecebida = useMarcarComoRecebida();
   const cleanupOrphanReceivables = useCleanupOrphanReceivables();
   
-  // Extract unique seller user_ids from sales
+  // Extract unique seller user_ids from sales (vendedor_id, not user_id)
   const sellerIds = useMemo(() => {
     if (!contas) return [];
     const ids = contas
