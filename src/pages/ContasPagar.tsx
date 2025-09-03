@@ -147,7 +147,7 @@ export default function ContasPagar() {
   );
 
   // Calcular totais
-  const totalContas = filteredContas.reduce((sum, d) => sum + Number(d.valor), 0);
+  const totalContas = filteredContas.filter(d => d.status === 'pendente').reduce((sum, d) => sum + Number(d.valor), 0);
   const contasPendentes = filteredContas.filter(d => d.status === 'pendente').reduce((sum, d) => sum + Number(d.valor), 0);
   const contasPagas = filteredContas.filter(d => d.status === 'confirmada').reduce((sum, d) => sum + Number(d.valor), 0);
 
