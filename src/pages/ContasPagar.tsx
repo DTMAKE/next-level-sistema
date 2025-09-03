@@ -83,14 +83,9 @@ export default function ContasPagar() {
   const getComissaoInfo = (conta: ContaPagar) => {
     if (conta.comissoes) {
       const vendedorNome = conta.comissoes.vendedor_profile?.name || 'Vendedor';
-      let clienteNome = 'Cliente';
-      
-      // Buscar nome do cliente da venda ou do contrato
-      if (conta.comissoes.vendas?.clientes?.nome) {
-        clienteNome = conta.comissoes.vendas.clientes.nome;
-      } else if (conta.comissoes.contrato?.clientes?.nome) {
-        clienteNome = conta.comissoes.contrato.clientes.nome;
-      }
+      const clienteNome = conta.comissoes.cliente_nome || 
+                         conta.comissoes.contrato?.clientes?.nome || 
+                         'Cliente';
       
       if (conta.comissoes.contrato_id) {
         return {
@@ -103,9 +98,7 @@ export default function ContasPagar() {
         return {
           vendedor: vendedorNome,
           cliente: clienteNome,
-          tipo: 'venda' as const,
-          valorVenda: conta.comissoes.vendas?.valor || 0,
-          dataVenda: conta.comissoes.vendas?.data_venda
+          tipo: 'venda' as const
         };
       }
     }
