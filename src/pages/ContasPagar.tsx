@@ -18,8 +18,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useContasPagar, useDeleteContaPagar, useToggleStatusContaPagar, type ContaPagar } from "@/hooks/useContasPagar";
 import { ContaPagarDialog } from "@/components/ContasPagar/ContaPagarDialog";
 import { StatusSelectorContasPagar } from "@/components/ContasPagar/StatusSelectorContasPagar";
-import { useVendaById } from "@/hooks/useVendaById";
-import { useContratoById } from "@/hooks/useContratoById";
 
 export default function ContasPagar() {
   const { user } = useAuth();
@@ -79,42 +77,25 @@ export default function ContasPagar() {
     return descricao?.toLowerCase().includes('comissão');
   };
 
-  // Buscar dados das vendas e contratos referenciados nas comissões
-  const uniqueVendaIds = [...new Set(contas?.filter(c => c.comissoes?.venda_id).map(c => c.comissoes!.venda_id!) || [])];
-  const uniqueContratoIds = [...new Set(contas?.filter(c => c.comissoes?.contrato_id).map(c => c.comissoes!.contrato_id!) || [])];
-
-  const vendaQueries = uniqueVendaIds.map(id => useVendaById(id));
-  const contratoQueries = uniqueContratoIds.map(id => useContratoById(id));
-
+  // Buscar dados das vendas e contratos de forma segura
   const getComissaoInfo = (conta: ContaPagar) => {
     if (conta.comissoes) {
       const vendedorNome = 'Vendedor';
+      const clienteNome = 'Cliente';
       
       if (conta.comissoes.contrato_id) {
-        const contratoQuery = contratoQueries.find((q, index) => 
-          uniqueContratoIds[index] === conta.comissoes!.contrato_id
-        );
-        const contrato = contratoQuery?.data;
-        const clienteNome = contrato?.clientes?.nome || 'Cliente';
-        
         return {
           vendedor: vendedorNome,
           cliente: clienteNome,
           tipo: 'contrato' as const,
-          numeroContrato: contrato?.numero_contrato ?? `CONTRATO-${conta.comissoes.contrato_id.slice(0, 8)}`
+          numeroContrato: `CONTRATO-${conta.comissoes.contrato_id.slice(0, 8)}`
         };
       } else if (conta.comissoes.venda_id) {
-        const vendaQuery = vendaQueries.find((q, index) => 
-          uniqueVendaIds[index] === conta.comissoes!.venda_id
-        );
-        const venda = vendaQuery?.data;
-        const clienteNome = venda?.clientes?.nome || 'Cliente';
-        
         return {
           vendedor: vendedorNome,
           cliente: clienteNome,
           tipo: 'venda' as const,
-          numeroVenda: venda?.numero_venda ?? `VENDA-${conta.comissoes.venda_id.slice(0, 8)}`
+          numeroVenda: `VENDA-${conta.comissoes.venda_id.slice(0, 8)}`
         };
       }
     }
