@@ -18,6 +18,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useContasPagar, useDeleteContaPagar, useToggleStatusContaPagar, useUpdateContaPagar, type ContaPagar } from "@/hooks/useContasPagar";
 import { ContaPagarDialog } from "@/components/ContasPagar/ContaPagarDialog";
 import { StatusSelectorContasPagar } from "@/components/ContasPagar/StatusSelectorContasPagar";
+import { PaymentMethodSelector } from "@/components/ContasPagar/PaymentMethodSelector";
 import { ComissaoInfo } from "@/components/ContasPagar/ComissaoInfo";
 import { SyncComissoesButton } from "@/components/ContasPagar/SyncComissoesButton";
 
@@ -482,13 +483,7 @@ export default function ContasPagar() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge variant="outline" className="text-xs">
-                                {getFormaPagamentoLabel(
-                                  conta.forma_pagamento || 'a_vista', 
-                                  conta.parcelas || 1, 
-                                  conta.parcela_atual || 1
-                                )}
-                              </Badge>
+                              <PaymentMethodSelector conta={conta} size="sm" />
                             </TableCell>
                             <TableCell>
                               {format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}

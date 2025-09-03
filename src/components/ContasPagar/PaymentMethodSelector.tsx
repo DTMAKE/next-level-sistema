@@ -7,84 +7,79 @@ import { useUpdateContaPagar, type ContaPagar } from "@/hooks/useContasPagar";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-interface StatusSelectorContasPagarProps {
+interface PaymentMethodSelectorProps {
   conta: ContaPagar;
   disabled?: boolean;
   size?: "sm" | "md" | "lg";
 }
 
-export function StatusSelectorContasPagar({ conta, disabled = false, size = "md" }: StatusSelectorContasPagarProps) {
+export function PaymentMethodSelector({ conta, disabled = false, size = "md" }: PaymentMethodSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const updateConta = useUpdateContaPagar();
   const { toast } = useToast();
 
-  // All accounts can have status controls
-  // No validation needed - both commission and manual accounts should be editable
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'pendente': return 'Pendente';
-      case 'confirmada': return 'Paga';
-      default: return 'Pendente';
+  const getPaymentMethodLabel = (method: string) => {
+    switch (method) {
+      case 'a_vista': return 'À Vista';
+      case 'parcelado': return 'Parcelado';
+      default: return 'À Vista';
     }
   };
 
-  const currentStatus = getStatusLabel(conta.status);
+  const currentMethod = getPaymentMethodLabel(conta.forma_pagamento || 'a_vista');
   
-  const handleStatusChange = async (newStatus: 'Pendente' | 'Paga') => {
+  const handleMethodChange = async (newMethod: 'À Vista' | 'Parcelado') => {
     if (disabled || updateConta.isPending) return;
 
-    // Don't update if it's the same status
-    if (currentStatus === newStatus) return;
+    // Don't update if it's the same method
+    if (currentMethod === newMethod) return;
 
-    // No additional validation needed - all accounts can have status updated
-
-    const statusValue = newStatus === 'Paga' ? 'confirmada' : 'pendente';
+    const methodValue = newMethod === 'Parcelado' ? 'parcelado' : 'a_vista';
     
     try {
-      console.log('Atualizando status:', { id: conta.id, from: conta.status, to: statusValue });
+      console.log('Atualizando forma de pagamento:', { id: conta.id, from: conta.forma_pagamento, to: methodValue });
       
       await updateConta.mutateAsync({
         id: conta.id,
-        data: { status: statusValue },
+        data: { forma_pagamento: methodValue },
       });
       
       setIsOpen(false);
       toast({
-        title: "Status atualizado",
-        description: `Status alterado para ${newStatus}`,
+        title: "Forma de pagamento atualizada",
+        description: `Alterado para ${newMethod}`,
       });
     } catch (error) {
-      console.error("Erro ao atualizar status:", error);
+      console.error("Erro ao atualizar forma de pagamento:", error);
       toast({
         title: "Erro ao atualizar",
-        description: "Não foi possível atualizar o status",
+        description: "Não foi possível atualizar a forma de pagamento",
         variant: "destructive",
       });
     }
   };
 
-  const getStatusStyles = (status: string) => {
-    switch (status) {
-      case 'Pendente':
+  const getMethodStyles = (method: string) => {
+    switch (method) {
+      case 'À Vista':
         return {
-          badge: "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100",
-          dot: "bg-yellow-600"
+          badge: "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100",
+          dot: "bg-blue-600"
         };
-      case 'Paga':
+      case 'Parcelado':
         return {
-          badge: "bg-green-100 text-green-800 border-green-200 hover:bg-green-100", 
-          dot: "bg-green-600"
+          badge: "bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100", 
+          dot: "bg-orange-600"
         };
       default:
         return {
-          badge: "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100",
-          dot: "bg-yellow-600"
+          badge: "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100",
+          dot: "bg-blue-600"
         };
     }
   };
 
-  const styles = getStatusStyles(currentStatus);
+  const styles = getMethodStyles(currentMethod);
   
   const sizeClasses = {
     sm: "text-xs px-2 py-1 h-6 min-w-[60px] max-w-[90px]",
@@ -97,7 +92,7 @@ export function StatusSelectorContasPagar({ conta, disabled = false, size = "md"
       <Badge variant="secondary" className={cn(styles.badge, sizeClasses[size], "justify-center")}>
         <div className={cn("w-2 h-2 rounded-full mr-1.5 flex-shrink-0", styles.dot)} />
         <span className="truncate text-xs sm:text-sm">
-          {size === "sm" && currentStatus === "Pendente" ? "Pend." : currentStatus}
+          {size === "sm" && currentMethod === "Parcelado" ? "Parc." : currentMethod}
         </span>
       </Badge>
     );
@@ -126,7 +121,7 @@ export function StatusSelectorContasPagar({ conta, disabled = false, size = "md"
           >
             <div className={cn("w-2 h-2 rounded-full flex-shrink-0", styles.dot)} />
             <span className="truncate text-xs sm:text-sm">
-              {size === "sm" && currentStatus === "Pendente" ? "Pend." : currentStatus}
+              {size === "sm" && currentMethod === "Parcelado" ? "Parc." : currentMethod}
             </span>
             <ChevronDown className="w-3 h-3 flex-shrink-0" />
           </Badge>
@@ -139,24 +134,24 @@ export function StatusSelectorContasPagar({ conta, disabled = false, size = "md"
         sideOffset={4}
       >
         <DropdownMenuItem 
-          onClick={() => handleStatusChange("Pendente")}
+          onClick={() => handleMethodChange("À Vista")}
           className="cursor-pointer"
-          disabled={currentStatus === "Pendente"}
+          disabled={currentMethod === "À Vista"}
         >
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-yellow-600" />
-            <span className="font-medium">Pendente</span>
+            <div className="w-2 h-2 rounded-full bg-blue-600" />
+            <span className="font-medium">À Vista</span>
           </div>
         </DropdownMenuItem>
         
         <DropdownMenuItem 
-          onClick={() => handleStatusChange("Paga")}
+          onClick={() => handleMethodChange("Parcelado")}
           className="cursor-pointer"
-          disabled={currentStatus === "Paga"}
+          disabled={currentMethod === "Parcelado"}
         >
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-600" />
-            <span className="font-medium">Paga</span>
+            <div className="w-2 h-2 rounded-full bg-orange-600" />
+            <span className="font-medium">Parcelado</span>
           </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
