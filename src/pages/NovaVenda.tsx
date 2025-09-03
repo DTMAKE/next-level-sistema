@@ -38,7 +38,15 @@ export default function NovaVenda() {
   
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    console.log(`NovaVenda: Campo ${field} alterado para:`, value);
+    if (field === 'vendedor_id') {
+      console.log('NovaVenda: Vendedor selecionado - user_id:', value);
+    }
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      console.log('NovaVenda: FormData após alteração:', newData);
+      return newData;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,8 +60,9 @@ export default function NovaVenda() {
     if (valorTotal <= 0) return;
 
     try {
-      const venda = await createVenda.mutateAsync({
+      const vendaData = {
         cliente_id: formData.cliente_id,
+        vendedor_id: formData.vendedor_id, // ADICIONADO: Este era o campo que faltava!
         valor: valorTotal,
         status: formData.status,
         descricao: formData.descricao.trim() || undefined,
@@ -61,7 +70,12 @@ export default function NovaVenda() {
         forma_pagamento: formData.forma_pagamento,
         parcelas: formData.forma_pagamento === 'parcelado' ? formData.parcelas : 1,
         servicos: servicos, // Incluir serviços
-      });
+      };
+
+      console.log('NovaVenda: Dados completos da venda sendo enviados:', vendaData);
+      console.log('NovaVenda: vendedor_id específico:', formData.vendedor_id);
+
+      const venda = await createVenda.mutateAsync(vendaData);
 
       navigate("/vendas");
     } catch (error) {
@@ -131,7 +145,11 @@ export default function NovaVenda() {
                       <VendedorSelector
                         vendedorId={formData.vendedor_id}
                         onVendedorChange={(vendedorId) => handleInputChange("vendedor_id", vendedorId)}
+                        required={true}
                       />
+                      {!formData.vendedor_id && (
+                        <p className="text-sm text-destructive">Vendedor responsável é obrigatório</p>
+                      )}
                     </div>
                   </Card>
                 </div>
