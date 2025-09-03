@@ -44,6 +44,8 @@ export function VendedorSelector({ vendedorId, onVendedorChange, required = fals
   const vendedorSelecionado = vendedores.find(vendedor => vendedor.user_id === vendedorId);
 
   const selecionarVendedor = (vendedor: any) => {
+    console.log('VendedorSelector: Selecionando vendedor:', vendedor);
+    console.log('VendedorSelector: user_id sendo enviado:', vendedor.user_id);
     onVendedorChange(vendedor.user_id);
     setDialogOpen(false);
   };

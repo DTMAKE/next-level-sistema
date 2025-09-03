@@ -103,6 +103,9 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
 
   const handleInputChange = (field: string, value: string) => {
     console.log(`VendaDialog: Campo ${field} alterado para:`, value);
+    if (field === 'vendedor_id') {
+      console.log('VendaDialog: Vendedor selecionado - user_id:', value);
+    }
     setFormData(prev => {
       const newData = { ...prev, [field]: value };
       console.log('VendaDialog: FormData após alteração:', newData);
