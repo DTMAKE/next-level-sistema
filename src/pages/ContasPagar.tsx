@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { MonthYearPicker } from "@/components/Financeiro/MonthYearPicker";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useContasPagar, useDeleteContaPagar, useToggleStatusContaPagar, useUpdateContaPagar, type ContaPagar } from "@/hooks/useContasPagar";
+import { useContasPagar, useDeleteContaPagar, useToggleStatusContaPagar, type ContaPagar } from "@/hooks/useContasPagar";
 import { ContaPagarDialog } from "@/components/ContasPagar/ContaPagarDialog";
 import { StatusSelectorContasPagar } from "@/components/ContasPagar/StatusSelectorContasPagar";
 import { PaymentMethodSelector } from "@/components/ContasPagar/PaymentMethodSelector";
@@ -37,7 +37,6 @@ export default function ContasPagar() {
   const { data: contas, isLoading } = useContasPagar(selectedDate);
   const deleteContaPagar = useDeleteContaPagar();
   const toggleStatusContaPagar = useToggleStatusContaPagar();
-  const updateContaPagar = useUpdateContaPagar();
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -110,19 +109,6 @@ export default function ContasPagar() {
     toggleStatusContaPagar.mutate({ 
       id: conta.id, 
       currentStatus: conta.status 
-    });
-  };
-
-  const canDeleteConta = (conta: ContaPagar) => {
-    if (conta.comissoes?.contrato_id) return false;
-    if (conta.comissoes?.venda_id) return false;
-    return true;
-  };
-
-  const handleStatusChange = (conta: ContaPagar, novoStatus: string) => {
-    updateContaPagar.mutate({
-      id: conta.id,
-      data: { status: novoStatus }
     });
   };
 
@@ -421,8 +407,9 @@ export default function ContasPagar() {
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
-                                  onClick={() => handleToggleStatus(conta)}
+                                  onClick={() => handleToggleStatus(conta)} 
                                   disabled={toggleStatusContaPagar.isPending}
+                                  title="Marcar como paga"
                                 >
                                   <Check className="h-4 w-4" />
                                 </Button>
@@ -432,10 +419,21 @@ export default function ContasPagar() {
                                   variant="ghost" 
                                   size="sm" 
                                   onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
+                                  title="Baixar comprovante"
                                 >
                                   <Download className="h-4 w-4" />
                                 </Button>
                               )}
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleDeleteConta(conta.id)} 
+                                disabled={deleteContaPagar.isPending}
+                                title="Excluir conta a pagar"
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -453,7 +451,8 @@ export default function ContasPagar() {
                         <TableHead>Descrição</TableHead>
                         <TableHead>Pagamento</TableHead>
                         <TableHead>Data</TableHead>
-                        <TableHead className="text-right">Valor</TableHead>
+                        <TableHead>Valor</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -466,25 +465,67 @@ export default function ContasPagar() {
                               <StatusSelectorContasPagar conta={conta} size="sm" />
                             </TableCell>
                             <TableCell>
-                               <div>
-                                 <div>
-                                  <div className="font-medium">
-                                    {conta.descricao || 'Despesa sem descrição'}
-                                  </div>
-                                  {isComissaoTransaction(conta.descricao || '') && (
-                                    <ComissaoInfo conta={conta} size="sm" />
-                                  )}
+                              <div>
+                                <div className="font-medium">
+                                  {conta.descricao || 'Despesa sem descrição'}
                                 </div>
+                                {isComissaoTransaction(conta.descricao || '') && (
+                                  <ComissaoInfo conta={conta} size="sm" />
+                                )}
                               </div>
                             </TableCell>
                             <TableCell>
-                              <PaymentMethodSelector conta={conta} size="sm" />
+                              <div className="flex items-center gap-2">
+                                <CreditCard className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm">
+                                  {getFormaPagamentoLabel(
+                                    conta.forma_pagamento || 'a_vista', 
+                                    conta.parcelas || 1, 
+                                    conta.parcela_atual || 1
+                                  )}
+                                </span>
+                              </div>
                             </TableCell>
                             <TableCell>
                               {format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}
                             </TableCell>
                             <TableCell className="text-right font-medium text-red-600">
                               {formatCurrency(Number(conta.valor))}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                {conta.status === 'pendente' && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => handleToggleStatus(conta)} 
+                                    disabled={toggleStatusContaPagar.isPending}
+                                    title="Marcar como paga"
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                {conta.comprovante_url && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
+                                    title="Baixar comprovante"
+                                  >
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => handleDeleteConta(conta.id)} 
+                                  disabled={deleteContaPagar.isPending}
+                                  title="Excluir conta a pagar"
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         );
@@ -536,19 +577,25 @@ export default function ContasPagar() {
         </CardContent>
       </Card>
 
-      {/* Dialog de Confirmação de Exclusão */}
+      {/* Dialog de Confirmação de Delete */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir esta conta a pagar? Esta ação não pode ser desfeita.
+            <AlertDialogDescription className="space-y-2">
+              <p>Tem certeza que deseja excluir esta conta a pagar?</p>
+              <p className="text-sm text-muted-foreground">
+                <strong>Importante:</strong> Contas relacionadas a contratos ativos não podem ser excluídas para manter a integridade dos dados financeiros.
+              </p>
+              <p className="text-xs text-destructive font-medium">Esta ação não pode ser desfeita.</p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
+              Cancelar
+            </AlertDialogCancel>
             <AlertDialogAction 
-              onClick={confirmDelete}
+              onClick={confirmDelete} 
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Excluir
