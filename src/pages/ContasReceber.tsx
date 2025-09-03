@@ -44,8 +44,8 @@ export default function ContasReceber() {
   const sellerIds = useMemo(() => {
     if (!contas) return [];
     const ids = contas
-      .filter(conta => conta.venda_id && conta.vendas?.user_id)
-      .map(conta => conta.vendas!.user_id);
+      .filter(conta => conta.venda_id && conta.vendas?.vendedor_id)
+      .map(conta => conta.vendas!.vendedor_id!);
     return [...new Set(ids)];
   }, [contas]);
   
@@ -318,9 +318,9 @@ export default function ContasReceber() {
                             <CreditCard className="h-4 w-4 shrink-0" />
                             <span>{getFormaPagamentoLabel(conta.forma_pagamento || 'a_vista', conta.parcelas || 1, conta.parcela_atual || 1)}</span>
                           </div>
-                          {conta.venda_id && conta.vendas?.user_id && <div className="flex items-center gap-2">
+                          {conta.venda_id && conta.vendas?.vendedor_id && <div className="flex items-center gap-2">
                               <UserCheck className="h-3 w-3 text-purple-600" />
-                              <span className="text-xs">Vendedor: {getSellerName(conta.vendas.user_id)}</span>
+                              <span className="text-xs">Vendedor: {getSellerName(conta.vendas.vendedor_id)}</span>
                             </div>}
                           {isContratoTransaction(conta.descricao || '') && <div className="flex items-center gap-2">
                               <Building2 className="h-3 w-3 text-blue-600" />
@@ -370,8 +370,8 @@ export default function ContasReceber() {
                               
                               <div>
                                 <div className="font-semibold">{conta.descricao || 'Receita sem descrição'}</div>
-                                {conta.venda_id && conta.vendas?.user_id && <div className="text-xs text-muted-foreground">
-                                    Vendedor: {getSellerName(conta.vendas.user_id)}
+                                {conta.venda_id && conta.vendas?.vendedor_id && <div className="text-xs text-muted-foreground">
+                                    Vendedor: {getSellerName(conta.vendas.vendedor_id)}
                                   </div>}
                               </div>
                             </div>
