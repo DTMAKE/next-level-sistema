@@ -79,10 +79,10 @@ export default function ContasPagar() {
 
   const getComissaoInfo = (conta: ContaPagar) => {
     if (conta.comissoes) {
-      const vendedorNome = 'Vendedor'; // Simplificado
-      const clienteNome = 'Cliente'; // Simplificado
+      const vendedorNome = 'Vendedor'; // Simplificado por enquanto
       
       if (conta.comissoes.contrato_id) {
+        const clienteNome = conta.comissoes.contratos?.[0]?.clientes?.nome || 'Cliente';
         return {
           vendedor: vendedorNome,
           cliente: clienteNome,
@@ -90,6 +90,7 @@ export default function ContasPagar() {
           numeroContrato: conta.comissoes.contratos?.[0]?.numero_contrato ?? `CONTRATO-${conta.comissoes.contrato_id.slice(0, 8)}`
         };
       } else if (conta.comissoes.venda_id) {
+        const clienteNome = conta.comissoes.vendas?.[0]?.clientes?.nome || 'Cliente';
         return {
           vendedor: vendedorNome,
           cliente: clienteNome,

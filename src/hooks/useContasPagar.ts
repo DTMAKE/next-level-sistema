@@ -32,9 +32,15 @@ export interface ContaPagar {
     percentual: number;
     vendas?: {
       numero_venda: string;
+      clientes?: {
+        nome: string;
+      } | null;
     }[] | null;
     contratos?: {
       numero_contrato: string;
+      clientes?: {
+        nome: string;
+      } | null;
     }[] | null;
   } | null;
 }
@@ -77,10 +83,16 @@ export function useContasPagar(selectedDate: Date) {
             mes_referencia,
             percentual,
             vendas (
-              numero_venda
+              numero_venda,
+              clientes (
+                nome
+              )
             ),
             contratos (
-              numero_contrato
+              numero_contrato,
+              clientes (
+                nome
+              )
             )
           )
         `)
