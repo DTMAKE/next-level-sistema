@@ -58,8 +58,27 @@ Deno.serve(async (req) => {
     let canDelete = true;
     let errorMessage = '';
 
-    // Check if it's linked to an active contract (improved detection)
-    if (conta.descricao?.includes('Contrato') || conta.descricao?.toLowerCase().includes('receita recorrente')) {
+    // Check if it's linked to a contract using the new contrato_id column
+    if (conta.contrato_id) {
+      const { data: activeContract } = await supabaseClient
+        .from('contratos')
+        .select('id, status, tipo_contrato, numero_contrato')
+        .eq('id', conta.contrato_id)
+        .eq('status', 'ativo')
+        .maybeSingle();
+
+      if (activeContract) {
+        canDelete = false;
+        if (activeContract.tipo_contrato === 'recorrente') {
+          errorMessage = 'Não é possível excluir parcelas individuais de contratos recorrentes. Para cancelar, desative o contrato inteiro.';
+        } else {
+          errorMessage = 'Não é possível excluir: existe contrato ativo relacionado';
+        }
+      }
+    }
+    
+    // Fallback: Check legacy method for accounts that don't have contrato_id yet
+    else if (conta.descricao?.includes('Contrato') || conta.descricao?.toLowerCase().includes('receita recorrente')) {
       // Try to extract contract number or ID from description
       const contractMatch = conta.descricao.match(/Contrato\s+(.+?)\s+-/) || 
                            conta.descricao.match(/contrato\s+([a-f0-9-]{36})/i);

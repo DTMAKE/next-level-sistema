@@ -18,6 +18,7 @@ export interface ContaReceber {
   user_id: string;
   categoria_id: string | null;
   venda_id: string | null;
+  contrato_id: string | null;
   created_at: string;
   updated_at: string;
   categorias_financeiras?: {
@@ -26,6 +27,14 @@ export interface ContaReceber {
   } | null;
   vendas?: {
     id: string;
+    cliente_id: string;
+    clientes?: {
+      nome: string;
+    } | null;
+  } | null;
+  contratos?: {
+    id: string;
+    numero_contrato: string | null;
     cliente_id: string;
     clientes?: {
       nome: string;
@@ -65,6 +74,14 @@ export function useContasReceber(selectedDate: Date) {
           ),
           vendas (
             id,
+            cliente_id,
+            clientes (
+              nome
+            )
+          ),
+          contratos (
+            id,
+            numero_contrato,
             cliente_id,
             clientes (
               nome
@@ -383,6 +400,45 @@ export function useCleanupOrphanReceivables() {
       toast({
         title: "Erro",
         description: "Erro ao limpar contas órfãs. Verifique o console para mais detalhes.",
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useCleanupOrphanContractReceivables() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc('cleanup_orphan_contract_receivables');
+      
+      if (error) {
+        console.error('Error calling cleanup function:', error);
+        throw error;
+      }
+      
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
+      queryClient.invalidateQueries({ queryKey: ['transacoes-financeiras'] });
+      
+      const result = Array.isArray(data) ? data[0] : data;
+      const { deleted_count = 0, message = 'Operação concluída' } = result || {};
+      
+      toast({
+        title: deleted_count > 0 ? "Sucesso!" : "Informação",
+        description: message || `${deleted_count} conta(s) órfã(s) de contratos removida(s).`,
+        variant: deleted_count > 0 ? "default" : "default",
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error cleaning up orphan contract receivables:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao limpar contas órfãs de contratos. Tente novamente.",
         variant: "destructive",
       });
     },

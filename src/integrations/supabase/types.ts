@@ -937,6 +937,7 @@ export type Database = {
           categoria_id: string | null
           comissao_id: string | null
           comprovante_url: string | null
+          contrato_id: string | null
           created_at: string
           data_transacao: string
           data_vencimento: string | null
@@ -957,6 +958,7 @@ export type Database = {
           categoria_id?: string | null
           comissao_id?: string | null
           comprovante_url?: string | null
+          contrato_id?: string | null
           created_at?: string
           data_transacao?: string
           data_vencimento?: string | null
@@ -977,6 +979,7 @@ export type Database = {
           categoria_id?: string | null
           comissao_id?: string | null
           comprovante_url?: string | null
+          contrato_id?: string | null
           created_at?: string
           data_transacao?: string
           data_vencimento?: string | null
@@ -1006,6 +1009,13 @@ export type Database = {
             columns: ["comissao_id"]
             isOneToOne: false
             referencedRelation: "comissoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transacoes_financeiras_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos"
             referencedColumns: ["id"]
           },
           {
@@ -1128,6 +1138,13 @@ export type Database = {
       cleanup_orphan_commission_payables: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      cleanup_orphan_contract_receivables: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          deleted_count: number
+          message: string
+        }[]
       }
       cleanup_orphan_receivables: {
         Args: Record<PropertyKey, never>

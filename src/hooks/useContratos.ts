@@ -235,6 +235,8 @@ export function useDeleteContrato() {
 
   return useMutation({
     mutationFn: async (contratoId: string) => {
+      // Primeiro, deletar contas a receber relacionadas ao contrato (CASCADE automaticamente)
+      // O CASCADE ON DELETE da foreign key cuidará da exclusão automática
       const { error } = await supabase
         .from('contratos')
         .delete()
@@ -244,9 +246,11 @@ export function useDeleteContrato() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos'] });
+      queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
+      queryClient.invalidateQueries({ queryKey: ['transacoes-financeiras'] });
       toast({
         title: "Contrato removido",
-        description: "Contrato removido com sucesso.",
+        description: "Contrato e contas relacionadas removidas com sucesso.",
       });
     },
     onError: (error: Error) => {
