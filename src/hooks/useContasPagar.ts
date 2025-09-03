@@ -48,6 +48,16 @@ export function useContasPagar(selectedDate: Date) {
       const startOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
       const endOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
       
+      // Debug logs
+      console.log('useContasPagar - Buscando contas para:', {
+        userId: user.id,
+        userRole: user.role,
+        startOfMonth: startOfMonth.toISOString().split('T')[0],
+        endOfMonth: endOfMonth.toISOString().split('T')[0],
+        selectedMonth: selectedDate.getMonth(),
+        selectedYear: selectedDate.getFullYear()
+      });
+      
       let query = supabase
         .from('transacoes_financeiras')
         .select(`
@@ -86,11 +96,21 @@ export function useContasPagar(selectedDate: Date) {
 
       const { data, error } = await query.order('updated_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('useContasPagar - Erro na consulta:', error);
+        throw error;
+      }
+      
+      console.log('useContasPagar - Dados retornados:', {
+        count: data?.length || 0,
+        data: data
+      });
       
       return data || [];
     },
     enabled: !!user?.id,
+    staleTime: 0,
+    gcTime: 0,
   });
 }
 

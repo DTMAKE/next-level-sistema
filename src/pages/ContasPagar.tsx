@@ -34,6 +34,14 @@ export default function ContasPagar() {
   const itemsPerPage = 10;
 
   const { data: contas, isLoading } = useContasPagar(selectedDate);
+  console.log('ContasPagar - Dados do hook:', {
+    contas: contas,
+    count: contas?.length || 0,
+    isLoading,
+    selectedDate,
+    selectedMonth: selectedDate.getMonth(),
+    selectedYear: selectedDate.getFullYear()
+  });
   const deleteContaPagar = useDeleteContaPagar();
   const toggleStatusContaPagar = useToggleStatusContaPagar();
   const updateContaPagar = useUpdateContaPagar();
@@ -144,6 +152,12 @@ export default function ContasPagar() {
 
   // Aplicar filtros e memoização para performance
   const filteredContas = useMemo(() => {
+    console.log('ContasPagar - Aplicando filtros:', {
+      contasOriginais: contas?.length || 0,
+      searchTerm,
+      statusFilter
+    });
+    
     if (!contas) return [];
     return contas.filter(conta => {
       const matchesSearch = !searchTerm || conta.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -207,6 +221,14 @@ export default function ContasPagar() {
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
           <SyncComissoesButton />
+          <Button 
+            onClick={() => window.location.reload()} 
+            variant="outline" 
+            size="sm"
+            className="text-xs bg-blue-500 text-white hover:bg-blue-600"
+          >
+            🔄 Debug Refresh
+          </Button>
           <ContaPagarDialog>
             <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm">
               <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
