@@ -361,22 +361,24 @@ export default function ContasPagar() {
                     
                     return (
                       <Card key={conta.id} className="p-4 hover:shadow-md transition-shadow">
-                        <div className="flex flex-col gap-3">
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-3">
-                              {isComissaoTransaction(conta.descricao || '') ? (
-                                <UserCheck className="h-4 w-4 text-purple-600 shrink-0" />
-                              ) : (
-                                <TrendingDown className="h-4 w-4 text-red-600 shrink-0" />
-                              )}
-                              <h3 className="font-semibold text-base truncate">
-                                {conta.descricao || 'Despesa sem descrição'}
-                              </h3>
-                            </div>
-                            <StatusSelectorContasPagar conta={conta} size="sm" />
-                          </div>
-                          
-                          <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                        <div className="flex flex-col gap-2 sm:gap-3">
+                           <div className="flex items-start sm:items-center justify-between gap-2 sm:gap-3">
+                             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                               {isComissaoTransaction(conta.descricao || '') ? (
+                                 <UserCheck className="h-4 w-4 text-purple-600 shrink-0" />
+                               ) : (
+                                 <TrendingDown className="h-4 w-4 text-red-600 shrink-0" />
+                               )}
+                               <h3 className="font-semibold text-sm sm:text-base truncate">
+                                 {conta.descricao || 'Despesa sem descrição'}
+                               </h3>
+                             </div>
+                             <div className="shrink-0">
+                               <StatusSelectorContasPagar conta={conta} size="sm" />
+                             </div>
+                           </div>
+                           
+                           <div className="flex flex-col gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4 shrink-0" />
                               <span>
@@ -398,11 +400,11 @@ export default function ContasPagar() {
                             )}
                           </div>
                           
-                          <div className="flex items-center justify-between">
-                            <div className="font-bold text-red-600 text-lg">
-                              {formatCurrency(Number(conta.valor))}
-                            </div>
-                            <div className="flex gap-1">
+                           <div className="flex items-center justify-between pt-1 sm:pt-0">
+                             <div className="font-bold text-red-600 text-base sm:text-lg">
+                               {formatCurrency(Number(conta.valor))}
+                             </div>
+                             <div className="flex gap-1 shrink-0">
                               {conta.status === 'pendente' && (
                                 <Button 
                                   variant="ghost" 
