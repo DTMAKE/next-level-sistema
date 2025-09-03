@@ -27,6 +27,7 @@ export interface ContaReceber {
   } | null;
   vendas?: {
     id: string;
+    numero_venda: string | null;
     cliente_id: string;
     user_id: string;
     vendedor_id?: string;
@@ -76,6 +77,7 @@ export function useContasReceber(selectedDate: Date) {
           ),
           vendas (
             id,
+            numero_venda,
             cliente_id,
             user_id,
             vendedor_id,

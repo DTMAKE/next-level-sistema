@@ -18,9 +18,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useContasPagar, useDeleteContaPagar, useToggleStatusContaPagar, type ContaPagar } from "@/hooks/useContasPagar";
 import { ContaPagarDialog } from "@/components/ContasPagar/ContaPagarDialog";
 import { StatusSelectorContasPagar } from "@/components/ContasPagar/StatusSelectorContasPagar";
-import { PaymentMethodSelector } from "@/components/ContasPagar/PaymentMethodSelector";
-import { ComissaoInfo } from "@/components/ContasPagar/ComissaoInfo";
-
 
 export default function ContasPagar() {
   const { user } = useAuth();
@@ -82,23 +79,24 @@ export default function ContasPagar() {
 
   const getComissaoInfo = (conta: ContaPagar) => {
     if (conta.comissoes) {
-      const vendedorNome = conta.comissoes.vendedor_profile?.name || 'Vendedor';
-      const clienteNome = conta.comissoes.cliente_nome || 
-                         conta.comissoes.contrato?.clientes?.nome || 
-                         'Cliente';
+      const vendedorNome = 'Vendedor'; // Será implementado depois
+      const clienteNome = conta.comissoes.vendas?.clientes?.nome || 
+                          conta.comissoes.contratos?.clientes?.nome || 
+                          'Cliente';
       
       if (conta.comissoes.contrato_id) {
         return {
           vendedor: vendedorNome,
           cliente: clienteNome,
           tipo: 'contrato' as const,
-          numeroContrato: conta.comissoes.contrato?.numero_contrato || `Contrato ${conta.comissoes.contrato_id.slice(0, 8)}`
+          numeroContrato: conta.comissoes.contratos?.numero_contrato || `CONTRATO-${conta.comissoes.contrato_id.slice(0, 8)}`
         };
       } else if (conta.comissoes.venda_id) {
         return {
           vendedor: vendedorNome,
           cliente: clienteNome,
-          tipo: 'venda' as const
+          tipo: 'venda' as const,
+          numeroVenda: conta.comissoes.vendas?.numero_venda || `VENDA-${conta.comissoes.venda_id.slice(0, 8)}`
         };
       }
     }
@@ -395,9 +393,22 @@ export default function ContasPagar() {
                                 )}
                               </span>
                             </div>
-                            {isComissaoTransaction(conta.descricao || '') && (
-                              <ComissaoInfo conta={conta} size="sm" />
-                            )}
+                             {isComissaoTransaction(conta.descricao || '') && (
+                               <div className="flex items-center gap-2">
+                                 <UserCheck className="h-3 w-3 text-purple-600" />
+                                 <span className="text-xs text-purple-600 font-medium">
+                                   {(() => {
+                                     const info = getComissaoInfo(conta);
+                                     if (info?.tipo === 'venda') {
+                                       return `Venda: ${info.numeroVenda}`;
+                                     } else if (info?.tipo === 'contrato') {
+                                       return `${info.numeroContrato}`;
+                                     }
+                                     return 'Comissão';
+                                   })()}
+                                 </span>
+                               </div>
+                             )}
                           </div>
                           
                            <div className="flex items-center justify-between pt-1 sm:pt-0">
@@ -452,6 +463,7 @@ export default function ContasPagar() {
                         <TableHead>Status</TableHead>
                         <TableHead>Descrição</TableHead>
                         <TableHead>Pagamento</TableHead>
+                        <TableHead>Origem</TableHead>
                         <TableHead>Data</TableHead>
                         <TableHead>Valor</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
@@ -471,9 +483,6 @@ export default function ContasPagar() {
                                 <div className="font-medium">
                                   {conta.descricao || 'Despesa sem descrição'}
                                 </div>
-                                {isComissaoTransaction(conta.descricao || '') && (
-                                  <ComissaoInfo conta={conta} size="sm" />
-                                )}
                               </div>
                             </TableCell>
                             <TableCell>
@@ -486,6 +495,29 @@ export default function ContasPagar() {
                                     conta.parcela_atual || 1
                                   )}
                                 </span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                {(() => {
+                                  const info = getComissaoInfo(conta);
+                                  if (info?.tipo === 'venda') {
+                                    return (
+                                      <div className="flex items-center gap-1">
+                                        <ShoppingCart className="h-3 w-3 text-green-600" />
+                                        <span className="text-green-600 font-medium">{info.numeroVenda}</span>
+                                      </div>
+                                    );
+                                  } else if (info?.tipo === 'contrato') {
+                                    return (
+                                      <div className="flex items-center gap-1">
+                                        <Building2 className="h-3 w-3 text-blue-600" />
+                                        <span className="text-blue-600 font-medium">{info.numeroContrato}</span>
+                                      </div>
+                                    );
+                                  }
+                                  return '-';
+                                })()}
                               </div>
                             </TableCell>
                             <TableCell>
