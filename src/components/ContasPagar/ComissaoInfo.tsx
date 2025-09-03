@@ -49,7 +49,7 @@ export function ComissaoInfo({
       <div className="flex items-center gap-2">
         
         <span className={`${textSize} font-medium`}>
-          Vendedor: <span className="text-purple-600">{comissaoInfo.vendedor}</span>
+          Comissão para: <span className="text-purple-600">{comissaoInfo.vendedor}</span>
         </span>
       </div>
 
