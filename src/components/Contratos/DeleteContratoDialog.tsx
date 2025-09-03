@@ -27,7 +27,12 @@ export function DeleteContratoDialog({ open, onOpenChange, contrato }: DeleteCon
         <AlertDialogHeader>
           <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
           <AlertDialogDescription>
-            Tem certeza que deseja excluir o contrato <strong>{contrato?.titulo}</strong>?
+            Tem certeza que deseja excluir o contrato <strong>{contrato?.titulo || contrato?.numero_contrato}</strong>?
+            <br /><br />
+            <span className="text-destructive font-medium">
+              ⚠️ Esta ação também irá remover automaticamente todas as contas a receber pendentes relacionadas a este contrato.
+            </span>
+            <br />
             Esta ação não pode ser desfeita.
           </AlertDialogDescription>
         </AlertDialogHeader>
