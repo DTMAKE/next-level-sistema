@@ -185,10 +185,22 @@ export function useCreateVenda() {
       const { servicos, ...vendaInfo } = vendaData;
 
       console.log('useCreateVenda: Dados recebidos:', vendaData);
+      console.log('useCreateVenda: vendedor_id recebido:', vendaData.vendedor_id);
       console.log('useCreateVenda: Dados que serão salvos:', {
         ...vendaInfo,
         user_id: user.id,
       });
+      
+      // Validação crítica: garantir que vendedor_id não seja perdido
+      if (!vendaData.vendedor_id) {
+        console.error('useCreateVenda: ERRO - vendedor_id está vazio!');
+        toast({
+          title: "Erro de validação",
+          description: "Vendedor deve ser selecionado antes de salvar a venda.",
+          variant: "destructive",
+        });
+        throw new Error('Vendedor é obrigatório');
+      }
 
       const { data, error } = await supabase
         .from('vendas')

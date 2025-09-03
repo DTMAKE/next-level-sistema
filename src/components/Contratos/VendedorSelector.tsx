@@ -11,6 +11,13 @@ interface VendedorSelectorProps {
 export function VendedorSelector({ vendedorId, onVendedorChange, required = false }: VendedorSelectorProps) {
   const { data: vendedores, isLoading } = useVendedores();
 
+  const handleVendedorChange = (userId: string) => {
+    console.log('VendedorSelector: Vendedor selecionado - user_id:', userId);
+    const vendedorSelecionado = vendedores?.find(v => v.user_id === userId);
+    console.log('VendedorSelector: Dados completos do vendedor:', vendedorSelecionado);
+    onVendedorChange(userId);
+  };
+
   return (
     <div className="space-y-2">
       <Label htmlFor="vendedor" className="text-base font-medium">
@@ -18,7 +25,7 @@ export function VendedorSelector({ vendedorId, onVendedorChange, required = fals
       </Label>
       <Select 
         value={vendedorId} 
-        onValueChange={onVendedorChange}
+        onValueChange={handleVendedorChange}
         disabled={isLoading}
       >
         <SelectTrigger className="h-12 text-base">
