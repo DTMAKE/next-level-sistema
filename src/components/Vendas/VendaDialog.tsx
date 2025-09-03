@@ -45,7 +45,11 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
   useEffect(() => {
     logger.debug('VendaDialog useEffect', { vendaId: venda?.id, isOpen: open });
     if (venda && open) {
-      logger.debug('Carregando venda para edição', { vendaId: venda.id });
+      logger.debug('Carregando venda para edição', { 
+        vendaId: venda.id, 
+        vendedorId: venda.vendedor_id,
+        userId: venda.user_id 
+      });
       
       setFormData({
         cliente_id: venda.cliente_id || "",
@@ -84,6 +88,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
         }
       }
     } else if (!venda && open) {
+      logger.debug('Criando nova venda');
       setFormData({
         cliente_id: "",
         vendedor_id: "",
