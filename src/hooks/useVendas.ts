@@ -184,6 +184,12 @@ export function useCreateVenda() {
 
       const { servicos, ...vendaInfo } = vendaData;
 
+      console.log('useCreateVenda: Dados recebidos:', vendaData);
+      console.log('useCreateVenda: Dados que serão salvos:', {
+        ...vendaInfo,
+        user_id: user.id,
+      });
+
       const { data, error } = await supabase
         .from('vendas')
         .insert({
@@ -196,7 +202,12 @@ export function useCreateVenda() {
         `)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('useCreateVenda: Erro ao inserir venda:', error);
+        throw error;
+      }
+
+      console.log('useCreateVenda: Venda criada:', data);
 
       // Salvar serviços associados se existirem
       if (servicos && servicos.length > 0) {
