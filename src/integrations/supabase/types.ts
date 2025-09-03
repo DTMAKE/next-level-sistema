@@ -1175,6 +1175,10 @@ export type Database = {
           venda_id: string
         }[]
       }
+      generate_contract_future_accounts: {
+        Args: { p_contrato_id: string }
+        Returns: undefined
+      }
       generate_contract_number: {
         Args: { client_id: string; client_name: string }
         Returns: string
