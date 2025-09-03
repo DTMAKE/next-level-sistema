@@ -9,6 +9,7 @@ import { useCreateVenda, useUpdateVenda, type Venda } from "@/hooks/useVendas";
 import { useClientes } from "@/hooks/useClientes";
 import { getBrazilianDateString } from "@/utils/dateUtils";
 import { ServicosSelector } from "@/components/Vendas/ServicosSelector";
+import { VendedorSelector } from "@/components/Vendas/VendedorSelector";
 
 import { logger } from '@/utils/logger';
 
@@ -21,6 +22,7 @@ interface VendaDialogProps {
 export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
   const [formData, setFormData] = useState({
     cliente_id: "",
+    vendedor_id: "",
     valor: "",
     status: "proposta" as "proposta" | "negociacao" | "fechada" | "perdida",
     descricao: "",
@@ -47,6 +49,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
       
       setFormData({
         cliente_id: venda.cliente_id || "",
+        vendedor_id: venda.vendedor_id || "",
         valor: venda.valor?.toString() || "",
         status: venda.status || "proposta",
         descricao: venda.descricao || "",
@@ -83,6 +86,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
     } else if (!venda && open) {
       setFormData({
         cliente_id: "",
+        vendedor_id: "",
         valor: "",
         status: "proposta",
         descricao: "",
@@ -101,6 +105,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
       // Reset form when dialog closes
       setFormData({
         cliente_id: "",
+        vendedor_id: "",
         valor: "",
         status: "proposta",
         descricao: "",
@@ -117,11 +122,12 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
     // Calcular valor total dos serviços
     const valorTotal = servicos.reduce((total, servico) => total + servico.valor_total, 0);
     
-    if (!formData.cliente_id.trim() || valorTotal <= 0) return;
+    if (!formData.cliente_id.trim() || !formData.vendedor_id.trim() || valorTotal <= 0) return;
 
     try {
       const vendaData = {
         cliente_id: formData.cliente_id,
+        vendedor_id: formData.vendedor_id,
         valor: valorTotal,
         status: formData.status,
         descricao: formData.descricao.trim() || undefined,
@@ -141,7 +147,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
   };
 
   const valorTotalCalculado = servicos.reduce((total, servico) => total + servico.valor_total, 0);
-  const isFormValid = formData.cliente_id.trim() && valorTotalCalculado > 0;
+  const isFormValid = formData.cliente_id.trim() && formData.vendedor_id.trim() && valorTotalCalculado > 0;
 
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
@@ -169,6 +175,12 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Vendedor */}
+          <VendedorSelector
+            vendedorId={formData.vendedor_id}
+            onVendedorChange={(value) => handleInputChange("vendedor_id", value)}
+          />
 
           {/* Serviços */}
           <ServicosSelector 

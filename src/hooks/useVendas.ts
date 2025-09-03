@@ -42,6 +42,7 @@ export interface Venda {
 
 export interface CreateVendaData {
   cliente_id: string;
+  vendedor_id?: string;
   valor: number;
   status: 'proposta' | 'negociacao' | 'fechada' | 'perdida';
   descricao?: string;
