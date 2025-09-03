@@ -19,19 +19,25 @@ export function ComissaoInfo({
   const getComissaoInfo = (): ComissaoData | null => {
     if (conta.comissoes) {
       const vendedorNome = conta.comissoes.vendedor_profile?.name || 'Vendedor';
-      const clienteNome = conta.comissoes.cliente_nome || conta.comissoes.contrato?.clientes?.nome || 'Cliente';
+      
+      // Para vendas
+      if (conta.comissoes.venda_id) {
+        const clienteNome = conta.comissoes.venda?.clientes?.nome || 'Cliente';
+        return {
+          vendedor: vendedorNome,
+          cliente: clienteNome,
+          tipo: 'venda'
+        };
+      } 
+      
+      // Para contratos
       if (conta.comissoes.contrato_id) {
+        const clienteNome = conta.comissoes.contrato?.clientes?.nome || 'Cliente';
         return {
           vendedor: vendedorNome,
           cliente: clienteNome,
           tipo: 'contrato',
           numeroContrato: conta.comissoes.contrato?.numero_contrato || `Contrato ${conta.comissoes.contrato_id.slice(0, 8)}`
-        };
-      } else if (conta.comissoes.venda_id) {
-        return {
-          vendedor: vendedorNome,
-          cliente: clienteNome,
-          tipo: 'venda'
         };
       }
     }
