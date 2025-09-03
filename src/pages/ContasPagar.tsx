@@ -20,10 +20,9 @@ import { ContaPagarDialog } from "@/components/ContasPagar/ContaPagarDialog";
 import { StatusSelectorContasPagar } from "@/components/ContasPagar/StatusSelectorContasPagar";
 import { ComissaoInfo } from "@/components/ContasPagar/ComissaoInfo";
 import { SyncComissoesButton } from "@/components/ContasPagar/SyncComissoesButton";
+
 export default function ContasPagar() {
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
   const isMobile = useIsMobile();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
@@ -33,27 +32,19 @@ export default function ContasPagar() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [contaToDelete, setContaToDelete] = useState<string | null>(null);
   const itemsPerPage = 10;
-  const {
-    data: contas,
-    isLoading
-  } = useContasPagar(selectedDate);
-  console.log('ContasPagar - Dados do hook:', {
-    contas: contas,
-    count: contas?.length || 0,
-    isLoading,
-    selectedDate,
-    selectedMonth: selectedDate.getMonth(),
-    selectedYear: selectedDate.getFullYear()
-  });
+
+  const { data: contas, isLoading } = useContasPagar(selectedDate);
   const deleteContaPagar = useDeleteContaPagar();
   const toggleStatusContaPagar = useToggleStatusContaPagar();
   const updateContaPagar = useUpdateContaPagar();
+  
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pendente':
@@ -66,6 +57,7 @@ export default function ContasPagar() {
         return 'bg-gray-500/10 text-gray-700 dark:text-gray-400';
     }
   };
+
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'pendente':
@@ -78,17 +70,23 @@ export default function ContasPagar() {
         return status;
     }
   };
+
   const getFormaPagamentoLabel = (forma: string, parcelas: number, parcelaAtual: number) => {
     if (forma === 'a_vista') return 'À Vista';
     return `${parcelaAtual}/${parcelas}x`;
   };
+
   const isComissaoTransaction = (descricao: string) => {
     return descricao?.toLowerCase().includes('comissão');
   };
+
   const getComissaoInfo = (conta: ContaPagar) => {
     if (conta.comissoes) {
       const vendedorNome = conta.comissoes.vendedor_profile?.name || 'Vendedor';
-      const clienteNome = conta.comissoes.cliente_nome || conta.comissoes.contrato?.clientes?.nome || 'Cliente';
+      const clienteNome = conta.comissoes.cliente_nome || 
+                         conta.comissoes.contrato?.clientes?.nome || 
+                         'Cliente';
+      
       if (conta.comissoes.contrato_id) {
         return {
           vendedor: vendedorNome,
@@ -106,29 +104,32 @@ export default function ContasPagar() {
     }
     return null;
   };
+
   const handleToggleStatus = (conta: ContaPagar) => {
-    toggleStatusContaPagar.mutate({
-      id: conta.id,
-      currentStatus: conta.status
+    toggleStatusContaPagar.mutate({ 
+      id: conta.id, 
+      currentStatus: conta.status 
     });
   };
+
   const canDeleteConta = (conta: ContaPagar) => {
     if (conta.comissoes?.contrato_id) return false;
     if (conta.comissoes?.venda_id) return false;
     return true;
   };
+
   const handleStatusChange = (conta: ContaPagar, novoStatus: string) => {
     updateContaPagar.mutate({
       id: conta.id,
-      data: {
-        status: novoStatus
-      }
+      data: { status: novoStatus }
     });
   };
+
   const handleDeleteConta = (id: string) => {
     setContaToDelete(id);
     setDeleteDialogOpen(true);
   };
+
   const confirmDelete = () => {
     if (contaToDelete) {
       deleteContaPagar.mutate(contaToDelete);
@@ -136,17 +137,13 @@ export default function ContasPagar() {
       setContaToDelete(null);
     }
   };
+
   const handleDownloadComprovante = (url: string) => {
     window.open(url, '_blank');
   };
 
   // Aplicar filtros e memoização para performance
   const filteredContas = useMemo(() => {
-    console.log('ContasPagar - Aplicando filtros:', {
-      contasOriginais: contas?.length || 0,
-      searchTerm,
-      statusFilter
-    });
     if (!contas) return [];
     return contas.filter(conta => {
       const matchesSearch = !searchTerm || conta.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -157,7 +154,10 @@ export default function ContasPagar() {
 
   // Paginação
   const totalPages = Math.ceil(filteredContas.length / itemsPerPage);
-  const paginatedContas = filteredContas.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedContas = filteredContas.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   // Calcular totais
   const totalContas = filteredContas.reduce((sum, d) => sum + Number(d.valor), 0);
@@ -169,6 +169,7 @@ export default function ContasPagar() {
     setSearchTerm(value);
     setCurrentPage(1);
   };
+
   const handleFilterChange = (filter: string) => {
     setStatusFilter(filter);
     setCurrentPage(1);
@@ -179,27 +180,33 @@ export default function ContasPagar() {
     const pages = [];
     const maxVisiblePages = isMobile ? 3 : 5;
     const halfVisible = Math.floor(maxVisiblePages / 2);
+    
     let startPage = Math.max(1, currentPage - halfVisible);
     let endPage = Math.min(totalPages, currentPage + halfVisible);
+    
     if (currentPage <= halfVisible) {
       endPage = Math.min(totalPages, maxVisiblePages);
     }
+    
     if (currentPage > totalPages - halfVisible) {
       startPage = Math.max(1, totalPages - maxVisiblePages + 1);
     }
+    
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
+    
     return pages;
   };
-  return <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
+
+  return (
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
       {/* Header */}
       <div className="flex flex-row justify-between items-center gap-2">
         <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl truncate">Contas a Pagar</h1>
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <MonthYearPicker selected={selectedDate} onSelect={setSelectedDate} />
           <SyncComissoesButton />
-          
           <ContaPagarDialog>
             <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm">
               <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
@@ -256,7 +263,12 @@ export default function ContasPagar() {
             <div className="flex flex-row gap-2 items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Buscar por nome da despesa..." className="pl-10 h-10 text-sm" value={searchTerm} onChange={e => handleSearchChange(e.target.value)} />
+                <Input 
+                  placeholder="Buscar por nome da despesa..." 
+                  className="pl-10 h-10 text-sm" 
+                  value={searchTerm} 
+                  onChange={(e) => handleSearchChange(e.target.value)} 
+                />
               </div>
               
               <DropdownMenu>
@@ -266,7 +278,9 @@ export default function ContasPagar() {
                     <span className="ml-2 hidden sm:inline">
                       {statusFilter === "all" ? "Status" : getStatusLabel(statusFilter)}
                     </span>
-                    {statusFilter !== "all" && <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>}
+                    {statusFilter !== "all" && (
+                      <Badge variant="secondary" className="ml-2 h-5 px-2 text-xs">1</Badge>
+                    )}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-popover border z-50">
@@ -288,55 +302,86 @@ export default function ContasPagar() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {!isMobile && <div className="flex items-center gap-2 ml-2">
-                  <Button variant={viewMode === "cards" ? "default" : "outline"} size="sm" onClick={() => setViewMode("cards")}>
+              {!isMobile && (
+                <div className="flex items-center gap-2 ml-2">
+                  <Button 
+                    variant={viewMode === "cards" ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setViewMode("cards")}
+                  >
                     <Grid className="h-4 w-4" />
                   </Button>
-                  <Button variant={viewMode === "table" ? "default" : "outline"} size="sm" onClick={() => setViewMode("table")}>
+                  <Button 
+                    variant={viewMode === "table" ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setViewMode("table")}
+                  >
                     <List className="h-4 w-4" />
                   </Button>
-                </div>}
+                </div>
+              )}
             </div>
             
-            {filteredContas.length > 0 && <div className="text-sm text-muted-foreground">
+            {filteredContas.length > 0 && (
+              <div className="text-sm text-muted-foreground">
                 Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredContas.length)} de {filteredContas.length} conta(s)
-              </div>}
+              </div>
+            )}
           </div>
         </CardHeader>
         
         <CardContent className="p-4 sm:p-6">
-          {isLoading ? <div className="space-y-4">
-              {Array.from({
-            length: 5
-          }).map((_, i) => <div key={i} className="space-y-2">
+          {isLoading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="space-y-2">
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-3/4" />
-                </div>)}
-            </div> : paginatedContas.length === 0 ? <div className="text-center py-12">
+                </div>
+              ))}
+            </div>
+          ) : paginatedContas.length === 0 ? (
+            <div className="text-center py-12">
               <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">
-                {searchTerm || statusFilter !== "all" ? "Nenhum resultado encontrado" : "Nenhuma conta encontrada"}
+                {searchTerm || statusFilter !== "all" 
+                  ? "Nenhum resultado encontrado" 
+                  : "Nenhuma conta encontrada"
+                }
               </h3>
               <p className="text-muted-foreground mb-4 text-sm">
-                {searchTerm || statusFilter !== "all" ? "Não encontramos contas com os filtros aplicados." : "Comece adicionando sua primeira conta a pagar."}
+                {searchTerm || statusFilter !== "all" 
+                  ? "Não encontramos contas com os filtros aplicados." 
+                  : "Comece adicionando sua primeira conta a pagar."
+                }
               </p>
-              {!searchTerm && statusFilter === "all" && <ContaPagarDialog>
+              {!searchTerm && statusFilter === "all" && (
+                <ContaPagarDialog>
                   <Button className="gradient-premium border-0 text-background">
                     <Plus className="mr-2 h-4 w-4" />
                     Adicionar Conta
                   </Button>
-                </ContaPagarDialog>}
-            </div> : <>
-              {viewMode === "cards" || isMobile ?
-          // Card View
-          <div className="space-y-3">
-                  {paginatedContas.map(conta => {
-              const comissaoInfo = getComissaoInfo(conta);
-              return <Card key={conta.id} className="p-4 hover:shadow-md transition-shadow">
+                </ContaPagarDialog>
+              )}
+            </div>
+          ) : (
+            <>
+              {viewMode === "cards" || isMobile ? (
+                // Card View
+                <div className="space-y-3">
+                  {paginatedContas.map((conta) => {
+                    const comissaoInfo = getComissaoInfo(conta);
+                    
+                    return (
+                      <Card key={conta.id} className="p-4 hover:shadow-md transition-shadow">
                         <div className="flex flex-col gap-3">
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-3">
-                              {isComissaoTransaction(conta.descricao || '') ? <UserCheck className="h-4 w-4 text-purple-600 shrink-0" /> : <TrendingDown className="h-4 w-4 text-red-600 shrink-0" />}
+                              {isComissaoTransaction(conta.descricao || '') ? (
+                                <UserCheck className="h-4 w-4 text-purple-600 shrink-0" />
+                              ) : (
+                                <TrendingDown className="h-4 w-4 text-red-600 shrink-0" />
+                              )}
                               <h3 className="font-semibold text-base truncate">
                                 {conta.descricao || 'Despesa sem descrição'}
                               </h3>
@@ -348,18 +393,22 @@ export default function ContasPagar() {
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4 shrink-0" />
                               <span>
-                                {format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", {
-                          locale: ptBR
-                        })}
+                                {format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
                               <CreditCard className="h-4 w-4 shrink-0" />
                               <span>
-                                {getFormaPagamentoLabel(conta.forma_pagamento || 'a_vista', conta.parcelas || 1, conta.parcela_atual || 1)}
+                                {getFormaPagamentoLabel(
+                                  conta.forma_pagamento || 'a_vista', 
+                                  conta.parcelas || 1, 
+                                  conta.parcela_atual || 1
+                                )}
                               </span>
                             </div>
-                            {isComissaoTransaction(conta.descricao || '') && <ComissaoInfo conta={conta} size="sm" />}
+                            {isComissaoTransaction(conta.descricao || '') && (
+                              <ComissaoInfo conta={conta} size="sm" />
+                            )}
                           </div>
                           
                           <div className="flex items-center justify-between">
@@ -367,20 +416,35 @@ export default function ContasPagar() {
                               {formatCurrency(Number(conta.valor))}
                             </div>
                             <div className="flex gap-1">
-                              {conta.status === 'pendente' && <Button variant="ghost" size="sm" onClick={() => handleToggleStatus(conta)} disabled={toggleStatusContaPagar.isPending}>
+                              {conta.status === 'pendente' && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => handleToggleStatus(conta)}
+                                  disabled={toggleStatusContaPagar.isPending}
+                                >
                                   <Check className="h-4 w-4" />
-                                </Button>}
-                              {conta.comprovante_url && <Button variant="ghost" size="sm" onClick={() => handleDownloadComprovante(conta.comprovante_url!)}>
+                                </Button>
+                              )}
+                              {conta.comprovante_url && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => handleDownloadComprovante(conta.comprovante_url!)}
+                                >
                                   <Download className="h-4 w-4" />
-                                </Button>}
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </div>
-                      </Card>;
-            })}
-                </div> :
-          // Table View
-          <div className="rounded-md border">
+                      </Card>
+                    );
+                  })}
+                </div>
+              ) : (
+                // Table View
+                <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -392,66 +456,93 @@ export default function ContasPagar() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {paginatedContas.map(conta => {
-                  const comissaoInfo = getComissaoInfo(conta);
-                  return <TableRow key={conta.id}>
+                      {paginatedContas.map((conta) => {
+                        const comissaoInfo = getComissaoInfo(conta);
+                        
+                        return (
+                          <TableRow key={conta.id}>
                             <TableCell>
                               <StatusSelectorContasPagar conta={conta} size="sm" />
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                {isComissaoTransaction(conta.descricao || '') ? <UserCheck className="h-4 w-4 text-purple-600" /> : <FileText className="h-4 w-4 text-muted-foreground" />}
+                                {isComissaoTransaction(conta.descricao || '') ? (
+                                  <UserCheck className="h-4 w-4 text-purple-600" />
+                                ) : (
+                                  <FileText className="h-4 w-4 text-muted-foreground" />
+                                )}
                                 <div>
                                   <div className="font-medium">
                                     {conta.descricao || 'Despesa sem descrição'}
                                   </div>
-                                  {isComissaoTransaction(conta.descricao || '') && <ComissaoInfo conta={conta} size="sm" />}
+                                  {isComissaoTransaction(conta.descricao || '') && (
+                                    <ComissaoInfo conta={conta} size="sm" />
+                                  )}
                                 </div>
                               </div>
                             </TableCell>
                             <TableCell>
                               <Badge variant="outline" className="text-xs">
-                                {getFormaPagamentoLabel(conta.forma_pagamento || 'a_vista', conta.parcelas || 1, conta.parcela_atual || 1)}
+                                {getFormaPagamentoLabel(
+                                  conta.forma_pagamento || 'a_vista', 
+                                  conta.parcelas || 1, 
+                                  conta.parcela_atual || 1
+                                )}
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              {format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", {
-                        locale: ptBR
-                      })}
+                              {format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}
                             </TableCell>
                             <TableCell className="text-right font-medium text-red-600">
                               {formatCurrency(Number(conta.valor))}
                             </TableCell>
-                          </TableRow>;
-                })}
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
-                </div>}
+                </div>
+              )}
               
               {/* Paginação */}
-              {totalPages > 1 && <div className="flex items-center justify-between pt-4">
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between pt-4">
                   <div className="text-sm text-muted-foreground">
                     Página {currentPage} de {totalPages}
                   </div>
                   <Pagination>
                     <PaginationContent>
                       <PaginationItem>
-                        <PaginationPrevious onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"} />
+                        <PaginationPrevious 
+                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        />
                       </PaginationItem>
                       
-                      {generatePaginationNumbers().map(page => <PaginationItem key={page}>
-                          <PaginationLink onClick={() => setCurrentPage(page)} isActive={currentPage === page} className="cursor-pointer">
+                      {generatePaginationNumbers().map((page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(page)}
+                            isActive={currentPage === page}
+                            className="cursor-pointer"
+                          >
                             {page}
                           </PaginationLink>
-                        </PaginationItem>)}
+                        </PaginationItem>
+                      ))}
                       
                       <PaginationItem>
-                        <PaginationNext onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"} />
+                        <PaginationNext 
+                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                          className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        />
                       </PaginationItem>
                     </PaginationContent>
                   </Pagination>
-                </div>}
-            </>}
+                </div>
+              )}
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -466,11 +557,15 @@ export default function ContasPagar() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>;
+    </div>
+  );
 }

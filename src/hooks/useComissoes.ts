@@ -116,14 +116,10 @@ export function useCreateComissao() {
       return comissao;
     },
     onSuccess: () => {
-      console.log('useComissoes - Invalidando queries após criação de comissão...');
       queryClient.invalidateQueries({ queryKey: ['comissoes'] });
       queryClient.invalidateQueries({ queryKey: ['comissoes-vendedor'] });
       queryClient.invalidateQueries({ queryKey: ['comissoes-mes'] });
       queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
-      
-      // Force refresh da página de contas a pagar
-      queryClient.refetchQueries({ queryKey: ['contas-pagar'] });
     },
     onError: (error: Error) => {
       console.error('Erro ao criar comissão:', error);
