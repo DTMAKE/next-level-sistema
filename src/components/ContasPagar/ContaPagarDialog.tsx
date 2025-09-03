@@ -154,13 +154,13 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base font-medium">Forma de Pagamento *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="h-12 text-base">
                           <SelectValue placeholder="Selecione" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-background/95 backdrop-blur-sm border shadow-lg z-50">
+                      <SelectContent className="bg-background border shadow-lg z-[100]">
                         <SelectItem value="a_vista">À Vista</SelectItem>
                         <SelectItem value="parcelado">Parcelado</SelectItem>
                       </SelectContent>
