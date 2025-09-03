@@ -127,7 +127,14 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
     // Calcular valor total dos serviços
     const valorTotal = servicos.reduce((total, servico) => total + servico.valor_total, 0);
     
-    if (!formData.cliente_id.trim() || !formData.vendedor_id.trim() || valorTotal <= 0) return;
+    if (!formData.cliente_id.trim() || !formData.vendedor_id.trim() || valorTotal <= 0) {
+      console.error('Validação falhou:', { 
+        cliente_id: formData.cliente_id, 
+        vendedor_id: formData.vendedor_id, 
+        valorTotal 
+      });
+      return;
+    }
 
     try {
       const vendaData = {
@@ -140,6 +147,8 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
         servicos: servicos, // Incluir serviços
       };
 
+      console.log('Dados da venda sendo enviados:', vendaData);
+
       if (venda) {
         await updateVenda.mutateAsync({ id: venda.id, ...vendaData });
       } else {
@@ -147,6 +156,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
       }
       handleDialogClose(false);
     } catch (error) {
+      console.error('Erro ao salvar venda:', error);
       // Error handling is done in the hooks
     }
   };
