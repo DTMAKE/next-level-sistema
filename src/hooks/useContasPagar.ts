@@ -63,7 +63,7 @@ export function useContasPagar(selectedDate: Date) {
             contrato_id,
             mes_referencia,
             percentual,
-            vendedor_profile:profiles(
+            vendedor_profile:profiles!comissoes_vendedor_id_fkey (
               name
             ),
             venda:vendas (
