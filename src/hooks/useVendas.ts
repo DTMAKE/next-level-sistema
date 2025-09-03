@@ -389,11 +389,14 @@ async function createComissaoForVenda(venda: Venda, createComissao: any) {
       return;
     }
 
-    // Buscar informações do vendedor
+    // Usar vendedor_id se existir, caso contrário user_id
+    const vendedorResponsavelId = venda.vendedor_id || venda.user_id;
+
+    // Buscar informações do vendedor responsável
     const { data: vendedor } = await supabase
       .from('profiles')
       .select('role, percentual_comissao, name')
-      .eq('user_id', venda.user_id)
+      .eq('user_id', vendedorResponsavelId)
       .single();
 
     // Só criar comissão se for vendedor ou admin configurado para receber comissão
@@ -408,14 +411,17 @@ async function createComissaoForVenda(venda: Venda, createComissao: any) {
         .eq('id', venda.cliente_id)
         .single();
 
+      const vendedorNome = vendedor.name || 'Vendedor';
+      const clienteNome = cliente?.nome || 'Cliente não informado';
+
       await createComissao.mutateAsync({
-        vendedor_id: venda.user_id,
+        vendedor_id: vendedorResponsavelId,
         venda_id: venda.id,
         valor_venda: venda.valor,
         percentual: percentualComissao,
         valor_comissao: valorComissao,
         mes_referencia: new Date(venda.data_venda).toISOString().split('T')[0],
-        observacoes: `Comissão da venda para cliente ${cliente?.nome || 'Não informado'}`
+        observacoes: `Comissão de ${vendedorNome} - Venda para ${clienteNome}`
       });
     }
   } catch (error) {
