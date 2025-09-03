@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useCreateComissao } from '@/hooks/useComissoes';
 
 export interface Venda {
   id: string;
@@ -173,6 +174,7 @@ export function useCreateVenda() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const createComissao = useCreateComissao();
 
   return useMutation({
     mutationFn: async (vendaData: CreateVendaData) => {
@@ -218,6 +220,11 @@ export function useCreateVenda() {
         }
       }
 
+      // 3. Criar comissão se a venda for fechada e o usuário for vendedor
+      if (vendaData.status === 'fechada') {
+        await createComissaoForVenda(data as Venda, createComissao);
+      }
+
       return data as Venda;
     },
     onSuccess: () => {
@@ -240,6 +247,7 @@ export function useCreateVenda() {
 export function useUpdateVenda() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const createComissao = useCreateComissao();
 
   return useMutation({
     mutationFn: async ({ id, servicos, ...vendaData }: UpdateVendaData) => {
@@ -284,6 +292,11 @@ export function useUpdateVenda() {
             throw servicosError;
           }
         }
+      }
+
+      // Criar comissão se a venda foi marcada como fechada agora
+      if (vendaData.status === 'fechada') {
+        await createComissaoForVenda(data as Venda, createComissao);
       }
 
       return data as Venda;
@@ -334,4 +347,54 @@ export function useDeleteVenda() {
       });
     },
   });
+}
+
+// Função auxiliar para criar comissão
+async function createComissaoForVenda(venda: Venda, createComissao: any) {
+  try {
+    // Verificar se já existe comissão para esta venda
+    const { data: existingComissao } = await supabase
+      .from('comissoes')
+      .select('id')
+      .eq('venda_id', venda.id)
+      .single();
+
+    if (existingComissao) {
+      console.log('Comissão já existe para esta venda');
+      return;
+    }
+
+    // Buscar informações do vendedor
+    const { data: vendedor } = await supabase
+      .from('profiles')
+      .select('role, percentual_comissao, name')
+      .eq('user_id', venda.user_id)
+      .single();
+
+    // Só criar comissão se for vendedor ou admin configurado para receber comissão
+    if (vendedor?.role === 'vendedor' || (vendedor?.role === 'admin' && vendedor?.percentual_comissao > 0)) {
+      const percentualComissao = vendedor.percentual_comissao || 5.0;
+      const valorComissao = venda.valor * (percentualComissao / 100);
+
+      // Buscar nome do cliente para observações
+      const { data: cliente } = await supabase
+        .from('clientes')
+        .select('nome')
+        .eq('id', venda.cliente_id)
+        .single();
+
+      await createComissao.mutateAsync({
+        vendedor_id: venda.user_id,
+        venda_id: venda.id,
+        valor_venda: venda.valor,
+        percentual: percentualComissao,
+        valor_comissao: valorComissao,
+        mes_referencia: new Date(venda.data_venda).toISOString().split('T')[0],
+        observacoes: `Comissão da venda para cliente ${cliente?.nome || 'Não informado'}`
+      });
+    }
+  } catch (error) {
+    console.error('Erro ao criar comissão:', error);
+    // Não falhar a venda por causa da comissão
+  }
 }

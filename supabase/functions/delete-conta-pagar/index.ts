@@ -51,27 +51,9 @@ serve(async (req) => {
       )
     }
 
-    // Verificar se é uma comissão relacionada a uma venda ativa
+    // Verificar se é uma comissão relacionada - se for, será validado pela aplicação
     if (conta.comissao_id) {
-      console.log('Checking commission relation for:', conta.comissao_id)
-      
-      const { data: comissao, error: comissaoError } = await supabase
-        .from('comissoes')
-        .select('*, vendas!inner(status)')
-        .eq('id', conta.comissao_id)
-        .single()
-
-      if (comissaoError) {
-        console.error('Error checking commission:', comissaoError)
-      } else if (comissao && comissao.vendas?.status === 'fechada') {
-        return new Response(
-          JSON.stringify({ error: 'Não é possível excluir: existe venda relacionada' }),
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        )
-      }
+      console.log('Deleting expense account related to commission:', conta.comissao_id)
     }
 
     // Verificar se existe contrato ativo relacionado

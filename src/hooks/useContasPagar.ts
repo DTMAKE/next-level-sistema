@@ -279,6 +279,57 @@ export function useDeleteContaPagar() {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      // Primeiro verificar se a conta tem origem e validar se pode ser excluída
+      const { data: conta, error: fetchError } = await supabase
+        .from('transacoes_financeiras')
+        .select(`
+          *,
+          comissoes(
+            id,
+            venda_id,
+            contrato_id
+          )
+        `)
+        .eq('id', id)
+        .eq('tipo', 'despesa')
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw fetchError;
+      }
+
+      // Se tem comissão relacionada, verificar se pode excluir
+      if (conta?.comissoes) {
+        const comissao = conta.comissoes;
+        
+        // Verificar se tem venda relacionada ativa
+        if (comissao.venda_id) {
+          const { data: venda } = await supabase
+            .from('vendas')
+            .select('status')
+            .eq('id', comissao.venda_id)
+            .single();
+            
+          if (venda?.status === 'fechada') {
+            throw new Error('Não é possível excluir: existe venda relacionada. Exclua a venda primeiro.');
+          }
+        }
+        
+        // Verificar se tem contrato relacionado ativo
+        if (comissao.contrato_id) {
+          const { data: contrato } = await supabase
+            .from('contratos')
+            .select('status')
+            .eq('id', comissao.contrato_id)
+            .single();
+            
+          if (contrato?.status === 'ativo') {
+            throw new Error('Não é possível excluir: existe contrato ativo relacionado. Exclua o contrato primeiro.');
+          }
+        }
+      }
+
+      // Se chegou até aqui, pode usar a edge function
       const { data, error } = await supabase.functions.invoke('delete-conta-pagar', {
         body: { conta_id: id }
       });
