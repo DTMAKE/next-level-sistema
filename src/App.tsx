@@ -16,7 +16,7 @@ import Clientes from "./pages/Clientes";
 import NovoCliente from "./pages/NovoCliente";
 import ClienteDetalhes from "./pages/ClienteDetalhes";
 import Vendas from "./pages/Vendas";
-import NovaVenda from "./pages/NovaVenda";
+
 import VendaDetalhes from "./pages/VendaDetalhes";
 import Contratos from "./pages/Contratos";
 import NovoContrato from "./pages/NovoContrato";
@@ -92,11 +92,6 @@ const App = () => {
                      <Layout>
                        <Vendas />
                      </Layout>
-                   </ProtectedRoute>
-                 } />
-                 <Route path="/vendas/nova" element={
-                   <ProtectedRoute>
-                     <NovaVenda />
                    </ProtectedRoute>
                  } />
                  <Route path="/vendas/:id" element={

@@ -89,7 +89,8 @@ export default function Vendas() {
     setDeleteDialogOpen(true);
   };
   const handleNewVenda = () => {
-    navigate("/vendas/nova");
+    setSelectedVenda(undefined); // Ensure no venda is selected for creation
+    setDialogOpen(true);
   };
 
   // Reset page when search changes
