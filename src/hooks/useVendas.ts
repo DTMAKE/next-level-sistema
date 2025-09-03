@@ -389,15 +389,17 @@ async function createComissaoForVenda(venda: Venda, createComissao: any) {
       return;
     }
 
-    // Buscar informações do vendedor
+    // Buscar informações do vendedor responsável pela venda
+    const vendedorId = venda.vendedor_id || venda.user_id; // Fallback para user_id se vendedor_id não estiver definido
+    
     const { data: vendedor } = await supabase
       .from('profiles')
       .select('role, percentual_comissao, name')
-      .eq('user_id', venda.user_id)
+      .eq('user_id', vendedorId)
       .single();
 
-    // Só criar comissão se for vendedor ou admin configurado para receber comissão
-    if (vendedor?.role === 'vendedor' || (vendedor?.role === 'admin' && vendedor?.percentual_comissao > 0)) {
+    // Só criar comissão se o vendedor for do tipo 'vendedor' (não admin)
+    if (vendedor?.role === 'vendedor') {
       const percentualComissao = vendedor.percentual_comissao || 5.0;
       const valorComissao = venda.valor * (percentualComissao / 100);
 
@@ -409,14 +411,18 @@ async function createComissaoForVenda(venda: Venda, createComissao: any) {
         .single();
 
       await createComissao.mutateAsync({
-        vendedor_id: venda.user_id,
+        vendedor_id: vendedorId,
         venda_id: venda.id,
         valor_venda: venda.valor,
         percentual: percentualComissao,
         valor_comissao: valorComissao,
         mes_referencia: new Date(venda.data_venda).toISOString().split('T')[0],
-        observacoes: `Comissão da venda para cliente ${cliente?.nome || 'Não informado'}`
+        observacoes: `Comissão de ${vendedor.name || 'Vendedor'} - Venda para ${cliente?.nome || 'Cliente'}`
       });
+
+      console.log(`Comissão criada para vendedor ${vendedor.name} no valor de R$ ${valorComissao.toFixed(2)}`);
+    } else {
+      console.log('Admin não recebe comissão automática');
     }
   } catch (error) {
     console.error('Erro ao criar comissão:', error);
