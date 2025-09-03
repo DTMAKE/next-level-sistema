@@ -1201,7 +1201,7 @@ export type Database = {
         Returns: string
       }
       generate_future_contract_commissions: {
-        Args: { p_contrato_id: string }
+        Args: Record<PropertyKey, never> | { p_contrato_id: string }
         Returns: undefined
       }
       generate_future_receivables_and_payables: {
