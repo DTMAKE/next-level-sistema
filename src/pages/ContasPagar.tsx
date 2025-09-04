@@ -403,6 +403,7 @@ export default function ContasPagar() {
                                     tipo={comissaoInfo?.tipo || 'venda'}
                                     vendaId={comissaoInfo?.vendaId}
                                     contratoId={comissaoInfo?.contratoId}
+                                    vendedorId={conta.comissoes?.vendedor_id}
                                   />
                                 </div>
                               )}
@@ -499,13 +500,14 @@ export default function ContasPagar() {
                                  {(() => {
                                    const info = getComissaoInfo(conta);
                                    if (info?.tipo === 'venda' || info?.tipo === 'contrato') {
-                                     return (
-                                       <OrigemInfo 
-                                         tipo={info.tipo}
-                                         vendaId={info.vendaId}
-                                         contratoId={info.contratoId}
-                                       />
-                                     );
+                                      return (
+                                        <OrigemInfo 
+                                          tipo={info.tipo}
+                                          vendaId={info.vendaId}
+                                          contratoId={info.contratoId}
+                                          vendedorId={conta.comissoes?.vendedor_id}
+                                        />
+                                      );
                                    }
                                    return '-';
                                  })()}
