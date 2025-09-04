@@ -53,10 +53,21 @@ export default function ContasReceber() {
     data: profiles
   } = useProfiles(sellerIds);
 
-  // Helper function to get seller name
+  // Helper function to get seller name from sales or contracts
   const getSellerName = (userId: string) => {
     const profile = profiles?.find(p => p.user_id === userId);
     return profile?.name || 'Vendedor';
+  };
+
+  // Helper function to get contract seller name
+  const getContractSellerName = (conta: any) => {
+    if (conta.contratos?.vendedor?.name) {
+      return conta.contratos.vendedor.name;
+    }
+    if (conta.contratos?.vendedor_id) {
+      return getSellerName(conta.contratos.vendedor_id);
+    }
+    return null;
   };
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -330,7 +341,7 @@ export default function ContasReceber() {
                               <Building2 className="h-3 w-3 text-blue-600" />
                               <span className="text-xs text-blue-600 font-medium">
                                 Contrato: {conta.contratos.numero_contrato ?? `CONTRATO-${conta.contrato_id.slice(0, 8)}`}
-                                {conta.contratos.vendedor_id && ` | Vendedor: ${getSellerName(conta.contratos.vendedor_id)}`}
+                                {getContractSellerName(conta) && ` | Vendedor: ${getContractSellerName(conta)}`}
                               </span>
                             </div>}
                         </div>
@@ -380,8 +391,8 @@ export default function ContasReceber() {
                                 {conta.venda_id && conta.vendas?.vendedor_id && <div className="text-xs text-muted-foreground">
                                     Vendedor: {getSellerName(conta.vendas.vendedor_id)}
                                   </div>}
-                                {conta.contrato_id && conta.contratos?.vendedor_id && <div className="text-xs text-muted-foreground">
-                                    Vendedor: {getSellerName(conta.contratos.vendedor_id)}
+                                {conta.contrato_id && conta.contratos && getContractSellerName(conta) && <div className="text-xs text-muted-foreground">
+                                    Vendedor: {getContractSellerName(conta)}
                                   </div>}
                               </div>
                             </div>

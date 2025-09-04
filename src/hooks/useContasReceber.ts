@@ -43,6 +43,11 @@ export interface ContaReceber {
     clientes?: {
       nome: string;
     } | null;
+    vendedor?: {
+      user_id: string;
+      name: string;
+      role: string;
+    } | null;
   } | null;
 }
 
@@ -93,7 +98,8 @@ export function useContasReceber(selectedDate: Date) {
             vendedor_id,
             clientes (
               nome
-            )
+            ),
+            vendedor:profiles!contratos_vendedor_id_fkey(user_id, name, role)
           )
         `)
         .eq('tipo', 'receita')
