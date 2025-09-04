@@ -19,9 +19,10 @@ import { useContasReceber, useDeleteContaReceber, useMarcarComoRecebida, useClea
 import { useProfiles } from "@/hooks/useProfiles";
 import { ContaReceberDialog } from "@/components/ContasReceber/ContaReceberDialog";
 import { StatusSelectorContasReceber } from "@/components/ContasReceber/StatusSelectorContasReceber";
-
 export default function ContasReceber() {
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const isMobile = useIsMobile();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
@@ -31,37 +32,37 @@ export default function ContasReceber() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [contaToDelete, setContaToDelete] = useState<string | null>(null);
   const itemsPerPage = 10;
-
-  const { data: contas, isLoading } = useContasReceber(selectedDate);
+  const {
+    data: contas,
+    isLoading
+  } = useContasReceber(selectedDate);
   const deleteContaReceber = useDeleteContaReceber();
   const marcarComoRecebida = useMarcarComoRecebida();
   const cleanupOrphanReceivables = useCleanupOrphanReceivables();
-  
+
   // Extract unique seller user_ids from sales (vendedor_id, not user_id)
   const sellerIds = useMemo(() => {
     if (!contas) return [];
-    const ids = contas
-      .filter(conta => conta.venda_id && conta.vendas?.vendedor_id)
-      .map(conta => conta.vendas!.vendedor_id!);
+    const ids = contas.filter(conta => conta.venda_id && conta.vendas?.vendedor_id).map(conta => conta.vendas!.vendedor_id!);
     return [...new Set(ids)];
   }, [contas]);
-  
+
   // Fetch seller profiles
-  const { data: profiles } = useProfiles(sellerIds);
-  
+  const {
+    data: profiles
+  } = useProfiles(sellerIds);
+
   // Helper function to get seller name
   const getSellerName = (userId: string) => {
     const profile = profiles?.find(p => p.user_id === userId);
     return profile?.name || 'Vendedor';
   };
-
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
   };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pendente':
@@ -74,7 +75,6 @@ export default function ContasReceber() {
         return 'bg-gray-500/10 text-gray-700 dark:text-gray-400';
     }
   };
-
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'pendente':
@@ -87,25 +87,20 @@ export default function ContasReceber() {
         return status;
     }
   };
-
   const getFormaPagamentoLabel = (forma: string, parcelas: number, parcelaAtual: number) => {
     if (forma === 'a_vista') return 'À Vista';
     return `${parcelaAtual}/${parcelas}x`;
   };
-
   const isContratoTransaction = (descricao: string) => {
     return descricao?.toLowerCase().includes('contrato');
   };
-
   const handleMarcarComoRecebida = (conta: any) => {
     marcarComoRecebida.mutate(conta.id);
   };
-
   const handleDeleteConta = (id: string) => {
     setContaToDelete(id);
     setDeleteDialogOpen(true);
   };
-
   const confirmDelete = () => {
     if (contaToDelete) {
       deleteContaReceber.mutate(contaToDelete);
@@ -113,7 +108,6 @@ export default function ContasReceber() {
       setContaToDelete(null);
     }
   };
-
   const handleDownloadComprovante = (url: string) => {
     window.open(url, '_blank');
   };
@@ -142,7 +136,6 @@ export default function ContasReceber() {
     setSearchTerm(value);
     setCurrentPage(1);
   };
-
   const handleFilterChange = (filter: string) => {
     setStatusFilter(filter);
     setCurrentPage(1);
@@ -166,9 +159,7 @@ export default function ContasReceber() {
     }
     return pages;
   };
-
-  return (
-    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
+  return <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
       {/* Header */}
       <div className="flex flex-row justify-between items-center gap-2">
         <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl truncate">Contas a Receber</h1>
@@ -262,38 +253,31 @@ export default function ContasReceber() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {!isMobile && (
-                <div className="flex items-center gap-2 ml-2">
+              {!isMobile && <div className="flex items-center gap-2 ml-2">
                   <Button variant={viewMode === "cards" ? "default" : "outline"} size="sm" onClick={() => setViewMode("cards")}>
                     <Grid className="h-4 w-4" />
                   </Button>
                   <Button variant={viewMode === "table" ? "default" : "outline"} size="sm" onClick={() => setViewMode("table")}>
                     <List className="h-4 w-4" />
                   </Button>
-                </div>
-              )}
+                </div>}
             </div>
             
-            {filteredContas.length > 0 && (
-              <div className="text-sm text-muted-foreground">
+            {filteredContas.length > 0 && <div className="text-sm text-muted-foreground">
                 Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredContas.length)} de {filteredContas.length} conta(s)
-              </div>
-            )}
+              </div>}
           </div>
         </CardHeader>
         
         <CardContent className="p-4 sm:p-6">
-          {isLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="space-y-2">
+          {isLoading ? <div className="space-y-4">
+              {Array.from({
+            length: 5
+          }).map((_, i) => <div key={i} className="space-y-2">
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-3/4" />
-                </div>
-              ))}
-            </div>
-          ) : paginatedContas.length === 0 ? (
-            <div className="text-center py-12">
+                </div>)}
+            </div> : paginatedContas.length === 0 ? <div className="text-center py-12">
               <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">
                 {searchTerm || statusFilter !== "all" ? "Nenhum resultado encontrado" : "Nenhuma conta encontrada"}
@@ -301,30 +285,21 @@ export default function ContasReceber() {
               <p className="text-muted-foreground mb-4 text-sm">
                 {searchTerm || statusFilter !== "all" ? "Não encontramos contas com os filtros aplicados." : "Comece adicionando sua primeira conta a receber."}
               </p>
-              {!searchTerm && statusFilter === "all" && (
-                <ContaReceberDialog>
+              {!searchTerm && statusFilter === "all" && <ContaReceberDialog>
                   <Button className="gradient-premium border-0 text-background">
                     <Plus className="mr-2 h-4 w-4" />
                     Adicionar Conta
                   </Button>
-                </ContaReceberDialog>
-              )}
-            </div>
-          ) : (
-            <>
-              {viewMode === "cards" || isMobile ? (
-                // Card View
-                <div className="space-y-3">
-                  {paginatedContas.map(conta => (
-                    <Card key={conta.id} className="p-4 hover:shadow-md transition-shadow">
+                </ContaReceberDialog>}
+            </div> : <>
+              {viewMode === "cards" || isMobile ?
+          // Card View
+          <div className="space-y-3">
+                  {paginatedContas.map(conta => <Card key={conta.id} className="p-4 hover:shadow-md transition-shadow">
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            {isContratoTransaction(conta.descricao || '') ? (
-                              <Building2 className="h-4 w-4 text-blue-600 shrink-0" />
-                            ) : (
-                              <TrendingUp className="h-4 w-4 text-green-600 shrink-0" />
-                            )}
+                            {isContratoTransaction(conta.descricao || '') ? <Building2 className="h-4 w-4 text-blue-600 shrink-0" /> : <TrendingUp className="h-4 w-4 text-green-600 shrink-0" />}
                             <h3 className="font-semibold text-base truncate">
                               {conta.descricao || 'Receita sem descrição'}
                             </h3>
@@ -335,29 +310,27 @@ export default function ContasReceber() {
                         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 shrink-0" />
-                            <span>{format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}</span>
+                            <span>{format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", {
+                        locale: ptBR
+                      })}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <CreditCard className="h-4 w-4 shrink-0" />
                             <span>{getFormaPagamentoLabel(conta.forma_pagamento || 'a_vista', conta.parcelas || 1, conta.parcela_atual || 1)}</span>
                           </div>
-                          {conta.venda_id && conta.vendas && (
-                            <div className="flex items-center gap-2">
+                          {conta.venda_id && conta.vendas && <div className="flex items-center gap-2">
                               <ShoppingCart className="h-3 w-3 text-green-600" />
                               <span className="text-xs text-green-600 font-medium">
                                 Venda: {conta.vendas.numero_venda ?? `VENDA-${conta.venda_id.slice(0, 8)}`}
                                 {conta.vendas.vendedor_id && ` | Vendedor: ${getSellerName(conta.vendas.vendedor_id)}`}
                               </span>
-                            </div>
-                          )}
-                          {conta.contrato_id && conta.contratos && (
-                            <div className="flex items-center gap-2">
+                            </div>}
+                          {conta.contrato_id && conta.contratos && <div className="flex items-center gap-2">
                               <Building2 className="h-3 w-3 text-blue-600" />
                               <span className="text-xs text-blue-600 font-medium">
                                  {conta.contratos.numero_contrato ?? `CONTRATO-${conta.contrato_id.slice(0, 8)}`}
                               </span>
-                            </div>
-                          )}
+                            </div>}
                         </div>
                         
                         <div className="flex items-center justify-between">
@@ -365,39 +338,22 @@ export default function ContasReceber() {
                             {formatCurrency(Number(conta.valor))}
                           </div>
                           <div className="flex gap-1">
-                            {conta.status === 'pendente' && (
-                              <Button variant="ghost" size="sm" onClick={() => handleMarcarComoRecebida(conta)} disabled={marcarComoRecebida.isPending}>
+                            {conta.status === 'pendente' && <Button variant="ghost" size="sm" onClick={() => handleMarcarComoRecebida(conta)} disabled={marcarComoRecebida.isPending}>
                                 <Check className="h-4 w-4" />
-                              </Button>
-                            )}
-                            {conta.comprovante_url && (
-                              <Button variant="ghost" size="sm" onClick={() => handleDownloadComprovante(conta.comprovante_url!)}>
+                              </Button>}
+                            {conta.comprovante_url && <Button variant="ghost" size="sm" onClick={() => handleDownloadComprovante(conta.comprovante_url!)}>
                                 <Download className="h-4 w-4" />
-                              </Button>
-                            )}
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => handleDeleteConta(conta.id)} 
-                              disabled={deleteContaReceber.isPending || isContratoTransaction(conta.descricao || '')} 
-                              title={isContratoTransaction(conta.descricao || '') ? "⚠️ Esta conta faz parte de um contrato. Para cancelar, desative o contrato completo." : conta.venda_id ? "⚠️ Esta conta está relacionada a uma venda - não pode ser excluída se a venda estiver fechada" : "Excluir conta a receber"} 
-                              className={cn(
-                                isContratoTransaction(conta.descricao || '') ? "text-gray-400 cursor-not-allowed" : 
-                                conta.venda_id ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" : 
-                                "text-destructive hover:text-destructive"
-                              )}
-                            >
+                              </Button>}
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteConta(conta.id)} disabled={deleteContaReceber.isPending || isContratoTransaction(conta.descricao || '')} title={isContratoTransaction(conta.descricao || '') ? "⚠️ Esta conta faz parte de um contrato. Para cancelar, desative o contrato completo." : conta.venda_id ? "⚠️ Esta conta está relacionada a uma venda - não pode ser excluída se a venda estiver fechada" : "Excluir conta a receber"} className={cn(isContratoTransaction(conta.descricao || '') ? "text-gray-400 cursor-not-allowed" : conta.venda_id ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" : "text-destructive hover:text-destructive")}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
                       </div>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                // Table View
-                <div className="rounded-md border">
+                    </Card>)}
+                </div> :
+          // Table View
+          <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -411,8 +367,7 @@ export default function ContasReceber() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {paginatedContas.map(conta => (
-                        <TableRow key={conta.id}>
+                      {paginatedContas.map(conta => <TableRow key={conta.id}>
                           <TableCell>
                             <StatusSelectorContasReceber conta={conta} size="sm" />
                           </TableCell>
@@ -420,32 +375,26 @@ export default function ContasReceber() {
                             <div className="flex items-center gap-2">
                               <div>
                                 <div className="font-semibold">{conta.descricao || 'Receita sem descrição'}</div>
-                                {conta.venda_id && conta.vendas?.vendedor_id && (
-                                  <div className="text-xs text-muted-foreground">
+                                {conta.venda_id && conta.vendas?.vendedor_id && <div className="text-xs text-muted-foreground">
                                     Vendedor: {getSellerName(conta.vendas.vendedor_id)}
-                                  </div>
-                                )}
+                                  </div>}
                               </div>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <span>
-                                {conta.venda_id && conta.vendas ? (
-                                  <div className="flex items-center gap-1">
-                                    <ShoppingCart className="h-3 w-3 text-green-600" />
+                                {conta.venda_id && conta.vendas ? <div className="flex items-center gap-1">
+                                    
                                     <span className="text-green-600 font-medium">
                                       {conta.vendas.numero_venda ?? `VENDA-${conta.venda_id.slice(0, 8)}`}
                                     </span>
-                                  </div>
-                                ) : conta.contrato_id && conta.contratos ? (
-                                  <div className="flex items-center gap-1">
-                                    <Building2 className="h-3 w-3 text-blue-600" />
+                                  </div> : conta.contrato_id && conta.contratos ? <div className="flex items-center gap-1">
+                                    
                                     <span className="text-blue-600 font-medium">
                                       {conta.contratos.numero_contrato ?? `CONTRATO-${conta.contrato_id.slice(0, 8)}`}
                                     </span>
-                                  </div>
-                                ) : '-'}
+                                  </div> : '-'}
                               </span>
                             </div>
                           </TableCell>
@@ -457,7 +406,9 @@ export default function ContasReceber() {
                           </TableCell>
                           <TableCell>
                             <div className="text-sm">
-                              <div>{format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}</div>
+                              <div>{format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", {
+                          locale: ptBR
+                        })}</div>
                             </div>
                           </TableCell>
                           <TableCell>
@@ -467,38 +418,24 @@ export default function ContasReceber() {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-1">
-                              {conta.status === 'pendente' && (
-                                <Button variant="ghost" size="sm" onClick={() => handleMarcarComoRecebida(conta)} disabled={marcarComoRecebida.isPending}>
+                              {conta.status === 'pendente' && <Button variant="ghost" size="sm" onClick={() => handleMarcarComoRecebida(conta)} disabled={marcarComoRecebida.isPending}>
                                   <Check className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {conta.comprovante_url && (
-                                <Button variant="ghost" size="sm" onClick={() => handleDownloadComprovante(conta.comprovante_url!)}>
+                                </Button>}
+                              {conta.comprovante_url && <Button variant="ghost" size="sm" onClick={() => handleDownloadComprovante(conta.comprovante_url!)}>
                                   <Download className="h-4 w-4" />
-                                </Button>
-                              )}
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => handleDeleteConta(conta.id)} 
-                                disabled={deleteContaReceber.isPending} 
-                                title={isContratoTransaction(conta.descricao || '') ? "⚠️ Esta conta está relacionada a um contrato - verifique se o contrato está ativo" : conta.venda_id ? "⚠️ Esta conta está relacionada a uma venda - não pode ser excluída se a venda estiver fechada" : "Excluir conta a receber"} 
-                                className={cn(isContratoTransaction(conta.descricao || '') || conta.venda_id ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" : "text-destructive hover:text-destructive")}
-                              >
+                                </Button>}
+                              <Button variant="ghost" size="sm" onClick={() => handleDeleteConta(conta.id)} disabled={deleteContaReceber.isPending} title={isContratoTransaction(conta.descricao || '') ? "⚠️ Esta conta está relacionada a um contrato - verifique se o contrato está ativo" : conta.venda_id ? "⚠️ Esta conta está relacionada a uma venda - não pode ser excluída se a venda estiver fechada" : "Excluir conta a receber"} className={cn(isContratoTransaction(conta.descricao || '') || conta.venda_id ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" : "text-destructive hover:text-destructive")}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
                           </TableCell>
-                        </TableRow>
-                      ))}
+                        </TableRow>)}
                     </TableBody>
                   </Table>
-                </div>
-              )}
+                </div>}
 
               {/* Paginação */}
-              {totalPages > 1 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6">
+              {totalPages > 1 && <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6">
                   <div className="text-sm text-muted-foreground order-2 sm:order-1">
                     Página {currentPage} de {totalPages}
                   </div>
@@ -509,23 +446,19 @@ export default function ContasReceber() {
                         <PaginationPrevious onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} className={cn("cursor-pointer select-none", currentPage === 1 && "opacity-50 cursor-not-allowed")} />
                       </PaginationItem>
                       
-                      {generatePaginationNumbers().map(page => (
-                        <PaginationItem key={page}>
+                      {generatePaginationNumbers().map(page => <PaginationItem key={page}>
                           <PaginationLink onClick={() => setCurrentPage(page)} isActive={currentPage === page} className="cursor-pointer select-none">
                             {page}
                           </PaginationLink>
-                        </PaginationItem>
-                      ))}
+                        </PaginationItem>)}
                       
                       <PaginationItem>
                         <PaginationNext onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} className={cn("cursor-pointer select-none", currentPage === totalPages && "opacity-50 cursor-not-allowed")} />
                       </PaginationItem>
                     </PaginationContent>
                   </Pagination>
-                </div>
-              )}
-            </>
-          )}
+                </div>}
+            </>}
         </CardContent>
       </Card>
 
@@ -552,6 +485,5 @@ export default function ContasReceber() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  );
+    </div>;
 }
