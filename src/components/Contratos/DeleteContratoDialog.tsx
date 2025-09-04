@@ -1,15 +1,16 @@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useDeleteContrato, type Contrato } from "@/hooks/useContratos";
-
 interface DeleteContratoDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   contrato?: Contrato;
 }
-
-export function DeleteContratoDialog({ open, onOpenChange, contrato }: DeleteContratoDialogProps) {
+export function DeleteContratoDialog({
+  open,
+  onOpenChange,
+  contrato
+}: DeleteContratoDialogProps) {
   const deleteContrato = useDeleteContrato();
-
   const handleConfirm = async () => {
     if (contrato) {
       try {
@@ -20,18 +21,14 @@ export function DeleteContratoDialog({ open, onOpenChange, contrato }: DeleteCon
       }
     }
   };
-
-  return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+  return <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
           <AlertDialogDescription>
             Tem certeza que deseja excluir o contrato <strong>{contrato?.titulo || contrato?.numero_contrato}</strong>?
             <br /><br />
-            <span className="text-destructive font-medium">
-              ⚠️ Esta ação também irá remover automaticamente todas as contas a receber pendentes relacionadas a este contrato.
-            </span>
+            
             <br />
             Esta ação não pode ser desfeita.
           </AlertDialogDescription>
@@ -40,15 +37,10 @@ export function DeleteContratoDialog({ open, onOpenChange, contrato }: DeleteCon
           <AlertDialogCancel disabled={deleteContrato.isPending}>
             Cancelar
           </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleConfirm}
-            disabled={deleteContrato.isPending}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
+          <AlertDialogAction onClick={handleConfirm} disabled={deleteContrato.isPending} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
             {deleteContrato.isPending ? "Excluindo..." : "Excluir"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
-    </AlertDialog>
-  );
+    </AlertDialog>;
 }
