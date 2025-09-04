@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, Plus, FileText, Calendar, DollarSign, Edit, Trash2, User, MoreVertical, Grid, List } from "lucide-react";
+import { Search, Plus, FileText, Calendar, DollarSign, Edit, Trash2, User, MoreVertical, Grid, List, UserCheck } from "lucide-react";
 import { useContratos, type Contrato } from "@/hooks/useContratos";
 import { ContratoDialog } from "@/components/Contratos/ContratoDialog";
 import { DeleteContratoDialog } from "@/components/Contratos/DeleteContratoDialog";
@@ -195,15 +195,21 @@ export default function Contratos() {
                               {contrato.data_fim && ` - ${new Date(contrato.data_fim).toLocaleDateString()}`}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <DollarSign className="h-4 w-4 shrink-0" />
-                            <span>
-                              {new Intl.NumberFormat('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL'
-                      }).format(contrato.valor)}
-                            </span>
-                          </div>
+                           <div className="flex items-center gap-2">
+                             <DollarSign className="h-4 w-4 shrink-0" />
+                             <span>
+                               {new Intl.NumberFormat('pt-BR', {
+                         style: 'currency',
+                         currency: 'BRL'
+                       }).format(contrato.valor)}
+                             </span>
+                           </div>
+                           {contrato.vendedor && (
+                             <div className="flex items-center gap-2">
+                               <UserCheck className="h-4 w-4 shrink-0" />
+                               <span className="truncate">{contrato.vendedor.name}</span>
+                             </div>
+                           )}
                         </div>
                         
                         <div className="flex gap-2" onClick={e => e.stopPropagation()}>
@@ -223,14 +229,15 @@ export default function Contratos() {
           <div className="rounded-md border">
                   <Table>
                     <TableHeader>
-                      <TableRow>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Contrato</TableHead>
-                        <TableHead>Cliente</TableHead>
-                        <TableHead>Período</TableHead>
-                        <TableHead>Valor</TableHead>
-                        <TableHead className="w-[100px]">Ações</TableHead>
-                      </TableRow>
+                       <TableRow>
+                         <TableHead>Status</TableHead>
+                         <TableHead>Contrato</TableHead>
+                         <TableHead>Cliente</TableHead>
+                         <TableHead>Vendedor</TableHead>
+                         <TableHead>Período</TableHead>
+                         <TableHead>Valor</TableHead>
+                         <TableHead className="w-[100px]">Ações</TableHead>
+                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {paginatedData.map(contrato => <TableRow key={contrato.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/contratos/${contrato.id}`)}>
@@ -245,11 +252,14 @@ export default function Contratos() {
                               {contrato.numero_contrato || 'Contrato'}
                             </div>
                           </TableCell>
-                          <TableCell>{contrato.cliente?.nome || 'Cliente não encontrado'}</TableCell>
-                          <TableCell>
-                            {new Date(contrato.data_inicio).toLocaleDateString()}
-                            {contrato.data_fim && ` - ${new Date(contrato.data_fim).toLocaleDateString()}`}
-                          </TableCell>
+                           <TableCell>{contrato.cliente?.nome || 'Cliente não encontrado'}</TableCell>
+                           <TableCell>
+                             {contrato.vendedor ? contrato.vendedor.name : 'Não atribuído'}
+                           </TableCell>
+                           <TableCell>
+                             {new Date(contrato.data_inicio).toLocaleDateString()}
+                             {contrato.data_fim && ` - ${new Date(contrato.data_fim).toLocaleDateString()}`}
+                           </TableCell>
                           <TableCell>
                             {new Intl.NumberFormat('pt-BR', {
                       style: 'currency',

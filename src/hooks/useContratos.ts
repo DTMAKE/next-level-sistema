@@ -30,6 +30,12 @@ export interface Contrato {
     cnpj?: string;
     endereco?: string;
   };
+  // Dados do vendedor via join
+  vendedor?: {
+    user_id: string;
+    name: string;
+    role: string;
+  };
   // Dados dos serviços via join
   servicos?: Array<{
     id: string;
@@ -72,7 +78,8 @@ export function useContratos(searchTerm?: string) {
         .from('contratos')
         .select(`
           *,
-          cliente:clientes(id, nome, email, telefone)
+          cliente:clientes(id, nome, email, telefone),
+          vendedor:profiles!contratos_vendedor_id_fkey(user_id, name, role)
         `);
 
       // Only filter by user_id if user is not admin
