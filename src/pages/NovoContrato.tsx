@@ -13,12 +13,10 @@ import { ClientesSelector } from "@/components/Contratos/ClientesSelector";
 import { VendedorSelector } from "@/components/Contratos/VendedorSelector";
 import { PdfUploader } from "@/components/Contratos/PdfUploader";
 import { toast } from "sonner";
-
 export default function NovoContrato() {
   const navigate = useNavigate();
   const createContrato = useCreateContrato();
   const updateContratoServicos = useUpdateContratoServicos();
-  
   const [formData, setFormData] = useState({
     data_inicio: "",
     data_fim: "",
@@ -26,24 +24,29 @@ export default function NovoContrato() {
     tipo_contrato: "unico" as "unico" | "recorrente",
     dia_vencimento: 1,
     cliente_id: "",
-    vendedor_id: "",
+    vendedor_id: ""
   });
   const [servicosSelecionados, setServicosSelecionados] = useState<any[]>([]);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-
   const handleInputChange = (field: string, value: string) => {
     if (field === 'dia_vencimento') {
-      setFormData(prev => ({ ...prev, [field]: parseInt(value) }));
+      setFormData(prev => ({
+        ...prev,
+        [field]: parseInt(value)
+      }));
     } else {
       setFormData(prev => {
-        const updated = { ...prev, [field]: value };
-        
+        const updated = {
+          ...prev,
+          [field]: value
+        };
+
         // Auto-detectar contrato recorrente baseado nas datas
         if ((field === 'data_inicio' || field === 'data_fim') && updated.data_inicio && updated.data_fim) {
           const startDate = new Date(updated.data_inicio);
           const endDate = new Date(updated.data_fim);
           const diffMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
-          
+
           // Se a duração do contrato é maior que 0 meses, sugerir tipo recorrente
           if (diffMonths > 0) {
             updated.tipo_contrato = 'recorrente';
@@ -52,27 +55,21 @@ export default function NovoContrato() {
             updated.tipo_contrato = 'unico';
           }
         }
-        
         return updated;
       });
     }
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!formData.cliente_id.trim() || servicosSelecionados.length === 0) {
       toast.error("Selecione um cliente e pelo menos um serviço");
       return;
     }
-
     const valorTotalServicos = servicosSelecionados.reduce((total, servico) => total + servico.valor_total, 0);
-
     if (formData.tipo_contrato === 'recorrente' && !formData.data_fim) {
       toast.error("Para contratos recorrentes, a data de fim é obrigatória");
       return;
     }
-
     const contratoData = {
       data_inicio: formData.data_inicio,
       data_fim: formData.data_fim || undefined,
@@ -82,43 +79,35 @@ export default function NovoContrato() {
       cliente_id: formData.cliente_id,
       vendedor_id: formData.vendedor_id || undefined,
       valor: valorTotalServicos,
-      pdf_url: pdfUrl,
+      pdf_url: pdfUrl
     };
-
     try {
       const novoContrato = await createContrato.mutateAsync(contratoData as any);
-      
       if (servicosSelecionados.length > 0) {
         const servicosData = servicosSelecionados.map(servico => ({
           contrato_id: novoContrato.id,
           servico_id: servico.servico_id,
           quantidade: servico.quantidade,
           valor_unitario: servico.valor_unitario,
-          valor_total: servico.valor_total,
+          valor_total: servico.valor_total
         }));
-        await updateContratoServicos.mutateAsync({ contratoId: novoContrato.id, servicos: servicosData });
+        await updateContratoServicos.mutateAsync({
+          contratoId: novoContrato.id,
+          servicos: servicosData
+        });
       }
-      
       navigate("/contratos");
     } catch (error) {
       // Error handling is done in the hooks
     }
   };
-
   const isLoading = createContrato.isPending || updateContratoServicos.isPending;
   const isFormValid = formData.cliente_id.trim() && servicosSelecionados.length > 0;
-
-  return (
-    <div className="min-h-screen bg-gradient-elegant">
+  return <div className="min-h-screen bg-gradient-elegant">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => navigate("/contratos")}
-            className="hover:shadow-premium transition-shadow"
-          >
+          <Button variant="outline" size="icon" onClick={() => navigate("/contratos")} className="hover:shadow-premium transition-shadow">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </div>
@@ -138,16 +127,10 @@ export default function NovoContrato() {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Cliente */}
-                <ClientesSelector
-                  clienteId={formData.cliente_id}
-                  onClienteChange={(value) => handleInputChange("cliente_id", value)}
-                />
+                <ClientesSelector clienteId={formData.cliente_id} onClienteChange={value => handleInputChange("cliente_id", value)} />
 
                 {/* Vendedor */}
-                <VendedorSelector
-                  vendedorId={formData.vendedor_id}
-                  onVendedorChange={(value) => handleInputChange("vendedor_id", value)}
-                />
+                <VendedorSelector vendedorId={formData.vendedor_id} onVendedorChange={value => handleInputChange("vendedor_id", value)} />
 
                 {/* Datas */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -155,27 +138,14 @@ export default function NovoContrato() {
                     <Label htmlFor="data_inicio" className="text-base font-medium">
                       Data de Início *
                     </Label>
-                    <Input
-                      id="data_inicio"
-                      type="date"
-                      value={formData.data_inicio}
-                      onChange={(e) => handleInputChange("data_inicio", e.target.value)}
-                      className="h-12 text-base"
-                      required
-                    />
+                    <Input id="data_inicio" type="date" value={formData.data_inicio} onChange={e => handleInputChange("data_inicio", e.target.value)} className="h-12 text-base" required />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="data_fim" className="text-base font-medium">
                       Data de Fim
                     </Label>
-                    <Input
-                      id="data_fim"
-                      type="date"
-                      value={formData.data_fim}
-                      onChange={(e) => handleInputChange("data_fim", e.target.value)}
-                      className="h-12 text-base"
-                    />
+                    <Input id="data_fim" type="date" value={formData.data_fim} onChange={e => handleInputChange("data_fim", e.target.value)} className="h-12 text-base" />
                   </div>
                 </div>
 
@@ -183,7 +153,7 @@ export default function NovoContrato() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="status" className="text-base font-medium">Status</Label>
-                    <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
+                    <Select value={formData.status} onValueChange={value => handleInputChange("status", value)}>
                       <SelectTrigger className="h-12 text-base">
                         <SelectValue />
                       </SelectTrigger>
@@ -198,7 +168,7 @@ export default function NovoContrato() {
 
                   <div className="space-y-2">
                     <Label htmlFor="tipo_contrato" className="text-base font-medium">Tipo de Contrato</Label>
-                    <Select value={formData.tipo_contrato} onValueChange={(value) => handleInputChange("tipo_contrato", value)}>
+                    <Select value={formData.tipo_contrato} onValueChange={value => handleInputChange("tipo_contrato", value)}>
                       <SelectTrigger className="h-12 text-base">
                         <SelectValue />
                       </SelectTrigger>
@@ -211,41 +181,29 @@ export default function NovoContrato() {
                 </div>
 
                 {/* Dia de Vencimento para contratos recorrentes */}
-                {formData.tipo_contrato === 'recorrente' && (
-                  <div className="space-y-2">
+                {formData.tipo_contrato === 'recorrente' && <div className="space-y-2">
                     <Label htmlFor="dia_vencimento" className="text-base font-medium">Dia de Vencimento</Label>
-                    <Select 
-                      value={formData.dia_vencimento.toString()} 
-                      onValueChange={(value) => handleInputChange("dia_vencimento", value)}
-                    >
+                    <Select value={formData.dia_vencimento.toString()} onValueChange={value => handleInputChange("dia_vencimento", value)}>
                       <SelectTrigger className="h-12 text-base">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {Array.from({ length: 28 }, (_, i) => i + 1).map(day => (
-                          <SelectItem key={day} value={day.toString()}>
+                        {Array.from({
+                      length: 28
+                    }, (_, i) => i + 1).map(day => <SelectItem key={day} value={day.toString()}>
                             Dia {day}
-                          </SelectItem>
-                        ))}
+                          </SelectItem>)}
                       </SelectContent>
                     </Select>
-                  </div>
-                )}
+                  </div>}
 
                 {/* Serviços */}
-                <ServicosSelector
-                  servicosSelecionados={servicosSelecionados}
-                  onServicosChange={setServicosSelecionados}
-                />
+                <ServicosSelector servicosSelecionados={servicosSelecionados} onServicosChange={setServicosSelecionados} />
 
                 {/* PDF Upload */}
                 <div className="space-y-2">
-                  <Label className="text-base font-medium">Documento do Contrato</Label>
-                  <PdfUploader
-                    pdfUrl={pdfUrl}
-                    onPdfChange={setPdfUrl}
-                    disabled={isLoading}
-                  />
+                  
+                  <PdfUploader pdfUrl={pdfUrl} onPdfChange={setPdfUrl} disabled={isLoading} />
                 </div>
 
                 {/* Required fields note */}
@@ -255,28 +213,14 @@ export default function NovoContrato() {
 
                 {/* Actions */}
                 <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate("/contratos")}
-                    disabled={isLoading}
-                    className="flex-1 h-12 text-base"
-                  >
+                  <Button type="button" variant="outline" onClick={() => navigate("/contratos")} disabled={isLoading} className="flex-1 h-12 text-base">
                     Cancelar
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !isFormValid}
-                    className="flex-1 h-12 text-base gradient-premium border-0 text-background font-medium"
-                  >
-                    {isLoading ? (
-                      "Salvando..."
-                    ) : (
-                      <>
+                  <Button type="submit" disabled={isLoading || !isFormValid} className="flex-1 h-12 text-base gradient-premium border-0 text-background font-medium">
+                    {isLoading ? "Salvando..." : <>
                         <Save className="mr-2 h-4 w-4" />
                         Criar Contrato
-                      </>
-                    )}
+                      </>}
                   </Button>
                 </div>
               </form>
@@ -284,6 +228,5 @@ export default function NovoContrato() {
           </Card>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
