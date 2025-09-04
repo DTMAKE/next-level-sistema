@@ -24,7 +24,10 @@ export function DeleteContratoDialog({
   return <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+          <AlertDialogTitle>Tem certeza que deseja excluir o contrato CONTRATO-001?
+
+
+        </AlertDialogTitle>
           <AlertDialogDescription>
             Tem certeza que deseja excluir o contrato <strong>{contrato?.titulo || contrato?.numero_contrato}</strong>?
             <br /><br />
