@@ -2,6 +2,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { UserCheck, Building2, ShoppingCart, User } from "lucide-react";
 import { ContaPagar } from "@/hooks/useContasPagar";
+import { useVendedores } from "@/hooks/useVendedores";
+import { useVendaById } from "@/hooks/useVendaById";
+import { useContratoById } from "@/hooks/useContratoById";
 
 interface ComissaoInfoProps {
   conta: ContaPagar;
@@ -17,24 +20,34 @@ interface ComissaoData {
 }
 
 export function ComissaoInfo({ conta, size = "md" }: ComissaoInfoProps) {
+  // Buscar dados da venda ou contrato associado
+  const { data: venda } = useVendaById(conta.comissoes?.venda_id || null);
+  const { data: contrato } = useContratoById(conta.comissoes?.contrato_id || null);
+  const { data: vendedores } = useVendedores();
+
   const getComissaoInfo = (): ComissaoData | null => {
     if (conta.comissoes) {
-      const vendedorNome = 'Vendedor'; // Simplificado
-      const clienteNome = 'Cliente'; // Simplificado
+      // Buscar o vendedor responsável pela comissão
+      const vendedor = vendedores?.find(v => v.user_id === conta.comissoes?.vendedor_id);
+      const vendedorNome = vendedor?.name || 'Vendedor';
       
-      if (conta.comissoes.contrato_id) {
+      if (conta.comissoes.contrato_id && contrato) {
+        // Para contratos, buscar o cliente do contrato
+        const clienteNome = contrato.clientes?.nome || 'Cliente';
         return {
           vendedor: vendedorNome,
           cliente: clienteNome,
           tipo: 'contrato',
-          numeroContrato: `CONTRATO-${conta.comissoes.contrato_id.slice(0, 8)}`
+          numeroContrato: contrato.numero_contrato || `CONTRATO-${conta.comissoes.contrato_id.slice(0, 8)}`
         };
-      } else if (conta.comissoes.venda_id) {
+      } else if (conta.comissoes.venda_id && venda) {
+        // Para vendas, buscar o cliente da venda
+        const clienteNome = venda.clientes?.nome || 'Cliente';
         return {
           vendedor: vendedorNome,
           cliente: clienteNome,
           tipo: 'venda',
-          numeroVenda: `VENDA-${conta.comissoes.venda_id.slice(0, 8)}`
+          numeroVenda: venda.numero_venda || `VENDA-${conta.comissoes.venda_id.slice(0, 8)}`
         };
       }
     }
