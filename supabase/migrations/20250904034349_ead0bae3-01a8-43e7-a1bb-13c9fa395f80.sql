@@ -1,0 +1,341 @@
+-- Update commission description format to be cleaner
+
+CREATE OR REPLACE FUNCTION create_sale_financial_transactions()
+RETURNS TRIGGER AS $$
+DECLARE
+    vendedor_percentual numeric;
+    comissao_valor numeric;
+    cliente_nome text;
+    vendedor_nome text;
+    vendedor_role text;
+    categoria_venda_id uuid;
+    categoria_comissao_id uuid;
+    comissao_id_var uuid;
+    mes_referencia_date date;
+    admin_user_id uuid;
+BEGIN
+    -- Only process if sale is being marked as 'fechada' or inserted as 'fechada'
+    IF NEW.status = 'fechada' AND (TG_OP = 'INSERT' OR OLD.status IS NULL OR OLD.status != 'fechada') THEN
+        
+        -- Get client name
+        SELECT nome INTO cliente_nome
+        FROM public.clientes
+        WHERE id = NEW.cliente_id;
+        
+        -- Get seller info
+        SELECT percentual_comissao, name, role 
+        INTO vendedor_percentual, vendedor_nome, vendedor_role
+        FROM public.profiles
+        WHERE user_id = NEW.user_id;
+        
+        -- Get first admin user for commission expenses
+        SELECT user_id INTO admin_user_id
+        FROM public.profiles
+        WHERE role = 'admin'
+        ORDER BY created_at ASC
+        LIMIT 1;
+        
+        -- Find or create "Venda" category for revenue
+        SELECT id INTO categoria_venda_id
+        FROM public.categorias_financeiras
+        WHERE nome = 'Venda' 
+        AND tipo = 'receita'
+        ORDER BY created_at ASC
+        LIMIT 1;
+        
+        IF categoria_venda_id IS NULL THEN
+            INSERT INTO public.categorias_financeiras (user_id, nome, tipo, cor, ativo)
+            VALUES (COALESCE(admin_user_id, NEW.user_id), 'Venda', 'receita', 'hsl(142, 76%, 36%)', true)
+            RETURNING id INTO categoria_venda_id;
+        END IF;
+        
+        -- Create revenue transaction using sale number and client name
+        INSERT INTO public.transacoes_financeiras (
+            user_id,
+            tipo,
+            data_transacao,
+            descricao,
+            valor,
+            categoria_id,
+            venda_id,
+            status
+        ) VALUES (
+            NEW.user_id,
+            'receita',
+            NEW.data_venda,
+            COALESCE(NEW.numero_venda, 'VENDA-' || SUBSTRING(NEW.id::text FROM 1 FOR 8)) || ' - ' || COALESCE(cliente_nome, 'Cliente não encontrado'),
+            NEW.valor,
+            categoria_venda_id,
+            NEW.id,
+            'confirmada'
+        );
+        
+        -- Create commission only if user has a commission percentage set
+        IF vendedor_percentual IS NOT NULL AND vendedor_percentual > 0 THEN
+            -- Calculate commission
+            comissao_valor := NEW.valor * (vendedor_percentual / 100);
+            mes_referencia_date := DATE_TRUNC('month', NEW.data_venda)::date;
+            
+            -- Create commission record
+            INSERT INTO public.comissoes (
+                user_id,
+                vendedor_id,
+                venda_id,
+                valor_venda,
+                percentual,
+                valor_comissao,
+                mes_referencia,
+                status,
+                observacoes
+            ) VALUES (
+                NEW.user_id,
+                NEW.user_id,
+                NEW.id,
+                NEW.valor,
+                vendedor_percentual,
+                comissao_valor,
+                mes_referencia_date,
+                'pendente',
+                'Comissão de ' || COALESCE(NEW.numero_venda, 'VENDA-' || SUBSTRING(NEW.id::text FROM 1 FOR 8))
+            ) RETURNING id INTO comissao_id_var;
+            
+            -- Find or create commission category
+            SELECT id INTO categoria_comissao_id
+            FROM public.categorias_financeiras
+            WHERE nome = 'Comissões de Vendas'
+            AND tipo = 'despesa'
+            ORDER BY created_at ASC
+            LIMIT 1;
+            
+            IF categoria_comissao_id IS NULL THEN
+                INSERT INTO public.categorias_financeiras (user_id, nome, tipo, cor, ativo)
+                VALUES (COALESCE(admin_user_id, NEW.user_id), 'Comissões de Vendas', 'despesa', 'hsl(271, 91%, 65%)', true)
+                RETURNING id INTO categoria_comissao_id;
+            END IF;
+            
+            -- Create commission expense transaction with clean description
+            IF admin_user_id IS NOT NULL THEN
+                INSERT INTO public.transacoes_financeiras (
+                    user_id,
+                    tipo,
+                    data_transacao,
+                    data_vencimento,
+                    descricao,
+                    valor,
+                    categoria_id,
+                    comissao_id,
+                    status
+                ) VALUES (
+                    admin_user_id,
+                    'despesa',
+                    NEW.data_venda,
+                    NEW.data_venda, -- Use sale date for due date
+                    'Comissão de ' || COALESCE(vendedor_nome, 'Vendedor') || ' - ' || COALESCE(NEW.numero_venda, 'VENDA-' || SUBSTRING(NEW.id::text FROM 1 FOR 8)),
+                    comissao_valor,
+                    categoria_comissao_id,
+                    comissao_id_var,
+                    'pendente'
+                );
+            END IF;
+        END IF;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Update contract commission descriptions to be cleaner
+
+CREATE OR REPLACE FUNCTION create_contract_financial_transactions()
+RETURNS TRIGGER AS $$
+DECLARE
+    contract_record record;
+    categoria_venda_id uuid;
+    categoria_comissao_id uuid;
+    admin_user_id uuid;
+    vendedor_percentual numeric;
+    comissao_valor numeric;
+    comissao_id_var uuid;
+    current_month date;
+    end_month date;
+    due_date date;
+    installment_number integer;
+    actual_vendedor_id uuid;
+    vendedor_nome text;
+    vendedor_role text;
+BEGIN
+    -- Only process recurring active contracts
+    IF NEW.tipo_contrato != 'recorrente' OR NEW.status != 'ativo' THEN
+        RETURN NEW;
+    END IF;
+
+    -- Get contract details
+    SELECT c.*, cl.nome as cliente_nome
+    INTO contract_record
+    FROM public.contratos c
+    LEFT JOIN public.clientes cl ON cl.id = c.cliente_id
+    WHERE c.id = NEW.id;
+
+    -- Determine the actual salesperson - ALWAYS use vendedor_id if it exists, otherwise user_id
+    actual_vendedor_id := COALESCE(contract_record.vendedor_id, contract_record.user_id);
+
+    -- Skip if no data_fim is set (indefinite contract)
+    IF contract_record.data_fim IS NULL THEN
+        RETURN NEW;
+    END IF;
+
+    -- Get first admin user
+    SELECT user_id INTO admin_user_id
+    FROM public.profiles
+    WHERE role = 'admin'
+    ORDER BY created_at ASC
+    LIMIT 1;
+
+    -- Get or create revenue category
+    SELECT id INTO categoria_venda_id
+    FROM public.categorias_financeiras
+    WHERE nome = 'Venda' AND tipo = 'receita'
+    ORDER BY created_at ASC LIMIT 1;
+
+    IF categoria_venda_id IS NULL THEN
+        INSERT INTO public.categorias_financeiras (user_id, nome, tipo, cor, ativo)
+        VALUES (COALESCE(admin_user_id, contract_record.user_id), 'Venda', 'receita', '#10B981', true)
+        RETURNING id INTO categoria_venda_id;
+    END IF;
+
+    -- Calculate the start and end months for the contract period
+    current_month := DATE_TRUNC('month', contract_record.data_inicio)::date;
+    end_month := DATE_TRUNC('month', contract_record.data_fim)::date;
+    installment_number := 1;
+
+    -- Generate receivables for each month in the contract period
+    WHILE current_month <= end_month LOOP
+        -- Calculate due date for this month (using dia_vencimento, default to 5)
+        due_date := current_month + (COALESCE(contract_record.dia_vencimento, 5) - 1);
+        
+        -- Make sure due date doesn't exceed the month
+        IF EXTRACT(DAY FROM due_date) > EXTRACT(DAY FROM (current_month + INTERVAL '1 month - 1 day')) THEN
+            due_date := current_month + INTERVAL '1 month - 1 day';
+        END IF;
+
+        -- Check if receivable already exists for this month to prevent duplicates
+        IF NOT EXISTS (
+            SELECT 1 FROM public.transacoes_financeiras
+            WHERE tipo = 'receita'
+            AND contrato_id = NEW.id
+            AND data_transacao >= current_month
+            AND data_transacao < (current_month + INTERVAL '1 month')
+        ) THEN
+            -- Create receivable for this month
+            INSERT INTO public.transacoes_financeiras (
+                user_id,
+                tipo,
+                data_transacao,
+                data_vencimento,
+                descricao,
+                valor,
+                categoria_id,
+                contrato_id,
+                status
+            ) VALUES (
+                contract_record.user_id,
+                'receita',
+                due_date, -- Use due date as transaction date
+                due_date, -- Due date
+                'Receita recorrente - ' || COALESCE(contract_record.numero_contrato, 'CONTRATO-' || SUBSTRING(contract_record.id::text FROM 1 FOR 8)) || 
+                ' - ' || COALESCE(contract_record.cliente_nome, 'Cliente') || 
+                ' (' || installment_number || 'ª parcela)',
+                contract_record.valor,
+                categoria_venda_id,
+                NEW.id,
+                'pendente'
+            );
+        END IF;
+
+        -- Create commission if there's a salesperson and admin exists
+        IF admin_user_id IS NOT NULL THEN
+            -- Get vendedor info and commission percentage from the actual vendedor
+            SELECT name, role, COALESCE(percentual_comissao_contrato, percentual_comissao, 5.00)
+            INTO vendedor_nome, vendedor_role, vendedor_percentual
+            FROM public.profiles
+            WHERE user_id = actual_vendedor_id;
+
+            -- Only create commission if vendedor has commission percentage > 0
+            IF vendedor_percentual > 0 THEN
+                SELECT id INTO categoria_comissao_id
+                FROM public.categorias_financeiras
+                WHERE nome = 'Comissões de Vendas' AND tipo = 'despesa'
+                ORDER BY created_at ASC LIMIT 1;
+
+                IF categoria_comissao_id IS NULL THEN
+                    INSERT INTO public.categorias_financeiras (user_id, nome, tipo, cor, ativo)
+                    VALUES (admin_user_id, 'Comissões de Vendas', 'despesa', '#9333EA', true)
+                    RETURNING id INTO categoria_comissao_id;
+                END IF;
+
+                comissao_valor := contract_record.valor * (vendedor_percentual / 100);
+
+                -- Check if commission already exists for this month
+                IF NOT EXISTS (
+                    SELECT 1 FROM public.comissoes c
+                    WHERE c.contrato_id = NEW.id
+                    AND c.mes_referencia >= current_month
+                    AND c.mes_referencia < (current_month + INTERVAL '1 month')
+                ) THEN
+                    -- Create commission record with clean description
+                    INSERT INTO public.comissoes (
+                        user_id,
+                        vendedor_id,
+                        contrato_id,
+                        valor_venda,
+                        percentual,
+                        valor_comissao,
+                        mes_referencia,
+                        status,
+                        observacoes
+                    ) VALUES (
+                        contract_record.user_id,
+                        actual_vendedor_id, -- Use the actual vendedor from contract
+                        NEW.id,
+                        contract_record.valor,
+                        vendedor_percentual,
+                        comissao_valor,
+                        current_month,
+                        'pendente',
+                        'Comissão de ' || COALESCE(contract_record.numero_contrato, 'CONTRATO-' || SUBSTRING(contract_record.id::text FROM 1 FOR 8))
+                    ) RETURNING id INTO comissao_id_var;
+
+                    -- Create commission payable with SAME due date as receivable and clean description
+                    INSERT INTO public.transacoes_financeiras (
+                        user_id,
+                        tipo,
+                        data_transacao,
+                        data_vencimento,
+                        descricao,
+                        valor,
+                        categoria_id,
+                        comissao_id,
+                        status
+                    ) VALUES (
+                        admin_user_id,
+                        'despesa',
+                        due_date, -- Same due date as the receivable
+                        due_date, -- Use same due date as receivable
+                        'Comissão de ' || COALESCE(vendedor_nome, 'Vendedor') || ' - ' || COALESCE(contract_record.numero_contrato, 'CONTRATO-' || SUBSTRING(contract_record.id::text FROM 1 FOR 8)),
+                        comissao_valor,
+                        categoria_comissao_id,
+                        comissao_id_var,
+                        'pendente'
+                    );
+                END IF;
+            END IF;
+        END IF;
+
+        -- Move to next month
+        current_month := current_month + INTERVAL '1 month';
+        installment_number := installment_number + 1;
+    END LOOP;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
