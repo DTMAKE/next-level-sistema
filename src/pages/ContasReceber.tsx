@@ -40,11 +40,12 @@ export default function ContasReceber() {
   const marcarComoRecebida = useMarcarComoRecebida();
   const cleanupOrphanReceivables = useCleanupOrphanReceivables();
 
-  // Extract unique seller user_ids from sales (vendedor_id, not user_id)
+  // Extract unique seller user_ids from sales and contracts
   const sellerIds = useMemo(() => {
     if (!contas) return [];
-    const ids = contas.filter(conta => conta.venda_id && conta.vendas?.vendedor_id).map(conta => conta.vendas!.vendedor_id!);
-    return [...new Set(ids)];
+    const salesIds = contas.filter(conta => conta.venda_id && conta.vendas?.vendedor_id).map(conta => conta.vendas!.vendedor_id!);
+    const contractIds = contas.filter(conta => conta.contrato_id && conta.contratos?.vendedor_id).map(conta => conta.contratos!.vendedor_id!);
+    return [...new Set([...salesIds, ...contractIds])];
   }, [contas]);
 
   // Fetch seller profiles
@@ -328,7 +329,8 @@ export default function ContasReceber() {
                           {conta.contrato_id && conta.contratos && <div className="flex items-center gap-2">
                               <Building2 className="h-3 w-3 text-blue-600" />
                               <span className="text-xs text-blue-600 font-medium">
-                                 {conta.contratos.numero_contrato ?? `CONTRATO-${conta.contrato_id.slice(0, 8)}`}
+                                Contrato: {conta.contratos.numero_contrato ?? `CONTRATO-${conta.contrato_id.slice(0, 8)}`}
+                                {conta.contratos.vendedor_id && ` | Vendedor: ${getSellerName(conta.contratos.vendedor_id)}`}
                               </span>
                             </div>}
                         </div>
@@ -378,6 +380,9 @@ export default function ContasReceber() {
                                 {conta.venda_id && conta.vendas?.vendedor_id && <div className="text-xs text-muted-foreground">
                                     Vendedor: {getSellerName(conta.vendas.vendedor_id)}
                                   </div>}
+                                {conta.contrato_id && conta.contratos?.vendedor_id && <div className="text-xs text-muted-foreground">
+                                    Vendedor: {getSellerName(conta.contratos.vendedor_id)}
+                                  </div>}
                               </div>
                             </div>
                           </TableCell>
@@ -385,12 +390,12 @@ export default function ContasReceber() {
                             <div className="flex items-center gap-2">
                               <span>
                                 {conta.venda_id && conta.vendas ? <div className="flex items-center gap-1">
-                                    
+                                    <ShoppingCart className="h-3 w-3 text-green-600" />
                                     <span className="text-green-600 font-medium">
                                       {conta.vendas.numero_venda ?? `VENDA-${conta.venda_id.slice(0, 8)}`}
                                     </span>
                                   </div> : conta.contrato_id && conta.contratos ? <div className="flex items-center gap-1">
-                                    
+                                    <Building2 className="h-3 w-3 text-blue-600" />
                                     <span className="text-blue-600 font-medium">
                                       {conta.contratos.numero_contrato ?? `CONTRATO-${conta.contrato_id.slice(0, 8)}`}
                                     </span>
