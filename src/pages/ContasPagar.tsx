@@ -21,6 +21,7 @@ import { StatusSelectorContasPagar } from "@/components/ContasPagar/StatusSelect
 import { useVendaById } from "@/hooks/useVendaById";
 import { useContratoById } from "@/hooks/useContratoById";
 import { OrigemInfo } from "@/components/ContasPagar/OrigemInfo";
+import { useVendedores } from "@/hooks/useVendedores";
 
 export default function ContasPagar() {
   const { user } = useAuth();
@@ -37,6 +38,7 @@ export default function ContasPagar() {
   const { data: contas, isLoading } = useContasPagar(selectedDate);
   const deleteContaPagar = useDeleteContaPagar();
   const toggleStatusContaPagar = useToggleStatusContaPagar();
+  const { data: vendedores } = useVendedores();
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -83,7 +85,8 @@ export default function ContasPagar() {
   // Buscar dados das vendas e contratos de forma segura
   const getComissaoInfo = (conta: ContaPagar) => {
     if (conta.comissoes) {
-      const vendedorNome = 'Vendedor';
+      const vendedor = vendedores?.find(v => v.user_id === conta.comissoes?.vendedor_id);
+      const vendedorNome = vendedor?.name || 'Vendedor';
       const clienteNome = 'Cliente';
       
       if (conta.comissoes.contrato_id) {
@@ -371,9 +374,12 @@ export default function ContasPagar() {
                                ) : (
                                  <TrendingDown className="h-4 w-4 text-red-600 shrink-0" />
                                )}
-                               <h3 className="font-semibold text-sm sm:text-base truncate">
-                                 {conta.descricao || 'Despesa sem descrição'}
-                               </h3>
+                                <h3 className="font-semibold text-sm sm:text-base truncate">
+                                  {isComissaoTransaction(conta.descricao || '') ? 
+                                    `Comissão - ${getComissaoInfo(conta)?.vendedor || 'Vendedor'}` : 
+                                    (conta.descricao || 'Despesa sem descrição')
+                                  }
+                                </h3>
                              </div>
                              <div className="shrink-0">
                                <StatusSelectorContasPagar conta={conta} size="sm" />
@@ -476,13 +482,16 @@ export default function ContasPagar() {
                             <TableCell>
                               <StatusSelectorContasPagar conta={conta} size="sm" />
                             </TableCell>
-                            <TableCell>
-                              <div>
-                                <div className="font-medium">
-                                  {conta.descricao || 'Despesa sem descrição'}
-                                </div>
-                              </div>
-                            </TableCell>
+                             <TableCell>
+                               <div>
+                                 <div className="font-medium">
+                                   {isComissaoTransaction(conta.descricao || '') ? 
+                                     `Comissão - ${getComissaoInfo(conta)?.vendedor || 'Vendedor'}` : 
+                                     (conta.descricao || 'Despesa sem descrição')
+                                   }
+                                 </div>
+                               </div>
+                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <CreditCard className="h-4 w-4 text-muted-foreground" />
