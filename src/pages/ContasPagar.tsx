@@ -18,6 +18,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useContasPagar, useDeleteContaPagar, useToggleStatusContaPagar, type ContaPagar } from "@/hooks/useContasPagar";
 import { ContaPagarDialog } from "@/components/ContasPagar/ContaPagarDialog";
 import { StatusSelectorContasPagar } from "@/components/ContasPagar/StatusSelectorContasPagar";
+import { ComissaoInfo } from "@/components/ContasPagar/ComissaoInfo";
 import { useVendaById } from "@/hooks/useVendaById";
 import { useContratoById } from "@/hooks/useContratoById";
 import { OrigemInfo } from "@/components/ContasPagar/OrigemInfo";
@@ -481,6 +482,11 @@ export default function ContasPagar() {
                                 <div className="font-medium">
                                   {conta.descricao || 'Despesa sem descrição'}
                                 </div>
+                                {conta.comissoes && (
+                                  <div className="mt-1">
+                                    <ComissaoInfo conta={conta} size="sm" />
+                                  </div>
+                                )}
                               </div>
                             </TableCell>
                             <TableCell>
