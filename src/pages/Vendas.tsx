@@ -170,7 +170,10 @@ export default function Vendas() {
           <h1 className="font-bold text-lg sm:text-xl lg:text-2xl xl:text-3xl truncate">Vendas</h1>
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <MonthYearPicker selected={selectedDate} onSelect={handleDateChange} />
-            <Button className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm" onClick={handleNewVenda}>
+            <Button 
+              className="gradient-premium border-0 text-background h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm" 
+              onClick={() => navigate("/vendas/nova")}
+            >
               <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Nova Venda</span>
               <span className="sm:hidden">Nova</span>
@@ -273,7 +276,10 @@ export default function Vendas() {
               <p className="text-muted-foreground mb-4 text-sm">
                 {searchTerm ? "Não encontramos vendas com os termos buscados." : "Comece adicionando sua primeira venda."}
               </p>
-              {!searchTerm && <Button className="gradient-premium border-0 text-background" onClick={handleNewVenda}>
+              {!searchTerm && <Button 
+                className="gradient-premium border-0 text-background" 
+                onClick={() => navigate("/vendas/nova")}
+              >
                   <Plus className="mr-2 h-4 w-4" />
                   Adicionar Venda
                 </Button>}

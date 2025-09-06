@@ -20,6 +20,7 @@ import Vendas from "./pages/Vendas";
 import VendaDetalhes from "./pages/VendaDetalhes";
 import Contratos from "./pages/Contratos";
 import NovoContrato from "./pages/NovoContrato";
+import NovaVenda from "./pages/NovaVenda";
 import ContratoDetalhes from "./pages/ContratoDetalhes";
 import NovoServico from "./pages/NovoServico";
 import ServicoDetalhes from "./pages/ServicoDetalhes";
@@ -92,6 +93,11 @@ const App = () => {
                      <Layout>
                        <Vendas />
                      </Layout>
+                   </ProtectedRoute>
+                 } />
+                 <Route path="/vendas/nova" element={
+                   <ProtectedRoute>
+                     <NovaVenda />
                    </ProtectedRoute>
                  } />
                  <Route path="/vendas/:id" element={
