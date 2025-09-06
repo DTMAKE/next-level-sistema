@@ -25,6 +25,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
     vendedor_id: "",
     valor: "",
     status: "proposta" as "proposta" | "negociacao" | "fechada" | "perdida",
+    forma_pagamento: "a_vista",
     descricao: "",
     data_venda: getBrazilianDateString(),
   });
@@ -56,6 +57,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
         vendedor_id: venda.vendedor_id || "",
         valor: venda.valor?.toString() || "",
         status: venda.status || "proposta",
+        forma_pagamento: venda.forma_pagamento || "a_vista",
         descricao: venda.descricao || "",
         data_venda: venda.data_venda || getBrazilianDateString(),
       });
@@ -94,6 +96,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
         vendedor_id: "",
         valor: "",
         status: "proposta",
+        forma_pagamento: "a_vista",
         descricao: "",
         data_venda: getBrazilianDateString(),
       });
@@ -121,6 +124,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
         vendedor_id: "",
         valor: "",
         status: "proposta",
+        forma_pagamento: "a_vista",
         descricao: "",
         data_venda: getBrazilianDateString(),
       });
@@ -150,6 +154,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
         vendedor_id: formData.vendedor_id,
         valor: valorTotal,
         status: formData.status,
+        forma_pagamento: formData.forma_pagamento,
         descricao: formData.descricao.trim() || undefined,
         data_venda: formData.data_venda,
         servicos: servicos, // Incluir serviços
@@ -218,7 +223,7 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
             onServicosChange={setServicos}
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             {/* Status */}
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
@@ -231,6 +236,26 @@ export function VendaDialog({ open, onOpenChange, venda }: VendaDialogProps) {
                   <SelectItem value="negociacao">Negociação</SelectItem>
                   <SelectItem value="fechada">Fechada</SelectItem>
                   <SelectItem value="perdida">Perdida</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Forma de Pagamento */}
+            <div className="space-y-2">
+              <Label htmlFor="forma_pagamento">Forma de Pagamento</Label>
+              <Select value={formData.forma_pagamento} onValueChange={(value) => handleInputChange("forma_pagamento", value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="a_vista">À Vista</SelectItem>
+                  <SelectItem value="parcelado">Parcelado</SelectItem>
+                  <SelectItem value="pix">PIX</SelectItem>
+                  <SelectItem value="dinheiro">Dinheiro</SelectItem>
+                  <SelectItem value="cartao_credito">Cartão de Crédito</SelectItem>
+                  <SelectItem value="cartao_debito">Cartão de Débito</SelectItem>
+                  <SelectItem value="boleto">Boleto</SelectItem>
+                  <SelectItem value="transferencia">Transferência</SelectItem>
                 </SelectContent>
               </Select>
             </div>
