@@ -54,11 +54,11 @@ export default function ServicoDetalhes() {
 
   const getComplexidadeColor = (nivel: string) => {
     const cores: Record<string, string> = {
-      baixo: "bg-green-100 text-green-800",
-      medio: "bg-yellow-100 text-yellow-800",
-      alto: "bg-red-100 text-red-800"
+      baixo: "bg-success/10 text-success-foreground border-success/20",
+      medio: "bg-warning/10 text-warning-foreground border-warning/20", 
+      alto: "bg-destructive/10 text-destructive-foreground border-destructive/20"
     };
-    return cores[nivel] || "bg-gray-100 text-gray-800";
+    return cores[nivel] || "bg-muted text-muted-foreground";
   };
 
   if (error) {
@@ -90,33 +90,15 @@ export default function ServicoDetalhes() {
     <div className="min-h-screen bg-gradient-elegant">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => navigate("/servicos")}
-              className="hover:shadow-premium transition-shadow"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            {!isLoading && servico && (
-              <div className="flex items-center gap-3">
-                <Package className="h-6 w-6 text-accent" />
-                <h1 className="text-2xl font-bold text-foreground">{servico.nome}</h1>
-              </div>
-            )}
-          </div>
-          
-          {!isLoading && servico && (
-            <Button
-              onClick={() => navigate(`/servicos/${servico.id}/editar`)}
-              className="gradient-premium border-0 text-background"
-            >
-              <Edit className="mr-2 h-4 w-4" />
-              Editar Serviço
-            </Button>
-          )}
+        <div className="flex items-center gap-4 mb-8">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate("/servicos")}
+            className="hover:shadow-premium transition-shadow"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
         </div>
 
         {/* Content */}
@@ -139,119 +121,137 @@ export default function ServicoDetalhes() {
             </Card>
           ) : servico ? (
             <div className="space-y-6">
-              {/* Main Info Card */}
+              {/* Service Header Card */}
               <Card className="shadow-premium border-0 bg-card/50 backdrop-blur-sm">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl">{servico.nome}</CardTitle>
-                    <Badge variant={servico.ativo ? "default" : "secondary"}>
-                      {servico.ativo ? "Ativo" : "Inativo"}
-                    </Badge>
-                  </div>
-                  {servico.descricao && (
-                    <p className="text-muted-foreground mt-2">{servico.descricao}</p>
-                  )}
-                </CardHeader>
-                
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {/* Valor */}
-                    <div className="flex items-center gap-3 p-4 bg-primary/5 rounded-lg border">
-                      <DollarSign className="h-8 w-8 text-primary" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Valor de Venda</p>
-                        <p className="text-lg font-semibold text-primary">
-                          {formatCurrency(servico.valor)}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Custo (só para admin) */}
-                    {isAdmin && (
-                      <div className="flex items-center gap-3 p-4 bg-orange-50 rounded-lg border">
-                        <DollarSign className="h-8 w-8 text-orange-600" />
-                        <div>
-                          <p className="text-sm text-muted-foreground">Custo Interno</p>
-                          <p className="text-lg font-semibold text-orange-600">
-                            {formatCurrency(servico.custo || 0)}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Tempo de Entrega */}
-                    <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border">
-                      <Clock className="h-8 w-8 text-blue-600" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Tempo de Entrega</p>
-                        <p className="text-lg font-semibold text-blue-600">
-                          {servico.tempo_entrega_dias} dias
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Categoria */}
-                    <div className="flex items-center gap-3 p-4 bg-purple-50 rounded-lg border">
-                      <Package className="h-8 w-8 text-purple-600" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Categoria</p>
-                        <p className="text-lg font-semibold text-purple-600">
-                          {getCategoriaLabel(servico.categoria || "")}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Tipo de Cobrança */}
-                    <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border">
-                      <Calendar className="h-8 w-8 text-green-600" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Tipo de Cobrança</p>
-                        <p className="text-lg font-semibold text-green-600">
-                          {getTipoCobrancaLabel(servico.tipo_cobranca || "")}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Complexidade */}
-                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border">
-                      <Target className="h-8 w-8 text-gray-600" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Complexidade</p>
-                        <Badge className={getComplexidadeColor(servico.nivel_complexidade || "")}>
-                          {getComplexidadeLabel(servico.nivel_complexidade || "")}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <Package className="h-6 w-6 text-accent" />
+                        <CardTitle className="text-2xl">{servico.nome}</CardTitle>
+                        <Badge variant={servico.ativo ? "default" : "secondary"}>
+                          {servico.ativo ? "Ativo" : "Inativo"}
                         </Badge>
                       </div>
+                      <p className="text-muted-foreground">
+                        Criado em {new Date(servico.created_at).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
+                    
+                    {isAdmin && (
+                      <Button
+                        onClick={() => navigate(`/servicos/${servico.id}/editar`)}
+                        className="gradient-premium border-0 text-background"
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Editar Serviço
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {servico.descricao && (
+                    <div className="mt-4">
+                      <label className="text-sm font-medium text-muted-foreground">Descrição</label>
+                      <p className="text-lg mt-1">{servico.descricao}</p>
+                    </div>
+                  )}
+                </CardHeader>
+              </Card>
+
+              {/* Service Information */}
+              <Card className="shadow-premium border-0 bg-card/50 backdrop-blur-sm p-4">
+                <CardTitle className="text-lg mb-4 flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Informações do Serviço
+                </CardTitle>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Valor de Venda</label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <DollarSign className="h-4 w-4" />
+                      <p className="text-lg font-semibold">
+                        {formatCurrency(servico.valor)}
+                      </p>
                     </div>
                   </div>
 
-                  {/* Margem de Lucro (só para admin) */}
-                  {isAdmin && servico.custo && servico.valor > 0 && (
-                    <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border">
-                      <h3 className="text-lg font-semibold mb-2">Análise Financeira</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Margem Bruta</p>
-                          <p className="text-lg font-semibold text-green-600">
-                            {formatCurrency(servico.valor - servico.custo)}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Margem %</p>
-                          <p className="text-lg font-semibold text-green-600">
-                            {(((servico.valor - servico.custo) / servico.valor) * 100).toFixed(1)}%
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Markup</p>
-                          <p className="text-lg font-semibold text-blue-600">
-                            {servico.custo > 0 ? (servico.valor / servico.custo).toFixed(2) + "x" : "N/A"}
-                          </p>
-                        </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Tempo de Entrega</label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Clock className="h-4 w-4" />
+                      <p className="text-lg">{servico.tempo_entrega_dias} dias</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Categoria</label>
+                    <p className="text-lg mt-1">
+                      {getCategoriaLabel(servico.categoria || "")}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Tipo de Cobrança</label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Calendar className="h-4 w-4" />
+                      <p className="text-lg">
+                        {getTipoCobrancaLabel(servico.tipo_cobranca || "")}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Complexidade</label>
+                    <div className="mt-1">
+                      <Badge className={getComplexidadeColor(servico.nivel_complexidade || "")}>
+                        {getComplexidadeLabel(servico.nivel_complexidade || "")}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {isAdmin && (
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Custo Interno</label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <DollarSign className="h-4 w-4" />
+                        <p className="text-lg font-semibold">
+                          {formatCurrency(servico.custo || 0)}
+                        </p>
                       </div>
                     </div>
                   )}
-                </CardContent>
+                </div>
               </Card>
+
+              {/* Financial Analysis (Admin only) */}
+              {isAdmin && servico.custo && servico.valor > 0 && (
+                <Card className="shadow-premium border-0 bg-card/50 backdrop-blur-sm p-4">
+                  <CardTitle className="text-lg mb-4 flex items-center gap-2">
+                    <Target className="h-5 w-5" />
+                    Análise Financeira
+                  </CardTitle>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Margem Bruta</label>
+                      <p className="text-lg font-semibold mt-1">
+                        {formatCurrency(servico.valor - servico.custo)}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Margem %</label>
+                      <p className="text-lg font-semibold mt-1">
+                        {(((servico.valor - servico.custo) / servico.valor) * 100).toFixed(1)}%
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground">Markup</label>
+                      <p className="text-lg font-semibold mt-1">
+                        {servico.custo > 0 ? (servico.valor / servico.custo).toFixed(2) + "x" : "N/A"}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              )}
             </div>
           ) : (
             <Card className="shadow-premium border-0 bg-card/50 backdrop-blur-sm">
