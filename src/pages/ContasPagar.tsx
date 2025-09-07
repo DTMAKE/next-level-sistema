@@ -403,7 +403,7 @@ export default function ContasPagar() {
                                 )}
                               </span>
                             </div>
-                              {isComissaoTransaction(conta.descricao || '') && (
+                              {isComissaoTransaction(conta.descricao || '') ? (
                                 <div className="flex items-center gap-2">
                                   <OrigemInfo 
                                     tipo={comissaoInfo?.tipo || 'venda'}
@@ -411,6 +411,11 @@ export default function ContasPagar() {
                                     contratoId={comissaoInfo?.contratoId}
                                     vendedorId={conta.comissoes?.vendedor_id}
                                   />
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                                  <span>INTERNO</span>
                                 </div>
                               )}
                           </div>
@@ -518,7 +523,7 @@ export default function ContasPagar() {
                                         />
                                       );
                                    }
-                                   return '-';
+                                   return 'INTERNO';
                                  })()}
                                </div>
                              </TableCell>
