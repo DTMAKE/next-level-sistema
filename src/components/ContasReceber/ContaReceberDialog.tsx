@@ -150,7 +150,7 @@ export function ContaReceberDialog({ children }: ContaReceberDialogProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-base font-medium">Forma de Recebimento *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="h-12 text-base">
                           <SelectValue placeholder="Selecione" />
