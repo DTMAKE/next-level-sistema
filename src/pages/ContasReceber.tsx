@@ -322,7 +322,7 @@ export default function ContasReceber() {
                         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 shrink-0" />
-                            <span>{format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", {
+                            <span>{format(parseISO((conta.data_vencimento || conta.data_transacao) + 'T00:00:00'), "dd/MM/yyyy", {
                         locale: ptBR
                       })}</span>
                           </div>
@@ -374,7 +374,7 @@ export default function ContasReceber() {
                         <TableHead>Descrição</TableHead>
                         <TableHead>Origem</TableHead>
                         <TableHead>Recebimento</TableHead>
-                        <TableHead>Data</TableHead>
+                        <TableHead>Data de Vencimento</TableHead>
                         <TableHead>Valor</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
@@ -427,7 +427,7 @@ export default function ContasReceber() {
                           </TableCell>
                           <TableCell>
                             <div className="text-sm">
-                              <div>{format(parseISO(conta.data_transacao + 'T00:00:00'), "dd/MM/yyyy", {
+                              <div>{format(parseISO((conta.data_vencimento || conta.data_transacao) + 'T00:00:00'), "dd/MM/yyyy", {
                           locale: ptBR
                         })}</div>
                             </div>
