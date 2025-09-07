@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { addMonths } from 'date-fns';
 
 export interface ContaReceber {
   id: string;
@@ -178,9 +177,8 @@ export function useCreateContaReceber() {
         const transactions = [];
         
         for (let i = 1; i <= parcelas; i++) {
-          // Calcular data de vencimento usando date-fns
-          const baseDate = new Date(data.data_transacao);
-          const dataVencimento = i === 1 ? baseDate : addMonths(baseDate, i - 1);
+          const dataVencimento = new Date(data.data_transacao);
+          dataVencimento.setMonth(dataVencimento.getMonth() + i - 1);
           
           transactions.push({
             user_id: user.id,
