@@ -151,7 +151,108 @@ export function useRemoverUsuario() {
         throw new Error('Senha de confirmação obrigatória');
       }
 
-      // Remover perfil do usuário
+      // 1. Buscar um admin para receber os dados (diferente do usuário sendo removido)
+      const { data: adminUsers, error: adminError } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('role', 'admin')
+        .neq('user_id', userId)
+        .limit(1);
+
+      if (adminError) {
+        logger.error('Erro ao buscar admin', adminError);
+        throw new Error('Falha ao buscar administrador para transferir dados');
+      }
+
+      const targetAdminId = adminUsers?.[0]?.user_id || currentUser.id;
+
+      // 2. Transferir vendas para o admin
+      const { error: vendasError } = await supabase
+        .from('vendas')
+        .update({ vendedor_id: targetAdminId })
+        .eq('vendedor_id', userId);
+
+      if (vendasError) {
+        logger.error('Erro ao transferir vendas', vendasError);
+        throw new Error('Falha ao transferir vendas do usuário');
+      }
+
+      // 3. Transferir comissões para o admin
+      const { error: comissoesError } = await supabase
+        .from('comissoes')
+        .update({ vendedor_id: targetAdminId })
+        .eq('vendedor_id', userId);
+
+      if (comissoesError) {
+        logger.error('Erro ao transferir comissões', comissoesError);
+        throw new Error('Falha ao transferir comissões do usuário');
+      }
+
+      // 4. Transferir contratos para o admin
+      const { error: contratosError } = await supabase
+        .from('contratos')
+        .update({ vendedor_id: targetAdminId })
+        .eq('vendedor_id', userId);
+
+      if (contratosError) {
+        logger.error('Erro ao transferir contratos', contratosError);
+        throw new Error('Falha ao transferir contratos do usuário');
+      }
+
+      // 5. Transferir leads para o admin
+      const { error: leadsError } = await supabase
+        .from('leads')
+        .update({ vendedor_id: targetAdminId })
+        .eq('vendedor_id', userId);
+
+      if (leadsError) {
+        logger.error('Erro ao transferir leads', leadsError);
+        throw new Error('Falha ao transferir leads do usuário');
+      }
+
+      // 6. Remover metas específicas do vendedor
+      const { error: metasError } = await supabase
+        .from('metas_vendedores')
+        .delete()
+        .eq('vendedor_id', userId);
+
+      if (metasError) {
+        logger.error('Erro ao remover metas', metasError);
+        // Não bloquear a remoção por isso, apenas log
+      }
+
+      // 7. Transferir dados gerais do usuário (vendas, clientes, etc. criados por ele)
+      const { error: vendasUserError } = await supabase
+        .from('vendas')
+        .update({ user_id: targetAdminId })
+        .eq('user_id', userId);
+
+      const { error: clientesError } = await supabase
+        .from('clientes')
+        .update({ user_id: targetAdminId })
+        .eq('user_id', userId);
+
+      const { error: contratosUserError } = await supabase
+        .from('contratos')
+        .update({ user_id: targetAdminId })
+        .eq('user_id', userId);
+
+      const { error: leadsUserError } = await supabase
+        .from('leads')
+        .update({ user_id: targetAdminId })
+        .eq('user_id', userId);
+
+      const { error: servicosError } = await supabase
+        .from('servicos')
+        .update({ user_id: targetAdminId })
+        .eq('user_id', userId);
+
+      const { error: transacoesError } = await supabase
+        .from('transacoes_financeiras')
+        .update({ user_id: targetAdminId })
+        .eq('user_id', userId);
+
+      // 8. Finalmente, remover o perfil do usuário
       const { error } = await supabase
         .from('profiles')
         .delete()
@@ -162,13 +263,18 @@ export function useRemoverUsuario() {
         throw new Error(`Falha ao remover usuário: ${error.message}`);
       }
       
-      return { success: true };
+      return { success: true, transferredTo: targetAdminId };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] });
+      queryClient.invalidateQueries({ queryKey: ['vendas'] });
+      queryClient.invalidateQueries({ queryKey: ['comissoes'] });
+      queryClient.invalidateQueries({ queryKey: ['contratos'] });
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      queryClient.invalidateQueries({ queryKey: ['transacoes-financeiras'] });
       toast({
         title: 'Usuário removido',
-        description: 'O usuário foi removido com sucesso.',
+        description: 'O usuário foi removido com sucesso e todos os dados foram transferidos para um administrador.',
       });
     },
     onError: (error) => {
