@@ -152,7 +152,6 @@ export function useUpdateServico() {
         .from("servicos")
         .update(data)
         .eq("id", id)
-        .eq("user_id", user.id)
         .select()
         .single();
 
