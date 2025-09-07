@@ -939,14 +939,18 @@ export type Database = {
           comprovante_url: string | null
           contrato_id: string | null
           created_at: string
+          data_fim_recorrencia: string | null
           data_transacao: string
           data_vencimento: string | null
           descricao: string | null
           forma_pagamento: string | null
+          frequencia: string | null
           id: string
           observacoes: string | null
           parcela_atual: number | null
           parcelas: number | null
+          recorrencia_origem_id: string | null
+          recorrente: boolean | null
           status: string | null
           tipo: string
           updated_at: string
@@ -960,14 +964,18 @@ export type Database = {
           comprovante_url?: string | null
           contrato_id?: string | null
           created_at?: string
+          data_fim_recorrencia?: string | null
           data_transacao?: string
           data_vencimento?: string | null
           descricao?: string | null
           forma_pagamento?: string | null
+          frequencia?: string | null
           id?: string
           observacoes?: string | null
           parcela_atual?: number | null
           parcelas?: number | null
+          recorrencia_origem_id?: string | null
+          recorrente?: boolean | null
           status?: string | null
           tipo: string
           updated_at?: string
@@ -981,14 +989,18 @@ export type Database = {
           comprovante_url?: string | null
           contrato_id?: string | null
           created_at?: string
+          data_fim_recorrencia?: string | null
           data_transacao?: string
           data_vencimento?: string | null
           descricao?: string | null
           forma_pagamento?: string | null
+          frequencia?: string | null
           id?: string
           observacoes?: string | null
           parcela_atual?: number | null
           parcelas?: number | null
+          recorrencia_origem_id?: string | null
+          recorrente?: boolean | null
           status?: string | null
           tipo?: string
           updated_at?: string

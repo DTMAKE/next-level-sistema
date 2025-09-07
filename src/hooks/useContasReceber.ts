@@ -3,6 +3,60 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
+// Função utilitária para gerar transações recorrentes
+async function generateRecurringTransactions(originalTransaction: any, frequencia: string, dataFim?: string) {
+  const endDate = dataFim ? new Date(dataFim) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 ano se não especificado
+  const startDate = new Date(originalTransaction.data_transacao);
+  const transactions = [];
+  
+  let currentDate = new Date(startDate);
+  
+  // Definir incremento baseado na frequência
+  const incrementMonths = {
+    'mensal': 1,
+    'trimestral': 3,
+    'semestral': 6,
+    'anual': 12
+  }[frequencia] || 1;
+  
+  // Gerar até 24 transações futuras ou até a data fim
+  for (let i = 1; i <= 24 && currentDate <= endDate; i++) {
+    currentDate = new Date(startDate);
+    currentDate.setMonth(currentDate.getMonth() + (incrementMonths * i));
+    
+    if (currentDate > endDate) break;
+    
+    const dataVencimento = originalTransaction.data_vencimento ? 
+      new Date(new Date(originalTransaction.data_vencimento).getTime() + (incrementMonths * i * 30 * 24 * 60 * 60 * 1000)) : 
+      null;
+    
+    transactions.push({
+      user_id: originalTransaction.user_id,
+      tipo: originalTransaction.tipo,
+      descricao: originalTransaction.descricao,
+      valor: originalTransaction.valor,
+      data_transacao: currentDate.toISOString().split('T')[0],
+      data_vencimento: dataVencimento ? dataVencimento.toISOString().split('T')[0] : null,
+      forma_pagamento: originalTransaction.forma_pagamento,
+      parcelas: originalTransaction.parcelas,
+      parcela_atual: originalTransaction.parcela_atual,
+      observacoes: originalTransaction.observacoes,
+      status: 'pendente',
+      recorrencia_origem_id: originalTransaction.id,
+    });
+  }
+  
+  if (transactions.length > 0) {
+    const { error } = await supabase
+      .from('transacoes_financeiras')
+      .insert(transactions);
+    
+    if (error) {
+      console.error('Erro ao gerar transações recorrentes:', error);
+    }
+  }
+}
+
 export interface ContaReceber {
   id: string;
   descricao: string | null;
@@ -60,6 +114,9 @@ export interface CreateContaReceberData {
   parcelas?: number;
   observacoes?: string;
   comprovante_file?: File;
+  recorrente?: boolean;
+  frequencia?: 'mensal' | 'trimestral' | 'semestral' | 'anual';
+  data_fim_recorrencia?: string;
 }
 
 export function useContasReceber(selectedDate: Date) {
@@ -152,7 +209,7 @@ export function useCreateContaReceber() {
 
       if (data.forma_pagamento === 'a_vista') {
         // Criar uma única transação
-        const { error } = await supabase
+        const { data: result, error } = await supabase
           .from('transacoes_financeiras')
           .insert([{
             user_id: user.id,
@@ -167,9 +224,18 @@ export function useCreateContaReceber() {
             parcela_atual: 1,
             observacoes: data.observacoes,
             comprovante_url,
-          }]);
+            recorrente: data.recorrente || false,
+            frequencia: data.recorrente ? data.frequencia : null,
+            data_fim_recorrencia: data.recorrente ? data.data_fim_recorrencia : null,
+          }])
+          .select();
         
         if (error) throw error;
+
+        // Se é recorrente, criar as próximas transações automaticamente
+        if (data.recorrente && result && result.length > 0) {
+          await generateRecurringTransactions(result[0], data.frequencia!, data.data_fim_recorrencia);
+        }
       } else {
         // Criar múltiplas transações para parcelamento
         const parcelas = data.parcelas || 2;
@@ -193,14 +259,24 @@ export function useCreateContaReceber() {
             parcela_atual: i,
             observacoes: data.observacoes,
             comprovante_url: i === 1 ? comprovante_url : null,
+            // Para parcelado, só a primeira parcela é marcada como recorrente
+            recorrente: (i === 1 && data.recorrente) || false,
+            frequencia: (i === 1 && data.recorrente) ? data.frequencia : null,
+            data_fim_recorrencia: (i === 1 && data.recorrente) ? data.data_fim_recorrencia : null,
           });
         }
         
-        const { error } = await supabase
+        const { data: result, error } = await supabase
           .from('transacoes_financeiras')
-          .insert(transactions);
+          .insert(transactions)
+          .select();
         
         if (error) throw error;
+
+        // Se é recorrente, criar as próximas transações automaticamente
+        if (data.recorrente && result && result.length > 0) {
+          await generateRecurringTransactions(result[0], data.frequencia!, data.data_fim_recorrencia);
+        }
       }
     },
     onSuccess: () => {

@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Upload, FileText } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CalendarIcon, Upload, FileText, Repeat } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,9 @@ const formSchema = z.object({
   forma_pagamento: z.enum(['a_vista', 'parcelado']),
   parcelas: z.number().min(1).max(36).optional(),
   observacoes: z.string().optional(),
+  recorrente: z.boolean().default(false),
+  frequencia: z.enum(['mensal', 'trimestral', 'semestral', 'anual']).optional(),
+  data_fim_recorrencia: z.date().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -49,10 +53,13 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
       forma_pagamento: "a_vista",
       parcelas: 2,
       observacoes: "",
+      recorrente: false,
+      frequencia: "mensal",
     },
   });
 
   const formaPagamento = form.watch("forma_pagamento");
+  const recorrente = form.watch("recorrente");
 
   const onSubmit = async (data: FormData) => {
     const createData: CreateContaPagarData = {
@@ -64,6 +71,9 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
       parcelas: data.parcelas,
       observacoes: data.observacoes,
       comprovante_file: selectedFile || undefined,
+      recorrente: data.recorrente,
+      frequencia: data.recorrente ? data.frequencia : undefined,
+      data_fim_recorrencia: data.recorrente && data.data_fim_recorrencia ? format(data.data_fim_recorrencia, 'yyyy-MM-dd') : undefined,
     };
 
     try {
@@ -245,6 +255,90 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                   </FormItem>
                 )}
               />
+            </div>
+
+            {/* Seção de Recorrência */}
+            <div className="border rounded-lg p-4 bg-muted/30">
+              <FormField
+                control={form.control}
+                name="recorrente"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="text-base font-medium">
+                        <Repeat className="h-4 w-4 inline mr-2" />
+                        Despesa Recorrente
+                      </FormLabel>
+                      <p className="text-sm text-muted-foreground">
+                        Gerar automaticamente esta despesa todos os meses
+                      </p>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {recorrente && (
+                <div className="mt-4 space-y-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="frequencia"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base font-medium">Frequência</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="h-12 text-base">
+                                <SelectValue placeholder="Selecione a frequência" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-background border shadow-lg z-[100]">
+                              <SelectItem value="mensal">Mensal</SelectItem>
+                              <SelectItem value="trimestral">Trimestral</SelectItem>
+                              <SelectItem value="semestral">Semestral</SelectItem>
+                              <SelectItem value="anual">Anual</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="data_fim_recorrencia"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base font-medium">Data Fim (Opcional)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="date" 
+                              className="h-12 text-base"
+                              {...field}
+                              value={field.value ? format(field.value, 'yyyy-MM-dd') : ''}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                field.onChange(value ? new Date(value + 'T00:00:00') : null);
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/30 p-3 rounded border border-blue-200 dark:border-blue-800">
+                    <p>💡 Se não informar data fim, a recorrência será gerada por 12 meses a partir da data inicial.</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
