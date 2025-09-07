@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { useCreateComissao } from '@/hooks/useComissoes';
+import { useCreateComissao, useDeleteComissao } from '@/hooks/useComissoes';
 
 export interface Venda {
   id: string;
@@ -348,9 +348,26 @@ export function useUpdateVenda() {
 export function useDeleteVenda() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const deleteComissao = useDeleteComissao();
 
   return useMutation({
     mutationFn: async (vendaId: string) => {
+      // 1. Buscar comissões relacionadas à venda
+      const { data: comissoes, error: comissoesError } = await supabase
+        .from('comissoes')
+        .select('id')
+        .eq('venda_id', vendaId);
+
+      if (comissoesError) throw comissoesError;
+
+      // 2. Deletar cada comissão encontrada (isso também remove as transações financeiras)
+      if (comissoes && comissoes.length > 0) {
+        for (const comissao of comissoes) {
+          await deleteComissao.mutateAsync(comissao.id);
+        }
+      }
+
+      // 3. Deletar a venda
       const { error } = await supabase
         .from('vendas')
         .delete()
@@ -360,9 +377,11 @@ export function useDeleteVenda() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendas'] });
+      queryClient.invalidateQueries({ queryKey: ['comissoes'] });
+      queryClient.invalidateQueries({ queryKey: ['transacoes-financeiras'] });
       toast({
         title: "Venda removida",
-        description: "Venda removida com sucesso.",
+        description: "Venda e comissões relacionadas removidas com sucesso.",
       });
     },
     onError: (error: Error) => {
