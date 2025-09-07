@@ -60,8 +60,10 @@ export default function EditarServico() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🔄 HandleSubmit chamado', { formData });
     
     if (!formData.nome || !formData.valor) {
+      console.log('❌ Validação falhou', { nome: formData.nome, valor: formData.valor });
       toast({
         title: "Erro",
         description: "Nome e valor são obrigatórios",
@@ -84,24 +86,24 @@ export default function EditarServico() {
         ativo: formData.ativo,
       };
 
+      console.log('📤 Enviando dados para update:', servicoData);
       await updateServico.mutateAsync(servicoData);
-      
-      toast({
-        title: "Sucesso",
-        description: "Serviço atualizado com sucesso!",
-      });
+      console.log('✅ Update realizado com sucesso');
       
       navigate(`/servicos/${id}`);
     } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao atualizar serviço",
-        variant: "destructive",
-      });
+      console.error('❌ Erro no update:', error);
     }
   };
 
   const isFormValid = formData.nome && formData.valor && !isNaN(parseFloat(formData.valor));
+  
+  console.log('🔍 Form validation:', { 
+    isFormValid, 
+    nome: formData.nome, 
+    valor: formData.valor, 
+    isPending: updateServico.isPending 
+  });
 
   if (error) {
     return (

@@ -145,8 +145,12 @@ export function useUpdateServico() {
 
   return useMutation({
     mutationFn: async ({ id, ...data }: UpdateServicoData & { id: string }) => {
+      console.log('🔧 useUpdateServico: Iniciando update', { id, data });
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
+
+      console.log('🔧 useUpdateServico: Usuario autenticado', user.id);
 
       const { data: servico, error } = await supabase
         .from("servicos")
@@ -155,15 +159,19 @@ export function useUpdateServico() {
         .select()
         .single();
 
+      console.log('🔧 useUpdateServico: Resultado da query', { servico, error });
+
       if (error) throw error;
       return servico;
     },
     onSuccess: (_, variables) => {
+      console.log('✅ useUpdateServico: Update bem-sucedido');
       queryClient.invalidateQueries({ queryKey: ["servicos"] });
       queryClient.invalidateQueries({ queryKey: ["servico", variables.id] });
       toast.success("Serviço atualizado com sucesso!");
     },
     onError: (error) => {
+      console.error('❌ useUpdateServico: Erro no update', error);
       toast.error("Erro ao atualizar serviço. Tente novamente.");
     },
   });
