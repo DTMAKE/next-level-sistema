@@ -177,8 +177,15 @@ export function useCreateContaReceber() {
         const transactions = [];
         
         for (let i = 1; i <= parcelas; i++) {
-          const dataVencimento = new Date(data.data_transacao);
-          dataVencimento.setMonth(dataVencimento.getMonth() + i - 1);
+          // Calcular data de vencimento para cada parcela
+          const baseDate = new Date(data.data_transacao);
+          const dataVencimento = new Date(baseDate);
+          
+          // Para a primeira parcela, usar a data original
+          // Para parcelas subsequentes, adicionar meses
+          if (i > 1) {
+            dataVencimento.setMonth(dataVencimento.getMonth() + (i - 1));
+          }
           
           transactions.push({
             user_id: user.id,
