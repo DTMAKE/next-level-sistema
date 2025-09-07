@@ -410,7 +410,12 @@ export default function ContasReceber() {
                                     <span className="text-blue-600 font-medium">
                                       {conta.contratos.numero_contrato ?? `CONTRATO-${conta.contrato_id.slice(0, 8)}`}
                                     </span>
-                                  </div> : '-'}
+                                  </div> : <div className="flex items-center gap-1">
+                                    <UserCheck className="h-3 w-3 text-muted-foreground" />
+                                    <span className="text-muted-foreground font-medium">
+                                      INTERNO
+                                    </span>
+                                  </div>}
                               </span>
                             </div>
                           </TableCell>
