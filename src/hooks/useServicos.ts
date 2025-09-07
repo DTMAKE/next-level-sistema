@@ -99,7 +99,7 @@ export function useServico(servicoId: string) {
           .from("servicos")
           .select("*")
           .eq("id", servicoId)
-          .single();
+          .maybeSingle();
 
       if (error) throw error;
       return data as Servico;
@@ -159,8 +159,9 @@ export function useUpdateServico() {
       if (error) throw error;
       return servico;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["servicos"] });
+      queryClient.invalidateQueries({ queryKey: ["servico", variables.id] });
       toast.success("Serviço atualizado com sucesso!");
     },
     onError: (error) => {

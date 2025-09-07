@@ -138,7 +138,7 @@ export default function ServicoDetalhes() {
                       </p>
                     </div>
                     
-                    {isAdmin && (
+                    {(isAdmin || user?.id === servico.user_id) && (
                       <Button
                         onClick={() => navigate(`/servicos/${servico.id}/editar`)}
                         className="gradient-premium border-0 text-background"
@@ -209,7 +209,7 @@ export default function ServicoDetalhes() {
                     </div>
                   </div>
 
-                  {isAdmin && (
+                  {(isAdmin || user?.id === servico.user_id) && (
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Custo Interno</label>
                       <div className="flex items-center gap-2 mt-1">
