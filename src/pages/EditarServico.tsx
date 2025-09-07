@@ -60,10 +60,8 @@ export default function EditarServico() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('🔄 HandleSubmit chamado', { formData });
     
     if (!formData.nome || !formData.valor) {
-      console.log('❌ Validação falhou', { nome: formData.nome, valor: formData.valor });
       toast({
         title: "Erro",
         description: "Nome e valor são obrigatórios",
@@ -86,24 +84,15 @@ export default function EditarServico() {
         ativo: formData.ativo,
       };
 
-      console.log('📤 Enviando dados para update:', servicoData);
       await updateServico.mutateAsync(servicoData);
-      console.log('✅ Update realizado com sucesso');
       
       navigate(`/servicos/${id}`);
     } catch (error) {
-      console.error('❌ Erro no update:', error);
+      // Error is handled by the hook
     }
   };
 
   const isFormValid = formData.nome && formData.valor && !isNaN(parseFloat(formData.valor));
-  
-  console.log('🔍 Form validation:', { 
-    isFormValid, 
-    nome: formData.nome, 
-    valor: formData.valor, 
-    isPending: updateServico.isPending 
-  });
 
   if (error) {
     return (

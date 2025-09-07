@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Package, Edit, DollarSign, Clock, Target, Calendar } from "lucide-react";
-import { useServico } from "@/hooks/useServicos";
+import { ArrowLeft, Package, Edit, DollarSign, Clock, Target, Calendar, Power } from "lucide-react";
+import { useServico, useToggleServicoStatus } from "@/hooks/useServicos";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function ServicoDetalhes() {
@@ -14,6 +14,16 @@ export default function ServicoDetalhes() {
   const isAdmin = user?.role === "admin";
 
   const { data: servico, isLoading, error } = useServico(id!);
+  const toggleServicoStatus = useToggleServicoStatus();
+
+  const handleToggleStatus = () => {
+    if (servico) {
+      toggleServicoStatus.mutate({
+        servicoId: servico.id,
+        novoStatus: !servico.ativo
+      });
+    }
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -139,13 +149,23 @@ export default function ServicoDetalhes() {
                     </div>
                     
                     {(isAdmin || user?.id === servico.user_id) && (
-                      <Button
-                        onClick={() => navigate(`/servicos/${servico.id}/editar`)}
-                        className="gradient-premium border-0 text-background"
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Editar Serviço
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={handleToggleStatus}
+                          variant={servico.ativo ? "destructive" : "default"}
+                          disabled={toggleServicoStatus.isPending}
+                        >
+                          <Power className="mr-2 h-4 w-4" />
+                          {servico.ativo ? "Desativar" : "Ativar"}
+                        </Button>
+                        <Button
+                          onClick={() => navigate(`/servicos/${servico.id}/editar`)}
+                          className="gradient-premium border-0 text-background"
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Editar Serviço
+                        </Button>
+                      </div>
                     )}
                   </div>
                   

@@ -145,12 +145,8 @@ export function useUpdateServico() {
 
   return useMutation({
     mutationFn: async ({ id, ...data }: UpdateServicoData & { id: string }) => {
-      console.log('🔧 useUpdateServico: Iniciando update', { id, data });
-      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
-
-      console.log('🔧 useUpdateServico: Usuario autenticado', user.id);
 
       const { data: servico, error } = await supabase
         .from("servicos")
@@ -159,19 +155,15 @@ export function useUpdateServico() {
         .select()
         .single();
 
-      console.log('🔧 useUpdateServico: Resultado da query', { servico, error });
-
       if (error) throw error;
       return servico;
     },
     onSuccess: (_, variables) => {
-      console.log('✅ useUpdateServico: Update bem-sucedido');
       queryClient.invalidateQueries({ queryKey: ["servicos"] });
       queryClient.invalidateQueries({ queryKey: ["servico", variables.id] });
       toast.success("Serviço atualizado com sucesso!");
     },
     onError: (error) => {
-      console.error('❌ useUpdateServico: Erro no update', error);
       toast.error("Erro ao atualizar serviço. Tente novamente.");
     },
   });
@@ -200,6 +192,36 @@ export function useDeleteServico() {
     },
     onError: (error) => {
       toast.error("Erro ao deletar serviço. Tente novamente.");
+    },
+  });
+}
+
+// Hook para alternar status ativo/inativo do serviço
+export function useToggleServicoStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ servicoId, novoStatus }: { servicoId: string; novoStatus: boolean }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const { data: servico, error } = await supabase
+        .from("servicos")
+        .update({ ativo: novoStatus })
+        .eq("id", servicoId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return servico;
+    },
+    onSuccess: (servico) => {
+      queryClient.invalidateQueries({ queryKey: ["servicos"] });
+      queryClient.invalidateQueries({ queryKey: ["servico", servico.id] });
+      toast.success(servico.ativo ? "Serviço ativado com sucesso!" : "Serviço desativado com sucesso!");
+    },
+    onError: (error) => {
+      toast.error("Erro ao alterar status do serviço. Tente novamente.");
     },
   });
 }
