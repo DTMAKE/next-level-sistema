@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Plus, Search, Edit, Trash2, Package, DollarSign, MoreVertical, Grid, List, Filter, Power } from "lucide-react";
-import { useServicos, useDeleteServico, useToggleServicoStatus } from "@/hooks/useServicos";
+import { Plus, Search, Edit, Trash2, Package, DollarSign, MoreVertical, Grid, List, Filter } from "lucide-react";
+import { useServicos, useDeleteServico } from "@/hooks/useServicos";
 import { ServicoDialog } from "@/components/Servicos/ServicoDialog";
 import { DeleteServicoDialog } from "@/components/Servicos/DeleteServicoDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -31,7 +31,6 @@ export default function Servicos() {
     error
   } = useServicos(searchTerm);
   const deleteServico = useDeleteServico();
-  const toggleServicoStatus = useToggleServicoStatus();
 
   // Filter and paginate data
   const filteredServicos = useMemo(() => {
@@ -94,13 +93,6 @@ export default function Servicos() {
   const handleDelete = (servico: any) => {
     setSelectedServico(servico);
     setDeleteDialogOpen(true);
-  };
-
-  const handleToggleStatus = (servico: any) => {
-    toggleServicoStatus.mutate({
-      servicoId: servico.id,
-      novoStatus: !servico.ativo
-    });
   };
   
   const confirmDelete = () => {
@@ -240,16 +232,6 @@ export default function Servicos() {
                             <Edit className="h-4 w-4 xs:h-3 xs:w-3 mr-1" />
                             <span className="text-sm">Editar</span>
                           </Button>
-                          <Button 
-                            variant={servico.ativo ? "destructive" : "default"} 
-                            size="sm" 
-                            className="flex-1 min-h-[40px] touch-target"
-                            onClick={() => handleToggleStatus(servico)}
-                            disabled={toggleServicoStatus.isPending}
-                          >
-                            <Power className="h-4 w-4 xs:h-3 xs:w-3 mr-1" />
-                            <span className="text-sm">{servico.ativo ? "Desativar" : "Ativar"}</span>
-                          </Button>
                           <Button variant="outline" size="sm" className="flex-1 min-h-[40px] touch-target" onClick={() => handleDelete(servico)}>
                             <Trash2 className="h-4 w-4 xs:h-3 xs:w-3 mr-1" />
                             <span className="text-sm">Excluir</span>
@@ -299,10 +281,6 @@ export default function Servicos() {
                                   <DropdownMenuItem onClick={() => handleEdit(servico)}>
                                     <Edit className="h-4 w-4 mr-2" />
                                     Editar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleToggleStatus(servico)}>
-                                    <Power className="h-4 w-4 mr-2" />
-                                    {servico.ativo ? "Desativar" : "Ativar"}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleDelete(servico)} className="text-destructive">
                                     <Trash2 className="h-4 w-4 mr-2" />
