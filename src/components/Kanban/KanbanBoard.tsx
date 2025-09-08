@@ -9,13 +9,16 @@ import { KanbanColumn } from "./KanbanColumn";
 import { TaskCard } from "./TaskCard";
 import { TaskDialog } from "./TaskDialog";
 import { DeleteTaskDialog } from "./DeleteTaskDialog";
+import { MobileFAB } from "./MobileFAB";
 import { Tarefa } from "@/hooks/useProjetos";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface KanbanBoardProps {
   projetoId: string;
 }
 
 export function KanbanBoard({ projetoId }: KanbanBoardProps) {
+  const isMobile = useIsMobile();
   const { colunas, tarefas, updateTaskPosition, deleteTarefa, isLoadingColunas, isLoadingTarefas } = useKanbanTasks(projetoId);
   const [activeTask, setActiveTask] = useState<Tarefa | null>(null);
   const [showTaskDialog, setShowTaskDialog] = useState(false);
@@ -28,7 +31,7 @@ export function KanbanBoard({ projetoId }: KanbanBoardProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: isMobile ? 5 : 8, // Shorter distance for mobile
       },
     })
   );
@@ -112,6 +115,14 @@ export function KanbanBoard({ projetoId }: KanbanBoardProps) {
     }
   };
 
+  const handleCreateTaskFAB = () => {
+    // Use first column as default for mobile FAB
+    const firstColumn = colunas[0];
+    if (firstColumn) {
+      handleCreateTask(firstColumn.id);
+    }
+  };
+
   // Filter tasks based on search
   const filteredTarefas = tarefas.filter(task => 
     searchTerm === "" || 
@@ -121,13 +132,13 @@ export function KanbanBoard({ projetoId }: KanbanBoardProps) {
 
   if (isLoadingColunas || isLoadingTarefas) {
     return (
-      <div className="flex gap-6 overflow-x-auto pb-4">
+      <div className="flex gap-2 sm:gap-4 lg:gap-6 overflow-x-auto pb-4 px-2 sm:px-4 lg:px-6">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="flex-shrink-0 w-80 bg-muted/20 rounded-lg p-4 animate-pulse">
-            <div className="h-6 bg-muted rounded w-24 mb-4"></div>
-            <div className="space-y-3">
+          <div key={i} className="flex-shrink-0 w-72 sm:w-80 bg-muted/20 rounded-lg p-3 sm:p-4 animate-pulse">
+            <div className="h-4 sm:h-6 bg-muted rounded w-20 sm:w-24 mb-3 sm:mb-4"></div>
+            <div className="space-y-2 sm:space-y-3">
               {[...Array(3)].map((_, j) => (
-                <div key={j} className="h-20 bg-muted rounded"></div>
+                <div key={j} className="h-16 sm:h-20 bg-muted rounded"></div>
               ))}
             </div>
           </div>
@@ -137,19 +148,19 @@ export function KanbanBoard({ projetoId }: KanbanBoardProps) {
   }
 
   return (
-    <div className="h-[calc(100vh-180px)] sm:h-[calc(100vh-200px)] flex flex-col bg-gradient-to-br from-muted/30 to-background">
+    <div className="h-[calc(100vh-140px)] sm:h-[calc(100vh-200px)] flex flex-col bg-gradient-to-br from-muted/30 to-background">
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6 px-2 sm:px-1 py-3 sm:py-4 border-b bg-background/95 backdrop-blur-sm">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 mb-3 sm:mb-6 px-3 sm:px-1 py-2 sm:py-4 border-b bg-background/95 backdrop-blur-sm">
         <div className="relative flex-1 max-w-full sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Buscar tarefas..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-background text-sm sm:text-base"
+            className="pl-10 bg-background text-sm h-9 sm:h-10"
           />
         </div>
-        <Button variant="outline" size="sm" className="bg-background flex-shrink-0">
+        <Button variant="outline" size="sm" className="bg-background flex-shrink-0 h-9 sm:h-10">
           <Filter className="w-4 h-4 mr-2" />
           <span className="hidden sm:inline">Filtros</span>
           <span className="sm:hidden">Filtrar</span>
@@ -162,7 +173,7 @@ export function KanbanBoard({ projetoId }: KanbanBoardProps) {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex gap-3 sm:gap-4 lg:gap-6 overflow-x-auto pb-4 sm:pb-6 px-2 sm:px-4 lg:px-6 flex-1 min-h-0 min-w-max">
+        <div className={`flex gap-2 sm:gap-3 lg:gap-6 overflow-x-auto pb-4 sm:pb-6 px-2 sm:px-4 lg:px-6 flex-1 min-h-0 custom-scrollbar ${isMobile ? 'kanban-container' : ''}`}>
           <SortableContext items={colunas.map(c => c.id)} strategy={horizontalListSortingStrategy}>
             {colunas.map((coluna) => (
               <KanbanColumn
@@ -179,7 +190,7 @@ export function KanbanBoard({ projetoId }: KanbanBoardProps) {
         
         <DragOverlay>
           {activeTask && (
-            <div className="rotate-3 opacity-90">
+            <div className={`rotate-3 opacity-90 scale-105 ${isMobile ? 'dnd-dragging' : ''}`}>
               <TaskCard tarefa={activeTask} />
             </div>
           )}
@@ -199,6 +210,11 @@ export function KanbanBoard({ projetoId }: KanbanBoardProps) {
         onOpenChange={setShowDeleteDialog}
         onConfirm={handleConfirmDelete}
         taskTitle={taskToDelete?.titulo}
+      />
+
+      <MobileFAB 
+        onClick={handleCreateTaskFAB}
+        visible={colunas.length > 0 && !showTaskDialog}
       />
     </div>
   );

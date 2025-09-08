@@ -97,27 +97,29 @@ export default function Projetos() {
   if (selectedProjeto) {
     const projeto = projetos.find(p => p.id === selectedProjeto);
     return (
-      <div className="space-y-3 lg:space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 min-w-0">
+      <div className="space-y-2 sm:space-y-3 lg:space-y-6 min-h-0 flex flex-col">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 flex-shrink-0 px-3 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 min-w-0">
             <Button 
               variant="outline" 
               onClick={() => setSelectedProjeto("")}
               size="sm"
-              className="self-start sm:self-auto flex-shrink-0"
+              className="self-start sm:self-auto flex-shrink-0 h-8 px-2 sm:h-9 sm:px-3"
             >
               ← <span className="hidden sm:inline ml-1">Voltar aos Projetos</span><span className="sm:hidden ml-1">Voltar</span>
             </Button>
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">{projeto?.nome}</h1>
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold truncate">{projeto?.nome}</h1>
               {projeto?.descricao && (
-                <p className="text-muted-foreground mt-1 text-sm sm:text-base line-clamp-2">{projeto.descricao}</p>
+                <p className="text-muted-foreground mt-0.5 text-xs sm:text-sm line-clamp-2">{projeto.descricao}</p>
               )}
             </div>
           </div>
         </div>
         
-        <KanbanBoard projetoId={selectedProjeto} />
+        <div className="flex-1 min-h-0">
+          <KanbanBoard projetoId={selectedProjeto} />
+        </div>
       </div>
     );
   }

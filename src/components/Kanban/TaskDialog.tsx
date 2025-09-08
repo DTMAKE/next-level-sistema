@@ -154,11 +154,11 @@ export function TaskDialog({ open, onOpenChange, projetoId, colunaId, tarefa }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-[600px] max-h-[95vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            {tarefa ? "Editar Tarefa" : "Nova Tarefa"}
+          <DialogTitle className="flex items-center gap-2 text-lg">
+            <FileText className="w-5 h-5 flex-shrink-0" />
+            <span className="truncate">{tarefa ? "Editar Tarefa" : "Nova Tarefa"}</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -220,7 +220,7 @@ export function TaskDialog({ open, onOpenChange, projetoId, colunaId, tarefa }: 
             />
 
             {/* Prioridade e Responsáveis - Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="prioridade"
@@ -356,18 +356,19 @@ export function TaskDialog({ open, onOpenChange, projetoId, colunaId, tarefa }: 
             />
 
             {/* Botões de Ação */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
+                className="w-full sm:w-auto order-2 sm:order-1"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={createTarefa.isPending || updateTarefa.isPending}
-                className="min-w-[100px]"
+                className="min-w-[100px] w-full sm:w-auto order-1 sm:order-2"
               >
                 {createTarefa.isPending || updateTarefa.isPending ? (
                   <div className="flex items-center gap-2">

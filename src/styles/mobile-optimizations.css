@@ -1,0 +1,112 @@
+/* Mobile Optimizations for Kanban */
+
+/* Smooth scrolling for mobile */
+@media (max-width: 768px) {
+  .kanban-container {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .kanban-column {
+    min-width: 280px;
+    max-width: 280px;
+  }
+  
+  .task-card {
+    transform-origin: center;
+    transition: transform 0.2s ease;
+  }
+  
+  .task-card:active {
+    transform: scale(0.98);
+  }
+  
+  /* Better touch targets */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improved text readability on small screens */
+  .mobile-text {
+    line-height: 1.4;
+    font-size: 14px;
+  }
+  
+  /* Optimized spacing for mobile */
+  .mobile-spacing {
+    padding: 12px 16px;
+  }
+  
+  /* Prevent zoom on input focus */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Animation improvements */
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Better scrollbar styling */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Mobile-friendly drag feedback */
+@media (max-width: 768px) {
+  .dnd-dragging {
+    transform: rotate(5deg) scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+  }
+  
+  .dnd-drop-target {
+    background: hsl(var(--primary) / 0.1);
+    border: 2px dashed hsl(var(--primary) / 0.5);
+    border-radius: 8px;
+  }
+}

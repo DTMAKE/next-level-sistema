@@ -103,9 +103,9 @@ export function ProjetoDialog({ open, onOpenChange, projeto }: ProjetoDialogProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="w-[95vw] max-w-[425px] max-h-[95vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-lg">
             {projeto ? "Editar Projeto" : "Novo Projeto"}
           </DialogTitle>
         </DialogHeader>
@@ -189,17 +189,19 @@ export function ProjetoDialog({ open, onOpenChange, projeto }: ProjetoDialogProp
               />
             )}
 
-            <div className="flex justify-end space-x-2 pt-4">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
+                className="w-full sm:w-auto order-2 sm:order-1"
               >
                 Cancelar
               </Button>
               <Button 
                 type="submit"
                 disabled={createProjeto.isPending || updateProjeto.isPending}
+                className="w-full sm:w-auto order-1 sm:order-2"
               >
                 {createProjeto.isPending || updateProjeto.isPending
                   ? "Salvando..." 
