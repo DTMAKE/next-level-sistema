@@ -314,10 +314,12 @@ export function TaskDialog({ open, onOpenChange, projetoId, colunaId, tarefa }: 
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-auto p-0 max-w-[90vw]" 
+                      className="w-auto p-0 max-w-[90vw] z-50 bg-popover border shadow-lg" 
                       align="center"
-                      side="top"
+                      side="bottom"
                       sideOffset={8}
+                      avoidCollisions={true}
+                      collisionPadding={16}
                     >
                       <Calendar
                         mode="single"
