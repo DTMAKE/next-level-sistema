@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, Plus, Mail, Phone, Building2, Edit, Trash2, MoreVertical, Grid, List, Filter, Eye } from "lucide-react";
+import { Search, Plus, Mail, Phone, Building2, Edit, Trash2, MoreVertical, Grid, List, Filter } from "lucide-react";
 import { useClientes, type Cliente } from "@/hooks/useClientes";
 import { useLeads, type Lead } from "@/hooks/useLeads";
 import { useAuth } from "@/contexts/AuthContext";
@@ -271,12 +271,6 @@ export default function Clientes() {
                         </div>
                         
                         <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                          {item.type === "cliente" && (
-                            <Button variant="outline" size="sm" className="flex-1" onClick={() => navigate(`/clientes/${item.id}`)}>
-                              <Eye className="h-3 w-3 mr-1" />
-                              Detalhes
-                            </Button>
-                          )}
                           <Button variant="outline" size="sm" className="flex-1" onClick={() => item.type === "cliente" ? handleEditCliente(item as Cliente) : navigate("/leads")}>
                             <Edit className="h-3 w-3 mr-1" />
                             Editar
@@ -325,12 +319,6 @@ export default function Clientes() {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  {item.type === "cliente" && (
-                                    <DropdownMenuItem onClick={() => navigate(`/clientes/${item.id}`)}>
-                                      <Eye className="h-4 w-4 mr-2" />
-                                      Ver Detalhes
-                                    </DropdownMenuItem>
-                                  )}
                                   <DropdownMenuItem onClick={() => item.type === "cliente" ? handleEditCliente(item as Cliente) : navigate("/leads")}>
                                     <Edit className="h-4 w-4 mr-2" />
                                     Editar
