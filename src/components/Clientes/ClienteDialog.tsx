@@ -18,6 +18,7 @@ export function ClienteDialog({ open, onOpenChange, cliente }: ClienteDialogProp
   const [telefone, setTelefone] = useState("");
   const [endereco, setEndereco] = useState("");
   const [cnpj, setCnpj] = useState("");
+  const [nacionalidade, setNacionalidade] = useState("");
   const [status, setStatus] = useState("cliente");
 
   const createCliente = useCreateCliente();
@@ -33,6 +34,7 @@ export function ClienteDialog({ open, onOpenChange, cliente }: ClienteDialogProp
       setTelefone(cliente.telefone || "");
       setEndereco(cliente.endereco || "");
       setCnpj(cliente.cnpj || "");
+      setNacionalidade(cliente.nacionalidade || "");
       setStatus(cliente.status || "cliente");
     } else {
       setNome("");
@@ -40,6 +42,7 @@ export function ClienteDialog({ open, onOpenChange, cliente }: ClienteDialogProp
       setTelefone("");
       setEndereco("");
       setCnpj("");
+      setNacionalidade("");
       setStatus("cliente");
     }
   }, [cliente, open]);
@@ -58,6 +61,7 @@ export function ClienteDialog({ open, onOpenChange, cliente }: ClienteDialogProp
           telefone: telefone.trim() || undefined,
           endereco: endereco.trim() || undefined,
           cnpj: cnpj.trim() || undefined,
+          nacionalidade: nacionalidade.trim() || undefined,
           status: status,
         });
       } else {
@@ -67,6 +71,7 @@ export function ClienteDialog({ open, onOpenChange, cliente }: ClienteDialogProp
           telefone: telefone.trim() || undefined,
           endereco: endereco.trim() || undefined,
           cnpj: cnpj.trim() || undefined,
+          nacionalidade: nacionalidade.trim() || undefined,
           status: status,
         });
       }
@@ -118,7 +123,7 @@ export function ClienteDialog({ open, onOpenChange, cliente }: ClienteDialogProp
                 id="telefone"
                 value={telefone}
                 onChange={(e) => setTelefone(e.target.value)}
-                placeholder="(11) 99999-9999"
+                placeholder="+55 11 99999-9999 ou +1 555-123-4567"
                 className="h-10 sm:h-11"
               />
             </div>
@@ -135,15 +140,28 @@ export function ClienteDialog({ open, onOpenChange, cliente }: ClienteDialogProp
             </div>
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="endereco" className="text-sm font-medium">Endereço</Label>
-            <Input
-              id="endereco"
-              value={endereco}
-              onChange={(e) => setEndereco(e.target.value)}
-              placeholder="Digite o endereço completo"
-              className="h-10 sm:h-11"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="endereco" className="text-sm font-medium">Endereço</Label>
+              <Input
+                id="endereco"
+                value={endereco}
+                onChange={(e) => setEndereco(e.target.value)}
+                placeholder="Digite o endereço completo"
+                className="h-10 sm:h-11"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="nacionalidade" className="text-sm font-medium">Nacionalidade</Label>
+              <Input
+                id="nacionalidade"
+                value={nacionalidade}
+                onChange={(e) => setNacionalidade(e.target.value)}
+                placeholder="Brasil, Estados Unidos, França..."
+                className="h-10 sm:h-11"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

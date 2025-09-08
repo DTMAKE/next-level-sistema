@@ -19,6 +19,7 @@ export default function NovoCliente() {
     telefone: "",
     endereco: "",
     cnpj: "",
+    nacionalidade: "",
     status: "cliente",
   });
 
@@ -38,6 +39,7 @@ export default function NovoCliente() {
         telefone: formData.telefone.trim() || undefined,
         endereco: formData.endereco.trim() || undefined,
         cnpj: formData.cnpj.trim() || undefined,
+        nacionalidade: formData.nacionalidade.trim() || undefined,
         status: formData.status,
       });
       navigate("/clientes");
@@ -118,7 +120,7 @@ export default function NovoCliente() {
                       id="telefone"
                       value={formData.telefone}
                       onChange={(e) => handleInputChange("telefone", e.target.value)}
-                      placeholder="(11) 99999-9999"
+                      placeholder="+55 11 99999-9999 ou +1 555-123-4567"
                       className="h-12 text-base"
                       required
                     />
@@ -163,18 +165,33 @@ export default function NovoCliente() {
                   </div>
                 </div>
 
-                {/* Terceira linha: Endereço (largura completa) */}
-                <div className="space-y-2">
-                  <Label htmlFor="endereco" className="text-base font-medium">
-                    Endereço
-                  </Label>
-                  <Textarea
-                    id="endereco"
-                    value={formData.endereco}
-                    onChange={(e) => handleInputChange("endereco", e.target.value)}
-                    placeholder="Digite o endereço completo da empresa"
-                    className="min-h-[100px] text-base resize-none"
-                  />
+                {/* Terceira linha: Endereço e Nacionalidade */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="endereco" className="text-base font-medium">
+                      Endereço
+                    </Label>
+                    <Textarea
+                      id="endereco"
+                      value={formData.endereco}
+                      onChange={(e) => handleInputChange("endereco", e.target.value)}
+                      placeholder="Digite o endereço completo da empresa"
+                      className="min-h-[100px] text-base resize-none"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="nacionalidade" className="text-base font-medium">
+                      Nacionalidade
+                    </Label>
+                    <Input
+                      id="nacionalidade"
+                      value={formData.nacionalidade}
+                      onChange={(e) => handleInputChange("nacionalidade", e.target.value)}
+                      placeholder="Brasil, Estados Unidos, França..."
+                      className="h-12 text-base"
+                    />
+                  </div>
                 </div>
 
                 {/* Required fields note */}

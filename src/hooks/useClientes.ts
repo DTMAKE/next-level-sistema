@@ -11,6 +11,7 @@ export interface Cliente {
   endereco?: string;
   cnpj?: string;
   status?: string;
+  nacionalidade?: string;
   user_id: string;
   created_at: string;
   updated_at: string;
@@ -30,6 +31,7 @@ export interface CreateClienteData {
   endereco?: string;
   cnpj?: string;
   status?: string;
+  nacionalidade?: string;
 }
 
 export interface UpdateClienteData extends CreateClienteData {

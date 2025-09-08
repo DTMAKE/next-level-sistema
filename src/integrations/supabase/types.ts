@@ -177,6 +177,7 @@ export type Database = {
           email: string
           endereco: string | null
           id: string
+          nacionalidade: string | null
           nome: string
           status: string | null
           telefone: string | null
@@ -189,6 +190,7 @@ export type Database = {
           email: string
           endereco?: string | null
           id?: string
+          nacionalidade?: string | null
           nome: string
           status?: string | null
           telefone?: string | null
@@ -201,6 +203,7 @@ export type Database = {
           email?: string
           endereco?: string | null
           id?: string
+          nacionalidade?: string | null
           nome?: string
           status?: string | null
           telefone?: string | null
