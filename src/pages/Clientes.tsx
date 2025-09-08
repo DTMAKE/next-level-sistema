@@ -8,11 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, Plus, Mail, Phone, Building2, Edit, Trash2, MoreVertical, Grid, List, Filter } from "lucide-react";
+import { Search, Plus, Mail, Phone, Building2, Edit, Trash2, MoreVertical, Grid, List, Filter, Eye } from "lucide-react";
 import { useClientes, type Cliente } from "@/hooks/useClientes";
 import { useLeads, type Lead } from "@/hooks/useLeads";
 import { useAuth } from "@/contexts/AuthContext";
 import { ClienteDialog } from "@/components/Clientes/ClienteDialog";
+import { ClienteDetailsDialog } from "@/components/Clientes/ClienteDetailsDialog";
 import { DeleteClienteDialog } from "@/components/Clientes/DeleteClienteDialog";
 import { StatusSelector } from "@/components/Clientes/StatusSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -28,6 +29,7 @@ export default function Clientes() {
   const [viewMode, setViewMode] = useState<"cards" | "table">(isMobile ? "cards" : "table");
   const [statusFilter, setStatusFilter] = useState<FilterType>("todos");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedCliente, setSelectedCliente] = useState<Cliente | undefined>();
 
@@ -113,6 +115,11 @@ export default function Clientes() {
   const handleEditCliente = (cliente: Cliente) => {
     setSelectedCliente(cliente);
     setDialogOpen(true);
+  };
+
+  const handleViewCliente = (cliente: Cliente) => {
+    setSelectedCliente(cliente);
+    setDetailsDialogOpen(true);
   };
   
   const handleDeleteCliente = (cliente: Cliente) => {
@@ -271,6 +278,12 @@ export default function Clientes() {
                         </div>
                         
                         <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                          {item.type === "cliente" && (
+                            <Button variant="outline" size="sm" className="flex-1" onClick={() => handleViewCliente(item as Cliente)}>
+                              <Eye className="h-3 w-3 mr-1" />
+                              Detalhes
+                            </Button>
+                          )}
                           <Button variant="outline" size="sm" className="flex-1" onClick={() => item.type === "cliente" ? handleEditCliente(item as Cliente) : navigate("/leads")}>
                             <Edit className="h-3 w-3 mr-1" />
                             Editar
@@ -319,6 +332,12 @@ export default function Clientes() {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
+                                  {item.type === "cliente" && (
+                                    <DropdownMenuItem onClick={() => handleViewCliente(item as Cliente)}>
+                                      <Eye className="h-4 w-4 mr-2" />
+                                      Ver Detalhes
+                                    </DropdownMenuItem>
+                                  )}
                                   <DropdownMenuItem onClick={() => item.type === "cliente" ? handleEditCliente(item as Cliente) : navigate("/leads")}>
                                     <Edit className="h-4 w-4 mr-2" />
                                     Editar
@@ -360,6 +379,7 @@ export default function Clientes() {
       </Card>
 
       <ClienteDialog open={dialogOpen} onOpenChange={setDialogOpen} cliente={selectedCliente} />
+      <ClienteDetailsDialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen} cliente={selectedCliente} />
       <DeleteClienteDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} cliente={selectedCliente} />
     </div>;
 }
