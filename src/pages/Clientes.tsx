@@ -277,20 +277,20 @@ export default function Clientes() {
                             </div>}
                         </div>
                         
-                        <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                        <div className="flex flex-col xs:flex-row gap-2" onClick={e => e.stopPropagation()}>
                           {item.type === "cliente" && (
-                            <Button variant="outline" size="sm" className="flex-1" onClick={() => handleViewCliente(item as Cliente)}>
-                              <Eye className="h-3 w-3 mr-1" />
-                              Detalhes
+                            <Button variant="outline" size="sm" className="flex-1 min-h-[40px] touch-target" onClick={() => handleViewCliente(item as Cliente)}>
+                              <Eye className="h-4 w-4 xs:h-3 xs:w-3 mr-1 xs:mr-1" />
+                              <span className="text-sm">Detalhes</span>
                             </Button>
                           )}
-                          <Button variant="outline" size="sm" className="flex-1" onClick={() => item.type === "cliente" ? handleEditCliente(item as Cliente) : navigate("/leads")}>
-                            <Edit className="h-3 w-3 mr-1" />
-                            Editar
+                          <Button variant="outline" size="sm" className="flex-1 min-h-[40px] touch-target" onClick={() => item.type === "cliente" ? handleEditCliente(item as Cliente) : navigate("/leads")}>
+                            <Edit className="h-4 w-4 xs:h-3 xs:w-3 mr-1 xs:mr-1" />
+                            <span className="text-sm">Editar</span>
                           </Button>
-                          {item.type === "cliente" && <Button variant="outline" size="sm" className="flex-1" onClick={() => handleDeleteCliente(item as Cliente)}>
-                            <Trash2 className="h-3 w-3 mr-1" />
-                            Excluir
+                          {item.type === "cliente" && <Button variant="outline" size="sm" className="flex-1 min-h-[40px] touch-target" onClick={() => handleDeleteCliente(item as Cliente)}>
+                            <Trash2 className="h-4 w-4 xs:h-3 xs:w-3 mr-1 xs:mr-1" />
+                            <span className="text-sm">Excluir</span>
                           </Button>}
                         </div>
                       </div>
