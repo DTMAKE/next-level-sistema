@@ -2,8 +2,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Building2, Mail, Phone, MapPin, FileText, Calendar, Clock } from "lucide-react";
+import { ArrowLeft, Building2, Mail, Phone, MapPin, FileText, Calendar, Clock, Globe, UserCheck } from "lucide-react";
 import { useCliente } from "@/hooks/useClientes";
+import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function ClienteDetalhes() {
@@ -109,9 +110,16 @@ export default function ClienteDetalhes() {
           <div className="p-3 rounded-lg bg-accent/10">
             <Building2 className="h-6 w-6 text-accent" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl sm:text-3xl font-bold">{cliente.nome}</h1>
-            <p className="text-muted-foreground">Informações do cliente</p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-muted-foreground">Informações do cliente</p>
+              {cliente.status && (
+                <Badge variant={cliente.status === 'cliente' ? 'default' : 'secondary'} className="text-xs">
+                  {cliente.status === 'cliente' ? 'Cliente Ativo' : cliente.status}
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -162,6 +170,36 @@ export default function ClienteDetalhes() {
                 </div>
               </div>
             )}
+
+            {/* Nationality Card */}
+            {cliente.nacionalidade && (
+              <div className="p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
+                <div className="flex items-start gap-4">
+                  <div className="p-2 rounded-lg bg-accent/10">
+                    <Globe className="h-5 w-5 text-accent" />
+                  </div>
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <p className="text-sm font-medium text-muted-foreground">Nacionalidade</p>
+                    <p className="text-base font-medium">{cliente.nacionalidade}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Status Card */}
+            <div className="p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
+              <div className="flex items-start gap-4">
+                <div className="p-2 rounded-lg bg-accent/10">
+                  <UserCheck className="h-5 w-5 text-accent" />
+                </div>
+                <div className="space-y-1 min-w-0 flex-1">
+                  <p className="text-sm font-medium text-muted-foreground">Status</p>
+                  <Badge variant={cliente.status === 'cliente' ? 'default' : 'secondary'}>
+                    {cliente.status === 'cliente' ? 'Cliente Ativo' : cliente.status || 'Não definido'}
+                  </Badge>
+                </div>
+              </div>
+            </div>
 
             {/* Address Card */}
             {cliente.endereco && (
