@@ -346,3 +346,10 @@
     transform: translateY(0px) scale(1);
   }
 }
+
+/* Touch Target - Minimum recommended size for mobile accessibility */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  @apply touch-manipulation;
+}

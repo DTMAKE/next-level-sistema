@@ -235,23 +235,24 @@ export default function Servicos() {
                           </div>
                         </div>
                         
-                        <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                          <Button variant="outline" size="sm" onClick={() => handleEdit(servico)}>
-                            <Edit className="h-3 w-3 mr-1" />
-                            Editar
+                        <div className="flex flex-col xs:flex-row gap-2" onClick={e => e.stopPropagation()}>
+                          <Button variant="outline" size="sm" className="flex-1 min-h-[40px] touch-target" onClick={() => handleEdit(servico)}>
+                            <Edit className="h-4 w-4 xs:h-3 xs:w-3 mr-1" />
+                            <span className="text-sm">Editar</span>
                           </Button>
                           <Button 
                             variant={servico.ativo ? "destructive" : "default"} 
                             size="sm" 
+                            className="flex-1 min-h-[40px] touch-target"
                             onClick={() => handleToggleStatus(servico)}
                             disabled={toggleServicoStatus.isPending}
                           >
-                            <Power className="h-3 w-3 mr-1" />
-                            {servico.ativo ? "Desativar" : "Ativar"}
+                            <Power className="h-4 w-4 xs:h-3 xs:w-3 mr-1" />
+                            <span className="text-sm">{servico.ativo ? "Desativar" : "Ativar"}</span>
                           </Button>
-                          <Button variant="outline" size="sm" onClick={() => handleDelete(servico)}>
-                            <Trash2 className="h-3 w-3 mr-1" />
-                            Excluir
+                          <Button variant="outline" size="sm" className="flex-1 min-h-[40px] touch-target" onClick={() => handleDelete(servico)}>
+                            <Trash2 className="h-4 w-4 xs:h-3 xs:w-3 mr-1" />
+                            <span className="text-sm">Excluir</span>
                           </Button>
                         </div>
                       </div>
