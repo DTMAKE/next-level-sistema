@@ -316,8 +316,8 @@ export function TaskDialog({ open, onOpenChange, projetoId, colunaId, tarefa }: 
                     <PopoverContent 
                       className="w-auto p-0 max-w-[90vw]" 
                       align="center"
-                      side="bottom"
-                      sideOffset={4}
+                      side="top"
+                      sideOffset={8}
                     >
                       <Calendar
                         mode="single"
