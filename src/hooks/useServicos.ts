@@ -175,16 +175,22 @@ export function useDeleteServico() {
 
   return useMutation({
     mutationFn: async (servicoId: string) => {
+      console.log("useDeleteServico: Iniciando deleção do serviço", servicoId);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
+      console.log("useDeleteServico: Usuário autenticado", user.id);
       const { error } = await supabase
         .from("servicos")
         .delete()
         .eq("id", servicoId)
         .eq("user_id", user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("useDeleteServico: Erro ao deletar", error);
+        throw error;
+      }
+      console.log("useDeleteServico: Serviço deletado com sucesso");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["servicos"] });

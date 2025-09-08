@@ -97,6 +97,7 @@ export default function Servicos() {
   
   const confirmDelete = () => {
     if (selectedServico) {
+      console.log("Tentando deletar serviço:", selectedServico.id, selectedServico.nome);
       deleteServico.mutate(selectedServico.id);
       setDeleteDialogOpen(false);
       setSelectedServico(null);
