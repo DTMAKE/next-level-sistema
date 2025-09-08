@@ -315,7 +315,7 @@ export function TaskDialog({ open, onOpenChange, projetoId, colunaId, tarefa }: 
                     </PopoverTrigger>
                     <PopoverContent 
                       className="w-auto p-0 max-w-[90vw]" 
-                      align="start"
+                      align="center"
                       side="bottom"
                       sideOffset={4}
                     >
