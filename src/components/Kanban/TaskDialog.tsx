@@ -313,13 +313,19 @@ export function TaskDialog({ open, onOpenChange, projetoId, colunaId, tarefa }: 
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent 
+                      className="w-auto p-0 max-w-[90vw]" 
+                      align="start"
+                      side="bottom"
+                      sideOffset={4}
+                    >
                       <Calendar
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
                         disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                         initialFocus
+                        className="p-3 pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>
