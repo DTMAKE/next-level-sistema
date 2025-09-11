@@ -39,7 +39,7 @@ export function DeleteServicoDialog({
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
-            onClick={onConfirm}
+            onClick={(e) => { e.stopPropagation(); onConfirm(); }}
             disabled={isLoading}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >

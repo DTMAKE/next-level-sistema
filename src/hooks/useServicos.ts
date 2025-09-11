@@ -196,8 +196,10 @@ export function useDeleteServico() {
       queryClient.invalidateQueries({ queryKey: ["servicos"] });
       toast.success("Serviço deletado com sucesso!");
     },
-    onError: (error) => {
-      toast.error("Erro ao deletar serviço. Tente novamente.");
+    onError: (error: any) => {
+      console.error("useDeleteServico: onError", error);
+      const message = error?.message || (error as any)?.details || "Erro ao deletar serviço. Tente novamente.";
+      toast.error(message);
     },
   });
 }
