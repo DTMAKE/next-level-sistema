@@ -19,6 +19,7 @@ export default function NovoServico() {
   
   const [formData, setFormData] = useState({
     nome: "",
+    descricao: "",
     valor_implementacao: "",
     valor_minimo: "",
     valor_medio: "",
@@ -39,6 +40,7 @@ export default function NovoServico() {
     try {
       await createServico.mutateAsync({
         nome: formData.nome.trim(),
+        descricao: formData.descricao.trim() || null,
         valor_implementacao: parseFloat(formData.valor_implementacao),
         valor_minimo: parseFloat(formData.valor_minimo),
         valor_medio: parseFloat(formData.valor_medio), 
@@ -96,6 +98,21 @@ export default function NovoServico() {
                     placeholder="Digite o nome do serviço"
                     className="h-12 text-base"
                     required
+                  />
+                </div>
+
+                {/* Descrição */}
+                <div className="space-y-2">
+                  <Label htmlFor="descricao" className="text-base font-medium">
+                    Descrição
+                  </Label>
+                  <Textarea
+                    id="descricao"
+                    value={formData.descricao}
+                    onChange={(e) => handleInputChange("descricao", e.target.value)}
+                    placeholder="Descrição detalhada do serviço"
+                    className="text-base resize-none"
+                    rows={3}
                   />
                 </div>
 

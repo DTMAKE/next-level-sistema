@@ -24,6 +24,7 @@ interface ServicoDialogProps {
 export function ServicoDialog({ open, onOpenChange, servico }: ServicoDialogProps) {
   const [formData, setFormData] = useState({
     nome: "",
+    descricao: "",
     valor_implementacao: "",
     valor_minimo: "",
     valor_maximo: "",
@@ -38,6 +39,7 @@ export function ServicoDialog({ open, onOpenChange, servico }: ServicoDialogProp
     if (servico) {
       setFormData({
         nome: servico.nome || "",
+        descricao: servico.descricao || "",
         valor_implementacao: servico.valor_implementacao?.toString() || "0",
         valor_minimo: servico.valor_minimo?.toString() || servico.valor?.toString() || "",
         valor_maximo: servico.valor_maximo?.toString() || servico.valor?.toString() || "",
@@ -47,6 +49,7 @@ export function ServicoDialog({ open, onOpenChange, servico }: ServicoDialogProp
     } else {
       setFormData({
         nome: "",
+        descricao: "",
         valor_implementacao: "",
         valor_minimo: "",
         valor_maximo: "",
@@ -72,6 +75,7 @@ export function ServicoDialog({ open, onOpenChange, servico }: ServicoDialogProp
 
     const servicoData = {
       nome: formData.nome,
+      descricao: formData.descricao || null,
       valor_implementacao: parseFloat(formData.valor_implementacao),
       valor_minimo: parseFloat(formData.valor_minimo),
       valor_maximo: parseFloat(formData.valor_maximo), 
@@ -123,6 +127,17 @@ export function ServicoDialog({ open, onOpenChange, servico }: ServicoDialogProp
               onChange={(e) => handleInputChange("nome", e.target.value)}
               placeholder="Nome do serviço"
               required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="descricao">Descrição</Label>
+            <Textarea
+              id="descricao"
+              value={formData.descricao}
+              onChange={(e) => handleInputChange("descricao", e.target.value)}
+              placeholder="Descrição detalhada do serviço"
+              rows={3}
             />
           </div>
 
