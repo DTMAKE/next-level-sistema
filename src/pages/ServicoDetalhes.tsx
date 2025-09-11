@@ -32,6 +32,13 @@ export default function ServicoDetalhes() {
     }).format(value);
   };
 
+  const formatValueRange = (servico: any) => {
+    if (servico.valor_minimo && servico.valor_maximo) {
+      return `${formatCurrency(servico.valor_minimo)} - ${formatCurrency(servico.valor_maximo)}`;
+    }
+    return formatCurrency(servico.valor_medio || servico.valor);
+  };
+
   const getCategoriaLabel = (categoria: string) => {
     const categorias: Record<string, string> = {
       agente_ia: "Agente IA",
@@ -186,12 +193,36 @@ export default function ServicoDetalhes() {
                 </CardTitle>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Valor de Venda</label>
+                    <label className="text-sm font-medium text-muted-foreground">Valor de Implementação</label>
                     <div className="flex items-center gap-2 mt-1">
                       <DollarSign className="h-4 w-4" />
                       <p className="text-lg font-semibold">
-                        {formatCurrency(servico.valor)}
+                        {formatCurrency(servico.valor_implementacao || 0)}
                       </p>
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="text-sm font-medium text-muted-foreground">Valores Mensais</label>
+                    <div className="grid grid-cols-3 gap-2 mt-1">
+                      <div className="text-center">
+                        <p className="text-xs text-muted-foreground">Mínimo</p>
+                        <p className="text-sm font-semibold">
+                          {formatCurrency(servico.valor_minimo || 0)}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-muted-foreground">Médio</p>
+                        <p className="text-sm font-semibold">
+                          {formatCurrency(servico.valor_medio || servico.valor)}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-muted-foreground">Máximo</p>
+                        <p className="text-sm font-semibold">
+                          {formatCurrency(servico.valor_maximo || 0)}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
@@ -244,29 +275,29 @@ export default function ServicoDetalhes() {
               </Card>
 
               {/* Financial Analysis (Admin only) */}
-              {isAdmin && servico.custo && servico.valor > 0 && (
+              {isAdmin && servico.custo && (servico.valor_medio || servico.valor) > 0 && (
                 <Card className="shadow-premium border-0 bg-card/50 backdrop-blur-sm p-4">
                   <CardTitle className="text-lg mb-4 flex items-center gap-2">
                     <Target className="h-5 w-5" />
-                    Análise Financeira
+                    Análise Financeira (baseada no valor médio mensal)
                   </CardTitle>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="text-sm font-medium text-muted-foreground">Margem Bruta</label>
+                      <label className="text-sm font-medium text-muted-foreground">Margem Bruta Mensal</label>
                       <p className="text-lg font-semibold mt-1">
-                        {formatCurrency(servico.valor - servico.custo)}
+                        {formatCurrency((servico.valor_medio || servico.valor) - servico.custo)}
                       </p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Margem %</label>
                       <p className="text-lg font-semibold mt-1">
-                        {(((servico.valor - servico.custo) / servico.valor) * 100).toFixed(1)}%
+                        {((((servico.valor_medio || servico.valor) - servico.custo) / (servico.valor_medio || servico.valor)) * 100).toFixed(1)}%
                       </p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-muted-foreground">Markup</label>
                       <p className="text-lg font-semibold mt-1">
-                        {servico.custo > 0 ? (servico.valor / servico.custo).toFixed(2) + "x" : "N/A"}
+                        {servico.custo > 0 ? ((servico.valor_medio || servico.valor) / servico.custo).toFixed(2) + "x" : "N/A"}
                       </p>
                     </div>
                   </div>
