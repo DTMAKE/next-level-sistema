@@ -26,7 +26,10 @@ export default function EditarServico() {
   const [formData, setFormData] = useState({
     nome: "",
     descricao: "",
-    valor: "",
+    valor_implementacao: "",
+    valor_minimo: "",
+    valor_medio: "",
+    valor_maximo: "",
     custo: "",
     categoria: "agente_ia",
     tempo_entrega_dias: "",
@@ -40,7 +43,10 @@ export default function EditarServico() {
       setFormData({
         nome: servico.nome || "",
         descricao: servico.descricao || "",
-        valor: servico.valor?.toString() || "",
+        valor_implementacao: servico.valor_implementacao?.toString() || "0",
+        valor_minimo: servico.valor_minimo?.toString() || servico.valor?.toString() || "",
+        valor_medio: servico.valor_medio?.toString() || servico.valor?.toString() || "",
+        valor_maximo: servico.valor_maximo?.toString() || servico.valor?.toString() || "",
         custo: servico.custo?.toString() || "",
         categoria: servico.categoria || "agente_ia",
         tempo_entrega_dias: servico.tempo_entrega_dias?.toString() || "",
@@ -61,10 +67,10 @@ export default function EditarServico() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.nome || !formData.valor) {
+    if (!formData.nome || !formData.valor_implementacao || !formData.valor_minimo || !formData.valor_medio || !formData.valor_maximo) {
       toast({
         title: "Erro",
-        description: "Nome e valor são obrigatórios",
+        description: "Nome, valor de implementação e valores mensais são obrigatórios",
         variant: "destructive",
       });
       return;
@@ -75,7 +81,11 @@ export default function EditarServico() {
         id: id!,
         nome: formData.nome,
         descricao: formData.descricao || null,
-        valor: parseFloat(formData.valor),
+        valor_implementacao: parseFloat(formData.valor_implementacao),
+        valor_minimo: parseFloat(formData.valor_minimo),
+        valor_medio: parseFloat(formData.valor_medio),
+        valor_maximo: parseFloat(formData.valor_maximo),
+        valor: parseFloat(formData.valor_medio), // Keep for backwards compatibility
         custo: formData.custo ? parseFloat(formData.custo) : null,
         categoria: formData.categoria,
         tempo_entrega_dias: formData.tempo_entrega_dias ? parseInt(formData.tempo_entrega_dias) : null,
@@ -92,7 +102,11 @@ export default function EditarServico() {
     }
   };
 
-  const isFormValid = formData.nome && formData.valor && !isNaN(parseFloat(formData.valor));
+  const isFormValid = formData.nome && formData.valor_implementacao && formData.valor_minimo && formData.valor_medio && formData.valor_maximo && 
+                      !isNaN(parseFloat(formData.valor_implementacao)) &&
+                      !isNaN(parseFloat(formData.valor_minimo)) && 
+                      !isNaN(parseFloat(formData.valor_medio)) && 
+                      !isNaN(parseFloat(formData.valor_maximo));
 
   if (error) {
     return (
@@ -192,37 +206,84 @@ export default function EditarServico() {
                     />
                   </div>
 
-                  {/* Preço e Custo */}
-                  <div className={`grid gap-4 ${isAdmin ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
-                    <div>
-                      <Label htmlFor="valor">Valor de Venda *</Label>
-                      <Input
-                        id="valor"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={formData.valor}
-                        onChange={(e) => handleInputChange("valor", e.target.value)}
-                        placeholder="0.00"
-                        required
-                      />
-                    </div>
-                    
-                    {isAdmin && (
+                  {/* Valor de Implementação */}
+                  <div>
+                    <Label htmlFor="valor_implementacao">Valor de Implementação (R$) *</Label>
+                    <Input
+                      id="valor_implementacao"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.valor_implementacao}
+                      onChange={(e) => handleInputChange("valor_implementacao", e.target.value)}
+                      placeholder="0.00"
+                      required
+                    />
+                  </div>
+
+                  {/* Valores Mensais */}
+                  <div>
+                    <Label className="text-base font-medium">Valores por Mês *</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
                       <div>
-                        <Label htmlFor="custo">Custo Interno</Label>
+                        <Label htmlFor="valor_minimo" className="text-sm">Valor Mínimo (R$)</Label>
                         <Input
-                          id="custo"
+                          id="valor_minimo"
                           type="number"
                           step="0.01"
                           min="0"
-                          value={formData.custo}
-                          onChange={(e) => handleInputChange("custo", e.target.value)}
+                          value={formData.valor_minimo}
+                          onChange={(e) => handleInputChange("valor_minimo", e.target.value)}
                           placeholder="0.00"
+                          required
                         />
                       </div>
-                    )}
+                      
+                      <div>
+                        <Label htmlFor="valor_medio" className="text-sm">Valor Médio (R$)</Label>
+                        <Input
+                          id="valor_medio"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={formData.valor_medio}
+                          onChange={(e) => handleInputChange("valor_medio", e.target.value)}
+                          placeholder="0.00"
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="valor_maximo" className="text-sm">Valor Máximo (R$)</Label>
+                        <Input
+                          id="valor_maximo"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={formData.valor_maximo}
+                          onChange={(e) => handleInputChange("valor_maximo", e.target.value)}
+                          placeholder="0.00"
+                          required
+                        />
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Custo (se admin) */}
+                  {isAdmin && (
+                    <div>
+                      <Label htmlFor="custo">Custo Interno</Label>
+                      <Input
+                        id="custo"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={formData.custo}
+                        onChange={(e) => handleInputChange("custo", e.target.value)}
+                        placeholder="0.00"
+                      />
+                    </div>
+                  )}
 
                   {/* Categoria e Tempo de Entrega */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
