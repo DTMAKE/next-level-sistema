@@ -103,11 +103,18 @@ export default function Servicos() {
       setSelectedServico(null);
     }
   };
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
+  const formatValueRange = (servico: any) => {
+    const formatCurrency = (value: number) => {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(value);
+    };
+    
+    if (servico.valor_minimo && servico.valor_maximo) {
+      return `${formatCurrency(servico.valor_minimo)} - ${formatCurrency(servico.valor_maximo)}`;
+    }
+    return formatCurrency(servico.valor_medio || servico.valor);
   };
   return <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
     <div className="flex flex-row justify-between items-center gap-4">
@@ -223,7 +230,7 @@ export default function Servicos() {
                           <div className="flex items-center gap-2">
                             <DollarSign className="h-4 w-4 text-accent" />
                             <span className="font-semibold text-accent">
-                              {formatCurrency(servico.valor)}
+                              {formatValueRange(servico)}
                             </span>
                           </div>
                         </div>
@@ -267,7 +274,7 @@ export default function Servicos() {
                           </TableCell>
                           <TableCell>
                             <span className="font-semibold text-accent">
-                              {formatCurrency(servico.valor)}
+                              {formatValueRange(servico)}
                             </span>
                           </TableCell>
                           <TableCell>

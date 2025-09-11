@@ -9,6 +9,9 @@ interface Servico {
   nome: string;
   descricao?: string;
   valor: number;
+  valor_minimo?: number;
+  valor_maximo?: number;
+  valor_medio?: number;
   custo?: number;
   ativo: boolean;
   categoria?: string;
@@ -23,6 +26,9 @@ interface CreateServicoData {
   nome: string;
   descricao?: string;
   valor: number;
+  valor_minimo?: number;
+  valor_maximo?: number;
+  valor_medio?: number;
   custo?: number;
   ativo?: boolean;
   categoria?: string;
@@ -35,6 +41,9 @@ interface UpdateServicoData {
   nome?: string;
   descricao?: string;
   valor?: number;
+  valor_minimo?: number;
+  valor_maximo?: number;
+  valor_medio?: number;
   custo?: number;
   ativo?: boolean;
   categoria?: string;

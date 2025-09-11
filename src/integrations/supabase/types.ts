@@ -830,6 +830,9 @@ export type Database = {
           updated_at: string
           user_id: string
           valor: number
+          valor_maximo: number | null
+          valor_medio: number | null
+          valor_minimo: number | null
         }
         Insert: {
           ativo?: boolean
@@ -845,6 +848,9 @@ export type Database = {
           updated_at?: string
           user_id: string
           valor?: number
+          valor_maximo?: number | null
+          valor_medio?: number | null
+          valor_minimo?: number | null
         }
         Update: {
           ativo?: boolean
@@ -860,6 +866,9 @@ export type Database = {
           updated_at?: string
           user_id?: string
           valor?: number
+          valor_maximo?: number | null
+          valor_medio?: number | null
+          valor_minimo?: number | null
         }
         Relationships: []
       }
