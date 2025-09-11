@@ -19,7 +19,9 @@ export default function NovoServico() {
   
   const [formData, setFormData] = useState({
     nome: "",
-    valor: "",
+    valor_minimo: "",
+    valor_medio: "",
+    valor_maximo: "",
     custo: "",
     ativo: true,
   });
@@ -31,12 +33,15 @@ export default function NovoServico() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.nome.trim() || !formData.valor) return;
+    if (!formData.nome.trim() || !formData.valor_minimo || !formData.valor_medio || !formData.valor_maximo) return;
 
     try {
       await createServico.mutateAsync({
         nome: formData.nome.trim(),
-        valor: parseFloat(formData.valor),
+        valor_minimo: parseFloat(formData.valor_minimo),
+        valor_medio: parseFloat(formData.valor_medio), 
+        valor_maximo: parseFloat(formData.valor_maximo),
+        valor: parseFloat(formData.valor_medio), // Keep for backwards compatibility
         custo: formData.custo ? parseFloat(formData.custo) : 0,
         ativo: formData.ativo,
       });
@@ -46,7 +51,7 @@ export default function NovoServico() {
     }
   };
 
-  const isFormValid = formData.nome.trim() && formData.valor;
+  const isFormValid = formData.nome.trim() && formData.valor_minimo && formData.valor_medio && formData.valor_maximo;
 
   return (
     <div className="min-h-screen bg-gradient-elegant">
@@ -92,25 +97,65 @@ export default function NovoServico() {
                   />
                 </div>
 
-                {/* Segunda linha: Valor, Custo (se admin) e Status */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="valor" className="text-base font-medium">
-                      Valor de Venda *
-                    </Label>
-                    <Input
-                      id="valor"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={formData.valor}
-                      onChange={(e) => handleInputChange("valor", e.target.value)}
-                      placeholder="0,00"
-                      className="h-12 text-base"
-                      required
-                    />
+                {/* Segunda linha: Faixa de Valores */}
+                <div className="space-y-4">
+                  <Label className="text-base font-medium">Faixa de Valores *</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="valor_minimo" className="text-sm font-medium text-muted-foreground">
+                        Valor Mínimo (R$)
+                      </Label>
+                      <Input
+                        id="valor_minimo"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={formData.valor_minimo}
+                        onChange={(e) => handleInputChange("valor_minimo", e.target.value)}
+                        placeholder="0,00"
+                        className="h-12 text-base"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="valor_medio" className="text-sm font-medium text-muted-foreground">
+                        Valor Médio (R$)
+                      </Label>
+                      <Input
+                        id="valor_medio"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={formData.valor_medio}
+                        onChange={(e) => handleInputChange("valor_medio", e.target.value)}
+                        placeholder="0,00"
+                        className="h-12 text-base"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="valor_maximo" className="text-sm font-medium text-muted-foreground">
+                        Valor Máximo (R$)
+                      </Label>
+                      <Input
+                        id="valor_maximo"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={formData.valor_maximo}
+                        onChange={(e) => handleInputChange("valor_maximo", e.target.value)}
+                        placeholder="0,00"
+                        className="h-12 text-base"
+                        required
+                      />
+                    </div>
                   </div>
+                </div>
 
+                {/* Terceira linha: Custo (se admin) e Status */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {isAdmin && (
                     <div className="space-y-2">
                       <Label htmlFor="custo" className="text-base font-medium">
