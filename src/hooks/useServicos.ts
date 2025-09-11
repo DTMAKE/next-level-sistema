@@ -180,17 +180,19 @@ export function useDeleteServico() {
       if (!user) throw new Error("Usuário não autenticado");
 
       console.log("useDeleteServico: Usuário autenticado", user.id);
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("servicos")
         .delete()
         .eq("id", servicoId)
-        .eq("user_id", user.id);
+        .select()
+        .single();
 
       if (error) {
         console.error("useDeleteServico: Erro ao deletar", error);
         throw error;
       }
-      console.log("useDeleteServico: Serviço deletado com sucesso");
+      console.log("useDeleteServico: Serviço deletado com sucesso", data?.id);
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["servicos"] });
@@ -198,7 +200,11 @@ export function useDeleteServico() {
     },
     onError: (error: any) => {
       console.error("useDeleteServico: onError", error);
-      const message = error?.message || (error as any)?.details || "Erro ao deletar serviço. Tente novamente.";
+      const code = (error as any)?.code;
+      let message = (error as any)?.message || (error as any)?.details || "Erro ao deletar serviço. Tente novamente.";
+      if (code === '42501' || code === 'PGRST116' || code === 'PGRST123') {
+        message = "Você não tem permissão para excluir este serviço ou ele não existe.";
+      }
       toast.error(message);
     },
   });
