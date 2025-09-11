@@ -57,9 +57,9 @@ export function ServicosSelector({ servicosSelecionados, onServicosChange }: Ser
       const novoServico: ServicoSelecionado = {
         servico_id: servico.id,
         nome: servico.nome,
-        valor_unitario: servico.valor,
+        valor_unitario: servico.valor_implementacao || servico.valor,
         quantidade: 1,
-        valor_total: servico.valor,
+        valor_total: servico.valor_implementacao || servico.valor,
       };
       onServicosChange([...servicosSelecionados, novoServico]);
     }
@@ -136,8 +136,13 @@ export function ServicosSelector({ servicosSelecionados, onServicosChange }: Ser
                             )}
                             <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                               <Badge variant="outline" className="text-xs sm:text-sm px-2 py-1">
-                                {formatCurrency(servico.valor)}
+                                Implementação: {formatCurrency(servico.valor_implementacao || servico.valor)}
                               </Badge>
+                              {servico.valor_minimo && servico.valor_maximo && (
+                                <Badge variant="secondary" className="text-xs sm:text-sm px-2 py-1">
+                                  Mensal: {formatCurrency(servico.valor_minimo)} - {formatCurrency(servico.valor_maximo)}
+                                </Badge>
+                              )}
                             </div>
                           </div>
                           <Button
