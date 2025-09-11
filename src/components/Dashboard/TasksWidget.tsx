@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useUserTasks } from "@/hooks/useUserTasks";
-import { Link } from "react-router-dom";
 
 const prioridades = {
   baixa: { color: "hsl(var(--success))", bg: "hsl(var(--success) / 0.1)" },
@@ -53,11 +52,6 @@ export function TasksWidget() {
               </Badge>
             )}
           </CardTitle>
-          <Link to="/projetos">
-            <Button variant="outline" size="sm">
-              Ver Todos
-            </Button>
-          </Link>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">

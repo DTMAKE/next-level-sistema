@@ -26,7 +26,7 @@ import NovoServico from "./pages/NovoServico";
 import ServicoDetalhes from "./pages/ServicoDetalhes";
 import EditarServico from "./pages/EditarServico";
 import Servicos from "./pages/Servicos";
-import Projetos from "./pages/Projetos";
+
 import Financeiro from "./pages/Financeiro";
 import ContasReceber from "./pages/ContasReceber";
 import ContasPagar from "./pages/ContasPagar";
@@ -34,7 +34,7 @@ import Relatorios from "./pages/Relatorios";
 import Configuracoes from "./pages/Configuracoes";
 import Candidatos from "./pages/Candidatos";
 import Metas from "./pages/Metas";
-import MinhasTarefas from "./pages/MinhasTarefas";
+
 import Agenda from "./pages/Agenda";
 import NotFound from "./pages/NotFound";
 import HealthCheck from "./pages/HealthCheck";
@@ -145,13 +145,6 @@ const App = () => {
                       <EditarServico />
                     </ProtectedRoute>
                   } />
-                  <Route path="/projetos" element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Projetos />
-                      </Layout>
-                    </ProtectedRoute>
-                  } />
                  <Route path="/financeiro" element={
                    <ProtectedRoute requiredRole="admin">
                      <Layout>
@@ -198,13 +191,6 @@ const App = () => {
                       <ProtectedRoute>
                         <Layout>
                           <Metas />
-                        </Layout>
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/minhas-tarefas" element={
-                      <ProtectedRoute>
-                        <Layout>
-                          <MinhasTarefas />
                         </Layout>
                       </ProtectedRoute>
                     } />

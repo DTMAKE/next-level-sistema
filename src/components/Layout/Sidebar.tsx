@@ -24,8 +24,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Target,
-  Kanban,
-  CheckSquare,
   CalendarDays,
   TrendingUp,
   TrendingDown,
@@ -64,18 +62,6 @@ const modulosItems = [
     title: "Serviços",
     url: "/servicos",
     icon: Package,
-    roles: ["admin", "vendedor"],
-  },
-  {
-    title: "Projetos",
-    url: "/projetos",
-    icon: Kanban,
-    roles: ["admin", "vendedor"],
-  },
-  {
-    title: "Minhas Tarefas",
-    url: "/minhas-tarefas",
-    icon: CheckSquare,
     roles: ["admin", "vendedor"],
   },
   {
