@@ -19,6 +19,7 @@ export default function NovoServico() {
   
   const [formData, setFormData] = useState({
     nome: "",
+    valor_implementacao: "",
     valor_minimo: "",
     valor_medio: "",
     valor_maximo: "",
@@ -33,11 +34,12 @@ export default function NovoServico() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.nome.trim() || !formData.valor_minimo || !formData.valor_medio || !formData.valor_maximo) return;
+    if (!formData.nome.trim() || !formData.valor_implementacao || !formData.valor_minimo || !formData.valor_medio || !formData.valor_maximo) return;
 
     try {
       await createServico.mutateAsync({
         nome: formData.nome.trim(),
+        valor_implementacao: parseFloat(formData.valor_implementacao),
         valor_minimo: parseFloat(formData.valor_minimo),
         valor_medio: parseFloat(formData.valor_medio), 
         valor_maximo: parseFloat(formData.valor_maximo),
@@ -51,7 +53,7 @@ export default function NovoServico() {
     }
   };
 
-  const isFormValid = formData.nome.trim() && formData.valor_minimo && formData.valor_medio && formData.valor_maximo;
+  const isFormValid = formData.nome.trim() && formData.valor_implementacao && formData.valor_minimo && formData.valor_medio && formData.valor_maximo;
 
   return (
     <div className="min-h-screen bg-gradient-elegant">
@@ -97,9 +99,30 @@ export default function NovoServico() {
                   />
                 </div>
 
-                {/* Segunda linha: Faixa de Valores */}
+                {/* Segunda linha: Valor de Implementação */}
+                <div className="space-y-2">
+                  <Label htmlFor="valor_implementacao" className="text-base font-medium">
+                    Valor de Implementação (R$) *
+                  </Label>
+                  <Input
+                    id="valor_implementacao"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.valor_implementacao}
+                    onChange={(e) => handleInputChange("valor_implementacao", e.target.value)}
+                    placeholder="0,00"
+                    className="h-12 text-base"
+                    required
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Valor único cobrado no início do projeto
+                  </p>
+                </div>
+
+                {/* Terceira linha: Valores Mensais */}
                 <div className="space-y-4">
-                  <Label className="text-base font-medium">Faixa de Valores *</Label>
+                  <Label className="text-base font-medium">Valores por Mês *</Label>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="valor_minimo" className="text-sm font-medium text-muted-foreground">
@@ -152,6 +175,9 @@ export default function NovoServico() {
                       />
                     </div>
                   </div>
+                  <p className="text-sm text-muted-foreground">
+                    Faixa de valores para cobrança mensal recorrente
+                  </p>
                 </div>
 
                 {/* Terceira linha: Custo (se admin) e Status */}

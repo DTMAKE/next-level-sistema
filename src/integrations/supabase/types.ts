@@ -830,6 +830,7 @@ export type Database = {
           updated_at: string
           user_id: string
           valor: number
+          valor_implementacao: number | null
           valor_maximo: number | null
           valor_medio: number | null
           valor_minimo: number | null
@@ -848,6 +849,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           valor?: number
+          valor_implementacao?: number | null
           valor_maximo?: number | null
           valor_medio?: number | null
           valor_minimo?: number | null
@@ -866,6 +868,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           valor?: number
+          valor_implementacao?: number | null
           valor_maximo?: number | null
           valor_medio?: number | null
           valor_minimo?: number | null

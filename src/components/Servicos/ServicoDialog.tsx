@@ -24,6 +24,7 @@ interface ServicoDialogProps {
 export function ServicoDialog({ open, onOpenChange, servico }: ServicoDialogProps) {
   const [formData, setFormData] = useState({
     nome: "",
+    valor_implementacao: "",
     valor_minimo: "",
     valor_maximo: "",
     valor_medio: "",
@@ -37,6 +38,7 @@ export function ServicoDialog({ open, onOpenChange, servico }: ServicoDialogProp
     if (servico) {
       setFormData({
         nome: servico.nome || "",
+        valor_implementacao: servico.valor_implementacao?.toString() || "0",
         valor_minimo: servico.valor_minimo?.toString() || servico.valor?.toString() || "",
         valor_maximo: servico.valor_maximo?.toString() || servico.valor?.toString() || "",
         valor_medio: servico.valor_medio?.toString() || servico.valor?.toString() || "",
@@ -45,6 +47,7 @@ export function ServicoDialog({ open, onOpenChange, servico }: ServicoDialogProp
     } else {
       setFormData({
         nome: "",
+        valor_implementacao: "",
         valor_minimo: "",
         valor_maximo: "",
         valor_medio: "",
@@ -63,12 +66,13 @@ export function ServicoDialog({ open, onOpenChange, servico }: ServicoDialogProp
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.nome || !formData.valor_minimo || !formData.valor_maximo || !formData.valor_medio) {
+    if (!formData.nome || !formData.valor_implementacao || !formData.valor_minimo || !formData.valor_maximo || !formData.valor_medio) {
       return;
     }
 
     const servicoData = {
       nome: formData.nome,
+      valor_implementacao: parseFloat(formData.valor_implementacao),
       valor_minimo: parseFloat(formData.valor_minimo),
       valor_maximo: parseFloat(formData.valor_maximo), 
       valor_medio: parseFloat(formData.valor_medio),
@@ -89,7 +93,8 @@ export function ServicoDialog({ open, onOpenChange, servico }: ServicoDialogProp
   };
 
   const isLoading = createServico.isPending || updateServico.isPending;
-  const isFormValid = formData.nome && formData.valor_minimo && formData.valor_maximo && formData.valor_medio && 
+  const isFormValid = formData.nome && formData.valor_implementacao && formData.valor_minimo && formData.valor_maximo && formData.valor_medio && 
+                      !isNaN(parseFloat(formData.valor_implementacao)) &&
                       !isNaN(parseFloat(formData.valor_minimo)) && 
                       !isNaN(parseFloat(formData.valor_maximo)) && 
                       !isNaN(parseFloat(formData.valor_medio));
@@ -121,47 +126,64 @@ export function ServicoDialog({ open, onOpenChange, servico }: ServicoDialogProp
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="valor_minimo">Valor Mínimo (R$) *</Label>
-              <Input
-                id="valor_minimo"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.valor_minimo}
-                onChange={(e) => handleInputChange("valor_minimo", e.target.value)}
-                placeholder="0.00"
-                required
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="valor_medio">Valor Médio (R$) *</Label>
-              <Input
-                id="valor_medio"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.valor_medio}
-                onChange={(e) => handleInputChange("valor_medio", e.target.value)}
-                placeholder="0.00"
-                required
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="valor_maximo">Valor Máximo (R$) *</Label>
-              <Input
-                id="valor_maximo"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.valor_maximo}
-                onChange={(e) => handleInputChange("valor_maximo", e.target.value)}
-                placeholder="0.00"
-                required
-              />
+          <div>
+            <Label htmlFor="valor_implementacao">Valor de Implementação (R$) *</Label>
+            <Input
+              id="valor_implementacao"
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.valor_implementacao}
+              onChange={(e) => handleInputChange("valor_implementacao", e.target.value)}
+              placeholder="0.00"
+              required
+            />
+          </div>
+
+          <div>
+            <Label className="text-base font-medium">Valores por Mês *</Label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+              <div>
+                <Label htmlFor="valor_minimo" className="text-sm">Valor Mínimo (R$)</Label>
+                <Input
+                  id="valor_minimo"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.valor_minimo}
+                  onChange={(e) => handleInputChange("valor_minimo", e.target.value)}
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="valor_medio" className="text-sm">Valor Médio (R$)</Label>
+                <Input
+                  id="valor_medio"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.valor_medio}
+                  onChange={(e) => handleInputChange("valor_medio", e.target.value)}
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="valor_maximo" className="text-sm">Valor Máximo (R$)</Label>
+                <Input
+                  id="valor_maximo"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.valor_maximo}
+                  onChange={(e) => handleInputChange("valor_maximo", e.target.value)}
+                  placeholder="0.00"
+                  required
+                />
+              </div>
             </div>
           </div>
 
