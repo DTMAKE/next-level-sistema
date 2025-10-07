@@ -29,6 +29,7 @@ import {
   TrendingDown,
   UserCheck,
   LogOut,
+  Presentation,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -113,6 +114,12 @@ const adminItems = [
     title: "Configurações",
     url: "/configuracoes",
     icon: Settings,
+    roles: ["admin"],
+  },
+  {
+    title: "Criador de Propostas",
+    url: "/criador-propostas",
+    icon: Presentation,
     roles: ["admin"],
   },
 ];

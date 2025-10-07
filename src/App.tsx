@@ -34,7 +34,9 @@ import Relatorios from "./pages/Relatorios";
 import Configuracoes from "./pages/Configuracoes";
 import Candidatos from "./pages/Candidatos";
 import Metas from "./pages/Metas";
-
+import CriadorPropostas from "./pages/CriadorPropostas";
+import NovaProposta from "./pages/NovaProposta";
+import EditarProposta from "./pages/EditarProposta";
 import Agenda from "./pages/Agenda";
 import NotFound from "./pages/NotFound";
 import HealthCheck from "./pages/HealthCheck";
@@ -187,10 +189,31 @@ const App = () => {
                        </Layout>
                      </ProtectedRoute>
                    } />
-                     <Route path="/metas" element={
+                    <Route path="/metas" element={
                       <ProtectedRoute>
                         <Layout>
                           <Metas />
+                        </Layout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/criador-propostas" element={
+                      <ProtectedRoute requiredRole="admin">
+                        <Layout>
+                          <CriadorPropostas />
+                        </Layout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/nova-proposta" element={
+                      <ProtectedRoute requiredRole="admin">
+                        <Layout>
+                          <NovaProposta />
+                        </Layout>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/proposta/:id/editar" element={
+                      <ProtectedRoute requiredRole="admin">
+                        <Layout>
+                          <EditarProposta />
                         </Layout>
                       </ProtectedRoute>
                     } />
