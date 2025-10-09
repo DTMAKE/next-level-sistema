@@ -17,7 +17,7 @@ export default function Senhas() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-            <Shield className="h-6 w-6 sm:h-7 sm:w-7" />
+            
             Cofre de Senhas
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
