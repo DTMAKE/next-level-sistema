@@ -815,49 +815,41 @@ export type Database = {
         }
         Relationships: []
       }
-      propostas: {
+      senhas: {
         Row: {
-          cliente_id: string | null
-          contexto: string
           created_at: string
-          created_by: string
           id: string
-          slides_json: Json
-          status: string
+          observacoes: string | null
+          senha: string
           titulo: string
           updated_at: string
+          url: string | null
+          user_id: string
+          usuario: string | null
         }
         Insert: {
-          cliente_id?: string | null
-          contexto: string
           created_at?: string
-          created_by: string
           id?: string
-          slides_json?: Json
-          status?: string
+          observacoes?: string | null
+          senha: string
           titulo: string
           updated_at?: string
+          url?: string | null
+          user_id: string
+          usuario?: string | null
         }
         Update: {
-          cliente_id?: string | null
-          contexto?: string
           created_at?: string
-          created_by?: string
           id?: string
-          slides_json?: Json
-          status?: string
+          observacoes?: string | null
+          senha?: string
           titulo?: string
           updated_at?: string
+          url?: string | null
+          user_id?: string
+          usuario?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "propostas_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       servicos: {
         Row: {
