@@ -78,9 +78,18 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
 
     try {
       await createContaPagar.mutateAsync(createData);
-      setOpen(false);
-      form.reset();
+      form.reset({
+        descricao: "",
+        valor: undefined,
+        data_transacao: new Date(),
+        forma_pagamento: "a_vista",
+        parcelas: 2,
+        observacoes: "",
+        recorrente: false,
+        frequencia: "mensal",
+      });
       setSelectedFile(null);
+      setOpen(false);
     } catch (error) {
       console.error('Error creating conta a pagar:', error);
     }
@@ -95,12 +104,31 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
         setSelectedFile(file);
       } else {
         alert('Tipo de arquivo não permitido. Use PDF, JPG ou PNG.');
+        event.target.value = '';
       }
     }
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      // Reset everything when closing
+      form.reset({
+        descricao: "",
+        valor: undefined,
+        data_transacao: new Date(),
+        forma_pagamento: "a_vista",
+        parcelas: 2,
+        observacoes: "",
+        recorrente: false,
+        frequencia: "mensal",
+      });
+      setSelectedFile(null);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
@@ -368,6 +396,7 @@ export function ContaPagarDialog({ children }: ContaPagarDialogProps) {
                   accept=".pdf,.jpg,.jpeg,.png"
                   onChange={handleFileChange}
                   className="hidden"
+                  key={selectedFile?.name || 'empty'}
                 />
               </div>
             </div>
