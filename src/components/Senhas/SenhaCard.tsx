@@ -41,37 +41,37 @@ export function SenhaCard({ senha }: SenhaCardProps) {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <CardTitle className="text-lg font-semibold">{senha.titulo}</CardTitle>
-            <div className="flex gap-2">
+      <Card className="h-full flex flex-col">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between gap-2">
+            <CardTitle className="text-base sm:text-lg font-semibold break-words pr-2">{senha.titulo}</CardTitle>
+            <div className="flex gap-1 shrink-0">
               <SenhaDialog senha={senha}>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" className="h-8 w-8">
                   <Edit className="h-4 w-4" />
                 </Button>
               </SenhaDialog>
               <Button
                 variant="ghost"
                 size="icon"
+                className="h-8 w-8 text-destructive hover:text-destructive"
                 onClick={() => setDeleteDialogOpen(true)}
-                className="text-destructive hover:text-destructive"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 flex-1">
           {senha.usuario && (
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Usuário:</span>
-              <div className="flex items-center gap-2">
-                <span className="font-mono">{senha.usuario}</span>
+            <div className="space-y-1">
+              <span className="text-xs text-muted-foreground">Usuário:</span>
+              <div className="flex items-center gap-2 bg-muted/50 p-2 rounded-md">
+                <span className="font-mono text-sm truncate flex-1">{senha.usuario}</span>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6"
+                  className="h-7 w-7 shrink-0"
                   onClick={() => copyToClipboard(senha.usuario!, "Usuário")}
                 >
                   <Copy className="h-3 w-3" />
@@ -80,16 +80,16 @@ export function SenhaCard({ senha }: SenhaCardProps) {
             </div>
           )}
 
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Senha:</span>
-            <div className="flex items-center gap-2">
-              <span className="font-mono">
+          <div className="space-y-1">
+            <span className="text-xs text-muted-foreground">Senha:</span>
+            <div className="flex items-center gap-2 bg-muted/50 p-2 rounded-md">
+              <span className="font-mono text-sm truncate flex-1">
                 {showPassword ? senha.senha : "••••••••"}
               </span>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6"
+                className="h-7 w-7 shrink-0"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
@@ -97,7 +97,7 @@ export function SenhaCard({ senha }: SenhaCardProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6"
+                className="h-7 w-7 shrink-0"
                 onClick={() => copyToClipboard(senha.senha, "Senha")}
               >
                 <Copy className="h-3 w-3" />
@@ -106,23 +106,24 @@ export function SenhaCard({ senha }: SenhaCardProps) {
           </div>
 
           {senha.url && (
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">URL:</span>
+            <div className="space-y-1">
+              <span className="text-xs text-muted-foreground">URL:</span>
               <a
                 href={senha.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-primary hover:underline"
+                className="flex items-center gap-1 text-primary hover:underline bg-muted/50 p-2 rounded-md group"
               >
-                <span className="truncate max-w-[200px]">{senha.url}</span>
-                <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                <span className="truncate text-sm flex-1">{senha.url}</span>
+                <ExternalLink className="h-3 w-3 shrink-0 group-hover:translate-x-0.5 transition-transform" />
               </a>
             </div>
           )}
 
           {senha.observacoes && (
-            <div className="pt-2 border-t">
-              <p className="text-sm text-muted-foreground">{senha.observacoes}</p>
+            <div className="pt-2 border-t space-y-1">
+              <span className="text-xs text-muted-foreground">Observações:</span>
+              <p className="text-sm text-muted-foreground break-words">{senha.observacoes}</p>
             </div>
           )}
         </CardContent>
