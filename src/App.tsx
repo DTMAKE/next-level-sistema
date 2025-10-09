@@ -207,11 +207,15 @@ const App = () => {
                           <Agenda />
                         </Layout>
                       </ProtectedRoute>
-                    } />
-                     <Route path="/health" element={<HealthCheck />} />
-                     <Route path="/candidatura" element={<TeamApplication />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
+                      } />
+                      <Route path="/health" element={<HealthCheck />} />
+                      <Route path="/candidatura" element={<TeamApplication />} />
+                      {/* Redirect old routes */}
+                      <Route path="/criador-propostas" element={<ProtectedRoute requiredRole="admin"><Layout><Senhas /></Layout></ProtectedRoute>} />
+                      <Route path="/nova-proposta" element={<ProtectedRoute requiredRole="admin"><Layout><Senhas /></Layout></ProtectedRoute>} />
+                      <Route path="/proposta/:id/editar" element={<ProtectedRoute requiredRole="admin"><Layout><Senhas /></Layout></ProtectedRoute>} />
+                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </ErrorBoundary>
             </BrowserRouter>
