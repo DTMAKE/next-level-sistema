@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, Edit, Trash2, Copy, ExternalLink } from "lucide-react";
+import { Eye, EyeOff, Edit, Trash2, Copy } from "lucide-react";
 import { Senha, useDeleteSenha } from "@/hooks/useSenhas";
 import { useToast } from "@/hooks/use-toast";
 import { SenhaDialog } from "./SenhaDialog";
@@ -104,21 +104,6 @@ export function SenhaCard({ senha }: SenhaCardProps) {
               </Button>
             </div>
           </div>
-
-          {senha.url && (
-            <div className="space-y-1">
-              <span className="text-xs text-muted-foreground">URL:</span>
-              <a
-                href={senha.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-primary hover:underline bg-muted/50 p-2 rounded-md group"
-              >
-                <span className="truncate text-sm flex-1">{senha.url}</span>
-                <ExternalLink className="h-3 w-3 shrink-0 group-hover:translate-x-0.5 transition-transform" />
-              </a>
-            </div>
-          )}
 
           {senha.observacoes && (
             <div className="pt-2 border-t space-y-1">

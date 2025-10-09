@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,21 +8,43 @@ import { useCreateSenha, useUpdateSenha, Senha } from "@/hooks/useSenhas";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface SenhaDialogProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   senha?: Senha;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function SenhaDialog({ children, senha }: SenhaDialogProps) {
-  const [open, setOpen] = useState(false);
+export function SenhaDialog({ children, senha, open: controlledOpen, onOpenChange: controlledOnOpenChange }: SenhaDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen;
   const { user } = useAuth();
   const createSenha = useCreateSenha();
   const updateSenha = useUpdateSenha();
 
-  const [titulo, setTitulo] = useState(senha?.titulo || "");
-  const [usuario, setUsuario] = useState(senha?.usuario || "");
-  const [senhaValue, setSenhaValue] = useState(senha?.senha || "");
-  const [url, setUrl] = useState(senha?.url || "");
-  const [observacoes, setObservacoes] = useState(senha?.observacoes || "");
+  const [titulo, setTitulo] = useState("");
+  const [usuario, setUsuario] = useState("");
+  const [senhaValue, setSenhaValue] = useState("");
+  const [observacoes, setObservacoes] = useState("");
+
+  // Update form when senha prop changes or dialog opens
+  useEffect(() => {
+    if (open) {
+      if (senha) {
+        setTitulo(senha.titulo);
+        setUsuario(senha.usuario || "");
+        setSenhaValue(senha.senha);
+        setObservacoes(senha.observacoes || "");
+      } else {
+        setTitulo("");
+        setUsuario("");
+        setSenhaValue("");
+        setObservacoes("");
+      }
+    }
+  }, [senha, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +55,7 @@ export function SenhaDialog({ children, senha }: SenhaDialogProps) {
       titulo,
       usuario: usuario || null,
       senha: senhaValue,
-      url: url || null,
+      url: null,
       observacoes: observacoes || null,
     };
 
@@ -51,7 +73,6 @@ export function SenhaDialog({ children, senha }: SenhaDialogProps) {
     setTitulo("");
     setUsuario("");
     setSenhaValue("");
-    setUrl("");
     setObservacoes("");
   };
 
@@ -60,9 +81,11 @@ export function SenhaDialog({ children, senha }: SenhaDialogProps) {
       setOpen(newOpen);
       if (!newOpen) resetForm();
     }}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+      {children && (
+        <DialogTrigger asChild>
+          {children}
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-md">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
@@ -103,17 +126,6 @@ export function SenhaDialog({ children, senha }: SenhaDialogProps) {
                 onChange={(e) => setSenhaValue(e.target.value)}
                 placeholder="••••••••"
                 required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="url">URL</Label>
-              <Input
-                id="url"
-                type="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://exemplo.com"
               />
             </div>
 
